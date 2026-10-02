@@ -27,6 +27,7 @@ These decisions come from the brainstorm on 2026-10-02.
 7. The plugin is one plugin with platform folders inside it, not one plugin for each platform.
 8. The plugin ships an optional lean writing mode.
 9. A project can keep its specs, plans, ledgers, and retros out of the repository.
+10. A team can replace any of the three agents with its own, for example a Flutter implementer.
 
 ## Layout
 
@@ -37,7 +38,7 @@ The plugin repository holds these parts:
 - `commands/feature.md`: the pipeline. The steps are brainstorm, spec, spec review, plan, plan review,
   gate, tasks, final review, ship, and retro. It names no platform and no tracker.
 - `agents/implementer.md`, `agents/reviewer.md`, `agents/qa-reviewer.md`. Each agent loads the platform
-  skill that the project file names.
+  skill that the project file names. A project can name its own agent for any of the three seats.
 - `skills/run-rules/`: the ledger, the cost lines, review findings, evidence habits, and the rules for
   checks.
 - `skills/controller/`: dispatch, review seats, plan review, the stall watch, the ship checklist, the
@@ -73,6 +74,11 @@ Each project adds `.claude/agentic-delivery.md`, which git tracks. It holds thes
 - Accounts: the test account, the host it reaches, and what the run can do with it.
 - Ask-first areas: the files and actions that need the developer's word, for example signing, secrets,
   and a new dependency.
+- Agents: `implementer_agent`, `reviewer_agent`, and `qa_agent` name the agent for each seat. Each key
+  defaults to the plugin's own agent. A team can name its own agent, for example one in the project's
+  agents folder. The brief tells every agent to load the run rules and the platform skill, so a custom
+  agent still follows the rules. A key that names a missing agent stops the run at its first dispatch.
+  The run does not fall back to the default.
 
 ## The Flutter layer
 
