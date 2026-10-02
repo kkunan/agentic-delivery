@@ -5,7 +5,7 @@ import CoreGraphics
 import ImageIO
 
 struct Options {
-    var udid = "booted"
+    var capture: String?
     var out = "screenshot.png"
     var interval = 0.4
     var attempts = 12
@@ -28,9 +28,34 @@ struct Difference {
     }
 }
 
+let usage = """
+usage: settle-screenshot.swift --capture '<command>' [--out <path.png>]
+                               [--interval <seconds>] [--attempts <n>]
+                               [--tolerance <fraction>]
+
+Runs the capture command repeatedly until two consecutive frames match, then
+writes the settled frame to --out. The command runs with /bin/sh -c. Every {out}
+in it is replaced with the path the command must write a PNG to.
+
+example: --capture 'xcrun simctl io <device-id> screenshot {out}'
+
+exit 0  settled, --out written
+exit 1  never settled within --attempts; --out holds the last frame and
+        stderr names what kept moving
+exit 2  usage or capture error
+"""
+
+let scratch = FileManager.default.temporaryDirectory
+    .appendingPathComponent("settle-\(ProcessInfo.processInfo.processIdentifier)")
+
+func leave(_ code: Int32) -> Never {
+    try? FileManager.default.removeItem(at: scratch)
+    exit(code)
+}
+
 func fail(_ message: String, code: Int32 = 2) -> Never {
     FileHandle.standardError.write(Data("settle-screenshot: \(message)\n".utf8))
-    exit(code)
+    leave(code)
 }
 
 func parseOptions() -> Options {
@@ -44,44 +69,42 @@ func parseOptions() -> Options {
             return v
         }
         switch flag {
-        case "--udid": o.udid = value(flag)
+        case "--capture": o.capture = value(flag)
         case "--out": o.out = value(flag)
         case "--interval": o.interval = Double(value(flag)) ?? o.interval
         case "--attempts": o.attempts = Int(value(flag)) ?? o.attempts
         case "--tolerance": o.tolerance = Double(value(flag)) ?? o.tolerance
         case "--help", "-h":
-            print("""
-            usage: settle-screenshot.swift [--udid <id|booted>] [--out <path.png>]
-                                           [--interval <seconds>] [--attempts <n>]
-                                           [--tolerance <fraction>]
-
-            Captures repeatedly until two consecutive frames match, then writes the
-            settled frame to --out.
-
-            exit 0  settled, --out written
-            exit 1  never settled within --attempts; --out holds the last frame and
-                    stderr names what kept moving
-            exit 2  usage or capture error
-            """)
-            exit(0)
+            print(usage)
+            leave(0)
         default: fail("unknown option \(flag)")
         }
     }
     return o
 }
 
-func capture(udid: String, to path: String) {
+func shellQuote(_ text: String) -> String {
+    "'" + text.replacingOccurrences(of: "'", with: "'\\''") + "'"
+}
+
+func capture(command: String, to path: String) {
+    try? FileManager.default.removeItem(atPath: path)
     let p = Process()
-    p.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
-    p.arguments = ["simctl", "io", udid, "screenshot", path]
-    let err = Pipe()
-    p.standardError = err
-    p.standardOutput = Pipe()
-    do { try p.run() } catch { fail("could not run xcrun: \(error.localizedDescription)") }
+    p.executableURL = URL(fileURLWithPath: "/bin/sh")
+    p.arguments = ["-c", command.replacingOccurrences(of: "{out}", with: shellQuote(path))]
+    let errPath = scratch.appendingPathComponent("capture-stderr.txt").path
+    FileManager.default.createFile(atPath: errPath, contents: nil)
+    p.standardError = FileHandle(forWritingAtPath: errPath)
+    p.standardOutput = FileHandle.nullDevice
+    do { try p.run() } catch { fail("could not run the capture command: \(error.localizedDescription)") }
     p.waitUntilExit()
+    let text = String(decoding: FileManager.default.contents(atPath: errPath) ?? Data(), as: UTF8.self)
+        .trimmingCharacters(in: .whitespacesAndNewlines)
     guard p.terminationStatus == 0 else {
-        let text = String(decoding: err.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
-        fail("simctl screenshot failed for \(udid): \(text.trimmingCharacters(in: .whitespacesAndNewlines))")
+        fail("the capture command exited \(p.terminationStatus): \(text)")
+    }
+    guard FileManager.default.fileExists(atPath: path) else {
+        fail("the capture command wrote no file at \(path): \(text)")
     }
 }
 
@@ -130,19 +153,20 @@ func compare(_ a: Frame, _ b: Frame) -> Difference {
 }
 
 let options = parseOptions()
-let scratch = FileManager.default.temporaryDirectory
-    .appendingPathComponent("settle-\(ProcessInfo.processInfo.processIdentifier)")
+guard let command = options.capture else {
+    FileHandle.standardError.write(Data("settle-screenshot: --capture is required\n\(usage)\n".utf8))
+    leave(2)
+}
 try? FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
-defer { try? FileManager.default.removeItem(at: scratch) }
 
 let probe = scratch.appendingPathComponent("probe.png").path
-capture(udid: options.udid, to: options.out)
+capture(command: command, to: options.out)
 var previous = load(options.out)
 var last: Difference?
 
 for attempt in 1...options.attempts {
     Thread.sleep(forTimeInterval: options.interval)
-    capture(udid: options.udid, to: probe)
+    capture(command: command, to: probe)
     let current = load(probe)
     let d = compare(previous, current)
     last = d
@@ -150,12 +174,12 @@ for attempt in 1...options.attempts {
     try? FileManager.default.copyItem(atPath: probe, toPath: options.out)
     if d.changed == 0 {
         print("settled after \(attempt) comparison(s), identical; wrote \(options.out)")
-        exit(0)
+        leave(0)
     }
     if d.fraction <= options.tolerance {
         let pct = String(format: "%.4f", d.fraction * 100)
         print("settled after \(attempt) comparison(s), \(d.changed) px differ (\(pct)%, within tolerance, moving region \(d.boxDescription)); wrote \(options.out)")
-        exit(0)
+        leave(0)
     }
     previous = current
 }
@@ -170,4 +194,4 @@ settle-screenshot: never settled after \(options.attempts) comparisons at \(opti
   A large region means the screen is still animating or loading: raise --attempts.
 
 """.utf8))
-exit(1)
+leave(1)
