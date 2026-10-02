@@ -1,6 +1,6 @@
 ---
 name: platform-flutter
-description: The Flutter layer of an agentic-delivery run, with the test tiers, devices, commands, screenshots, and release checks. If the project file says `platform: flutter`, load this skill.
+description: "The Flutter layer of an agentic-delivery run, with the test tiers, devices, commands, screenshots, and release checks. If the project file says `platform: flutter`, load this skill."
 ---
 
 # Flutter platform
