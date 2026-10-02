@@ -24,7 +24,7 @@ Each of these terms has one meaning only.
 - Project file: `.claude/agentic-delivery.md` in the repository of the user.
 - Platform skill: the skill `platform-<platform>`, for example `platform-flutter`. It names the build commands, the test commands, and the device commands.
 
-If `docs` in the project file is `private`, `docs_dir` is a folder beside the repository. Every worktree reaches it by its full path.
+If `docs` in the project file is `private`, `docs_dir` is a folder outside the repository. Every worktree reaches it by its full path, and a path that starts with `~/` is under the home folder. In that mode, never commit or push a spec, a plan, a ledger, or a retro. The team chose to keep them out of the repository.
 
 ## Autonomy
 

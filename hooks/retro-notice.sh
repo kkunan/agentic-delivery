@@ -19,6 +19,8 @@ except Exception:
 path = os.path.abspath(path)
 inside = "/docs/superpowers/retros/" in path
 if not inside and docs_dir:
+    if docs_dir.startswith("~/"):
+        docs_dir = os.path.expanduser(docs_dir)
     if not os.path.isabs(docs_dir):
         docs_dir = os.path.join(top, docs_dir) if top else ""
     if docs_dir:

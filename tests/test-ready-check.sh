@@ -224,6 +224,12 @@ check "private docs, relative docs_dir: exit 1" 1 "$rc"
 check "private docs, relative docs_dir: says absolute" yes "$(has 'must be an absolute path')"
 cleanup
 
+T_DOCS=private T_DOCS_DIR_VALUE='~/private-notes' build
+HOME=$root run
+check "private docs, docs_dir under ~/: exit 0" 0 "$rc"
+check "private docs, docs_dir under ~/: ledger present" yes "$(has 'PASS  ledger present')"
+cleanup
+
 # ── The view files, through a stub for gh ─────────────────────────────────
 build
 mkdir -p "$repo/lib/a/views"

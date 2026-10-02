@@ -11,11 +11,20 @@ in your context, so do not open it again.
 0. Read `.claude/agentic-delivery.md`. If it is missing, stop. Offer to copy the file
    `templates/agentic-delivery.md` of the plugin into the project, and wait for the answer. If the file
    exists, check these keys first: `platform`, `base_branch`, `release_branch`, `branch_prefix`,
-   `protected_branches`, `docs_dir`, `view_globs`, and `screenshot_branch`. If one is empty or
-   missing, stop. Ask the developer for each empty key, and write the answers into the project file
+   `protected_branches`, `docs`, `docs_dir`, `view_globs`, and `screenshot_branch`. If one is empty
+   or missing, stop. Ask the developer for each empty key, and write the answers into the project file
    only after the developer agrees. Never guess a value from the branches or the folders that you
-   see. Then load the `controller` skill and the `run-rules` skill. Then load `platform-<platform>`,
+   see. Next, make sure that the skills `superpowers:brainstorming`, `superpowers:writing-plans`,
+   `superpowers:subagent-driven-development`, and `superpowers:requesting-code-review` are
+   available. If one is missing, stop and tell the developer to install the superpowers plugin,
+   because steps 1, 3, 5, and 6 need these skills. Do not do those steps without them.
+   Then load the `controller` skill and the `run-rules` skill. Then load `platform-<platform>`,
    with the `platform` key of the project file. Read the controller skill again after a compaction.
+
+Documents. Every spec, plan, ledger, and retro goes under `docs_dir`. It never goes under the
+default folder of a superpowers skill, such as `docs/superpowers/specs/`. If `docs` is
+`private`, never commit or push one of these documents, even where a superpowers skill says to
+commit it. A `docs_dir` that starts with `~/` is under the home folder of the developer.
 
 Agents. Take each agent from the project file: `implementer_agent`, `reviewer_agent`, and `qa_agent`.
 The defaults are the plugin agents `implementer`, `reviewer`, and `qa-reviewer`. If a key names an
@@ -36,8 +45,10 @@ ledger.
    in its header. Add the estimate: size, wall-clock range, token budget, and the number of times
    you expect to need the developer. `controller`, Estimates defines all four. Refine them in step 3.
    If the run passes them, tell the developer at that time.
-2. Create the branch with `branch_prefix` and a slug, from `base_branch`. Commit the spec, push it,
-   and open a draft pull request against `base_branch`. In the same step, work the tracker steps in
+2. Create the branch with `branch_prefix` and a slug, from `base_branch`. If `docs` is `repo`,
+   commit the spec, push it, and open a draft pull request against `base_branch`. If `docs` is
+   `private`, wait for the first task commit. Then push the branch and open the draft pull request,
+   because the branch has no commit of its own before then. In the same step, work the tracker steps in
    the project file: move the ticket to in progress and post the trail comment.
    `controller`, Tracker and pull request describes both.
 2b. Groom the spec before you write the plan. Dispatch two seats in parallel. The reviewer judges

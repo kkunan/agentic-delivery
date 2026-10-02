@@ -16,10 +16,13 @@ docs=$(bash "$reader" docs repo) || exit $?
 
 docs_dir=${docs_dir%/}
 case "$docs_dir" in
+    "~/"*) docs_dir="$HOME/${docs_dir#\~/}" ;;
+esac
+case "$docs_dir" in
     /*) ledger_root=$docs_dir ;;
     *)
         if [ "$docs" = private ]; then
-            printf 'FAIL  docs_dir\n      docs is private, so docs_dir must be an absolute path, not %s\n' "$docs_dir"
+            printf 'FAIL  docs_dir\n      docs is private, so docs_dir must be an absolute path or start with ~/, not %s\n' "$docs_dir"
             exit 1
         fi
         ledger_root="$repo/$docs_dir"

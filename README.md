@@ -31,6 +31,10 @@ something went wrong without it, and [`lessons.md`](lessons.md) tells the story 
 
 ## Quick start
 
+The plugin needs the superpowers plugin from the `claude-plugins-official` marketplace. The feature
+command uses four of its skills. If one is missing, the command stops. The manifest names superpowers as a
+dependency, so Claude Code can install it with this plugin. If it does not, install it first.
+
 Add the repository as a marketplace, then install the plugin from it:
 
 ```bash
@@ -174,7 +178,8 @@ that project, and the plugin never guesses these values. Its front matter names:
 - the platform: `flutter` or `ios`
 - the oldest plugin version that the project accepts
 - the base branch, the release branch, the branch prefix for features, and the protected branches
-- where the specs, plans, ledgers, and retros go: in the repository, or in a private folder
+- where the specs, plans, ledgers, and retros go: in the repository, or in a private folder that
+  the run never commits, such as `~/agentic-notes/<project>`
 - the file patterns of the screens, the names of the test processes, and the branch for screenshots
 - the mutation runner for the platform
 - optionally, your own agent for any of the three seats

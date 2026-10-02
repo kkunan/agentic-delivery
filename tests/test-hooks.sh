@@ -138,6 +138,10 @@ check "retro: absolute docs_dir retros path gives the notice" PostToolUse "$(pri
 out=$(payload "$private/2026-01-01-x/ledger.md" | bash "$retro"); check "retro: absolute docs_dir ledger path gives nothing" "" "$out"
 payload "$work/docs/superpowers/retros/x.md" | bash "$retro" >/dev/null 2>&1; check "retro: matching path exits 0" 0 $?
 
+printf -- '---\nplatform: flutter\ndocs_dir: ~/%s\n---\n' "$(basename "$private")" > "$proj"
+out=$(payload "$private/retros/2026-01-01-x.md" | HOME=$(dirname "$private") bash "$retro")
+check "retro: a docs_dir under ~/ gives the notice" PostToolUse "$(printf '%s' "$out" | event_of)"
+
 rm -f "$proj" "$fake/hooks/session-start.sh" "$fake/scripts/project-config.sh"
 rmdir "$work/.claude" "$fake/hooks" "$fake/scripts" "$fake/.claude-plugin" "$fake" "$private" "$plain"
 rm -rf "$work/.git"; rmdir "$work"
