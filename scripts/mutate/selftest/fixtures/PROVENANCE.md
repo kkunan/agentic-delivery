@@ -1,38 +1,29 @@
 # Fixture provenance
 
-captured: xcresulttool get test-results summary / tests / build-results, 2026-09-26, develop 4fdb638,
-device AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA, by the P-01 controller. The probe script and logs are in the P-01 ledger folder,
-`probe-captured/`.
+The fixtures are result files in the shape of the runner contract. They are written by hand. They are not captures from a real runner, because the contract is the source of truth for the shape:
 
-| Fixture | Capture |
+```
+{"compiled": true|false, "tests": [{"id": "<id>", "result": "passed|failed|skipped"}]}
+```
+
+| Fixture | Outcome |
 |---|---|
-| `pass.*.json` | `-only-testing:AppTests/ChatScrollGeometryTests/testTheThresholdIs88` on the clean tree |
-| `killed.*.json` | The same test, with `nearBottomThreshold` changed from `88` to `89` |
-| `nocompile.*.json` | The same test, with `nearBottomThreshold` changed from `88` to `"88"` |
-| `missing.*.json` | `-only-testing:AppTests/ChatScrollGeometryTests/testDoesNotExist` on the clean tree |
+| `pass.json` | Each named test passed. |
+| `killed.json` | Each named test failed. |
+| `skipped.json` | Each named test was skipped. |
+| `missing.json` | The code compiled, and no test ran. |
+| `nocompile.json` | The code did not compile. |
+| `invalid.json` | The file is not valid JSON. |
+| `shape.json` | The file is valid JSON, but `compiled` is not `true` or `false`. |
 
-The files are verbatim. `emit.py` prints them as they are, with three exceptions:
+The fake runner, `fake-runner.sh`, finds a `SELFTEST_` marker in the tree and gives `emit.py` the outcome. `emit.py` writes the result file with these changes to the fixture:
 
-- The `tests` tree for a compile failure is `nocompile.tests.json` and for a run of no test is
-  `missing.tests.json`, both verbatim. For every other outcome, `emit.py` takes the captured tree,
-  `killed.tests.json` for a kill and `pass.tests.json` otherwise, copies its `Test Suite` and
-  `Test Case` nodes once per test name, and substitutes only `nodeIdentifierURL`, `nodeIdentifier`,
-  `name` and `result`. `result` is `Passed`, `Failed` for a kill, or `Skipped`.
-- For the `no-field` outcome it removes `totalTestCount` and `passedTests` from `pass.test-results.json`.
-- `skipped.test-results.json` has no capture. spec: decision 14, "a run where every test was skipped,
-  which has `passedTests` 0". It is `pass.test-results.json` with `passedTests` 0, `skippedTests` 1
-  and `result` `Skipped`, at the top level and for the device.
+- If the fixture has an entry in `tests`, `emit.py` copies that entry for each test id that the fake runner knows. Each copy gets its test id in `id`.
+- For the `SELFTEST_NOCOMPILE_STALE` marker, it takes `nocompile.json` and adds a `failed` entry for each test id. A case uses this file to prove that `compiled` set to false still gives `did-not-compile`.
+- For the `SELFTEST_OTHER_FAILS` marker, it adds one `failed` entry for a test id that no mutation names.
+- For `invalid.json`, it writes the file as it is.
+- For the `SELFTEST_ERR_NOFILE` marker, the fake runner writes no result file and exits 1.
 
-A name whose first component is not `AppTests` or `AppUITests`, or that has fewer than two
-or more than three components, gets no node. spec: decision 10. That is the fake's stand-in for a
-name that runs nothing; the real behaviour for such a name is not measured.
+The fake runner knows a test id that starts with `suite/` and has exactly three parts. It does not know an id that holds `doesNotExist`. That is how a case asks for a test that does not run. If the fake runner knows none of the test ids, it writes `missing.json`. The exceptions are a compile failure and the error outcomes.
 
-The fake `xcodebuild` applies the same rule. When no name passed to it survives the rule, and the
-build does not fail, it runs no test: it exits 0 and its bundle gives the `missing` fixtures, as the
-real tool did for `testDoesNotExist` in the probe.
-
-spec: "Inputs the author believes the runner mishandles", "Names `.../testFoo` and a node for
-`.../testFooBar`: a prefix or suffix match reports that `testFoo` ran". `SELFTEST_RENAME_FOOBAR` in
-the tree makes the fake append `Bar` to every kept name before it is written to `selftest-names`, so
-a case can ask for `testFoo` while only a `testFooBar` node exists, and prove that the equality check
-in `results.py` correctly reports it as not run.
+The `SELFTEST_RENAME_FOOBAR` marker makes the fake runner add `Bar` to each test id that it knows. So a case can ask for `suite/a_test/foo` while the result file has only `suite/a_test/fooBar`. The case proves that `results.py` compares test ids exactly and reports that `suite/a_test/foo` did not run.

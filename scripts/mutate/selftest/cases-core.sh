@@ -5,11 +5,7 @@ r0_kill_alone() {
     run_runner
     expect_rc 0 && expect_calls 2 && expect_out "killed  k1  Sources/A.swift  $T_A" \
         && expect_out "mutate: 1 mutations, 1 killed, 0 survived, 0 did-not-compile, 0 error" \
-        && expect_arg "platform=iOS Simulator,id=$UDID" && expect_arg "-only-testing:$T_A" \
-        && expect_arg "-parallel-testing-enabled" && expect_clean && expect_no_journal \
-        && [ "$(grep -A1 -x 'ARG -parallel-testing-enabled' "$SELFTEST_CALL_LOG" | grep -cx 'ARG NO')" -eq 2 ] \
-        && [ "$(grep -A1 -x 'ARG -collect-test-diagnostics' "$SELFTEST_CALL_LOG" | grep -cx 'ARG never')" -eq 2 ] \
-        || say "-parallel-testing-enabled or -collect-test-diagnostics did not carry the expected value"
+        && expect_clean && expect_no_journal
 }
 
 r0_survivor_alone() {
@@ -21,21 +17,38 @@ r0_survivor_alone() {
         || say "the line after survived: is not the group listing for s1"
 }
 
+summary_as_golden() {
+    sed "s#$selftest_dir/#<selftest>/#" "$out/mutate-summary.txt"
+}
+
 r0_summary_golden() {
     mklist k1 Sources/A.swift "= 88" "= 88 // SELFTEST_KILL" "$T_A" \
         s1 Sources/A.swift "= 1" "= 2" "$T_B"
     run_runner
-    expect_rc 1 && cmp -s "$out/mutate-summary.txt" "$selftest_dir/golden-summary.txt" \
-        || say "mutate-summary.txt differs from golden-summary.txt: $(diff "$out/mutate-summary.txt" "$selftest_dir/golden-summary.txt")"
+    expect_rc 1 && summary_as_golden | cmp -s - "$selftest_dir/golden-summary.txt" \
+        || say "mutate-summary.txt differs from golden-summary.txt: $(summary_as_golden | diff - "$selftest_dir/golden-summary.txt")"
 }
 
-# ── Row 1: an existing result bundle is refused ───────────────────────────
-
-r1_existing_bundle() {
-    mklist k1 Sources/A.swift "= 88" "= 88 // SELFTEST_KILL" "$T_A"
-    mkdir -p "$out/mutant-k1.xcresult"
+r0_unnamed_failure_is_not_a_kill() {
+    mklist s1 Sources/A.swift "= 1" "= 1 // SELFTEST_OTHER_FAILS" "$T_A"
     run_runner
-    expect_rc 2 && expect_err "$out/mutant-k1.xcresult" && expect_calls 0 && expect_clean
+    expect_rc 1 && expect_out "survived  s1  Sources/A.swift  $T_A" && expect_clean
+}
+
+# ── Row 1: an existing result file or log is refused ──────────────────────
+
+r1_existing_result_file() {
+    mklist k1 Sources/A.swift "= 88" "= 88 // SELFTEST_KILL" "$T_A"
+    mkdir -p "$out" && echo '{}' > "$out/mutant-k1.json"
+    run_runner
+    expect_rc 2 && expect_err "$out/mutant-k1.json" && expect_calls 0 && expect_clean
+}
+
+r1_existing_log() {
+    mklist k1 Sources/A.swift "= 88" "= 88 // SELFTEST_KILL" "$T_A"
+    mkdir -p "$out" && echo old > "$out/mutant-k1.log"
+    run_runner
+    expect_rc 2 && expect_err "$out/mutant-k1.log" && expect_calls 0 && expect_clean
 }
 
 r1_partial_rerun() {
@@ -67,6 +80,13 @@ r2_mode_restored() {
 
 r3_did_not_compile() {
     mklist n1 Sources/A.swift "= 88" "= 88 // SELFTEST_NOCOMPILE" "$T_A"
+    run_runner
+    expect_rc 1 && expect_out "did-not-compile  n1" \
+        && expect_out "mutate: 1 mutations, 0 killed, 0 survived, 1 did-not-compile, 0 error" && expect_clean
+}
+
+r3_did_not_compile_beats_a_failure() {
+    mklist n1 Sources/A.swift "= 88" "= 88 // SELFTEST_NOCOMPILE_STALE" "$T_A"
     run_runner
     expect_rc 1 && expect_out "did-not-compile  n1" \
         && expect_out "mutate: 1 mutations, 0 killed, 0 survived, 1 did-not-compile, 0 error" && expect_clean
@@ -119,13 +139,13 @@ r5_untracked() {
     expect_rc 2 && expect_err "not tracked" && expect_calls 0
 }
 
-# ── Rows 1 to 3: paths that only a changing tree reaches ──────────────────
+# ── Rows 1 and 2: paths that only a changing tree reaches ─────────────────
 
-r1_bundle_appears_mid_run() {
+r1_result_file_appears_mid_run() {
     printf '%s// SELFTEST_PLANT_K1\n' "$A_SWIFT" > "$repo/Sources/A.swift" && commit_all plant
     mklist k1 Sources/A.swift "= 88" "= 88 // SELFTEST_KILL" "$T_A"
     run_runner
-    expect_rc 1 && expect_calls 1 && expect_out "(bundle appeared before the call)" && expect_clean
+    expect_rc 1 && expect_calls 1 && expect_out "(result file appeared before the call)" && expect_clean
 }
 
 r2_apply_refuses_a_file_that_changed() {
@@ -134,10 +154,4 @@ r2_apply_refuses_a_file_that_changed() {
     run_runner
     expect_rc 3 && expect_calls 1 && expect_err "STOPPED during apply of k1" \
         && expect_err "no longer occurs exactly once" && expect_no_journal
-}
-
-r3_failed_build_that_exits_0() {
-    mklist e1 Sources/A.swift "= 88" "= 88 // SELFTEST_ERR_BUILD_FAILED_EXIT0" "$T_A"
-    run_runner
-    expect_rc 1 && expect_out "error  e1" && expect_out "0 did-not-compile, 1 error"
 }

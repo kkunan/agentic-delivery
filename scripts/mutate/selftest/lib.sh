@@ -1,7 +1,6 @@
-UDID=AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA
-OWNER_UDID=BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB
-T_A=AppTests/ATests/testA
-T_B=AppTests/ATests/testB
+FAKE_RUNNER="$selftest_dir/fake-runner.sh"
+T_A=suite/a_test/one
+T_B=suite/a_test/two
 A_SWIFT=$'let threshold = 88\nlet other = 1\nlet word = "aaa"\n'
 
 # ── A throwaway repository per case ───────────────────────────────────────
@@ -11,12 +10,13 @@ new_repo() {
     case_dir=$(cd "$case_dir" && pwd -P)
     repo="$case_dir/repo"
     out="$case_dir/out"
-    mkdir -p "$repo/App.xcworkspace" "$repo/Sources"
+    mkdir -p "$repo/Sources"
     printf '%s' "$A_SWIFT" > "$repo/Sources/A.swift"
     git -C "$repo" init -q
     commit_all init
     export SELFTEST_CALL_LOG="$case_dir/calls.log" SELFTEST_TICKS="$case_dir/ticks" SELFTEST_LIST="$case_dir/list.json"
     : > "$SELFTEST_CALL_LOG"
+    echo stdin-data > "$case_dir/stdin"
 }
 
 commit_all() {
@@ -41,27 +41,40 @@ print(json.dumps([dict(zip(keys, a[i:i + 5])) for i in range(0, len(a), 5)]))
 
 # ── Running the runner ────────────────────────────────────────────────────
 
-run_args() {
-    ( cd "$repo" && MUTATE_XCODEBUILD="$selftest_dir/fake-xcodebuild.sh" \
-        MUTATE_XCRESULTTOOL="$selftest_dir/fake-xcresulttool.sh" \
-        "$RUNNER_DIR/mutate.sh" "$@" ) > "$case_dir/stdout" 2> "$case_dir/stderr"
+run_from() {
+    local dir=$1
+    shift
+    ( cd "$dir" && "$RUNNER_DIR/mutate.sh" "$@" ) < "$case_dir/stdin" > "$case_dir/stdout" 2> "$case_dir/stderr"
     rc=$?
 }
 
+run_args() {
+    run_from "$repo" "$@"
+}
+
 run_runner() {
-    run_args --manifest "$case_dir/list.json" --udid "$UDID" --out "$out" "$@"
+    run_args --manifest "$case_dir/list.json" --runner "$FAKE_RUNNER" --out "$out" "$@"
 }
 
 start_runner_bg() {
     cd "$repo" || return 1
     set -m
-    env MUTATE_XCODEBUILD="$selftest_dir/fake-xcodebuild.sh" \
-        MUTATE_XCRESULTTOOL="$selftest_dir/fake-xcresulttool.sh" \
-        "$RUNNER_DIR/mutate.sh" --manifest "$case_dir/list.json" --udid "$UDID" --out "$out" \
-        > "$case_dir/stdout" 2> "$case_dir/stderr" &
+    "$RUNNER_DIR/mutate.sh" --manifest "$case_dir/list.json" --runner "$FAKE_RUNNER" --out "$out" \
+        < "$case_dir/stdin" > "$case_dir/stdout" 2> "$case_dir/stderr" &
     runner=$!
     set +m
     cd - > /dev/null
+}
+
+add_wrapper() {
+    mkdir -p "$repo/$(dirname "$1")"
+    printf '#!/bin/bash\nexec "%s" "$@"\n' "$FAKE_RUNNER" > "$repo/$1"
+    chmod +x "$repo/$1"
+}
+
+add_project_file() {
+    mkdir -p "$repo/.claude"
+    printf -- '---\nplatform: selftest\n%s\n---\n' "$1" > "$repo/.claude/agentic-delivery.md"
 }
 
 wait_for() {
@@ -88,11 +101,7 @@ expect_rc() {
 expect_calls() {
     local n
     n=$(grep -c '^CALL$' "$SELFTEST_CALL_LOG")
-    [ "$n" -eq "$1" ] || say "$n xcodebuild calls, expected $1"
-}
-
-expect_arg() {
-    grep -qxF -- "ARG $1" "$SELFTEST_CALL_LOG" || say "no xcodebuild call had the argument $1"
+    [ "$n" -eq "$1" ] || say "$n runner calls, expected $1"
 }
 
 expect_out() {

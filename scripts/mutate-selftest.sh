@@ -4,7 +4,7 @@ set -uo pipefail
 scripts_dir=$(cd "$(dirname "$0")" && pwd -P)
 selftest_dir="$scripts_dir/mutate/selftest"
 RUNNER_DIR=$scripts_dir
-RUNNER_FILES="mutate.sh mutate/run.sh mutate/report.sh mutate/mutate.py mutate/manifest.py mutate/journal.py mutate/results.py"
+RUNNER_FILES="mutate.sh project-config.sh mutate/run.sh mutate/report.sh mutate/mutate.py mutate/manifest.py mutate/journal.py mutate/results.py"
 source "$selftest_dir/lib.sh"
 source "$selftest_dir/cases-core.sh"
 source "$selftest_dir/cases-signals.sh"
@@ -17,8 +17,9 @@ usage() {
 usage: scripts/mutate-selftest.sh [--runner <folder>] [--only <prefix>]
        scripts/mutate-selftest.sh [--runner <folder>] --mutants
 
-Runs the cases for scripts/mutate.sh with fake xcodebuild and xcresulttool.
---runner  a folder that holds a copy of the runner: mutate.sh and mutate/*.
+Runs the cases for scripts/mutate.sh with a fake platform runner,
+mutate/selftest/fake-runner.sh.
+--runner  a folder that holds a copy of mutate.sh, project-config.sh and mutate/*.
           Combines with --mutants, in either order, to judge that folder
 --only    run only the cases whose names start with <prefix>, for example r6_.
           Cannot be combined with --mutants

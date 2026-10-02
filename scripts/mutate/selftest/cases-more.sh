@@ -17,12 +17,12 @@ r11_dead_lock() {
     /usr/bin/true & dead=$!
     wait "$dead"
     mkdir "$lock" && echo "$dead" > "$lock/pid"
-    printf '%s' "$case_dir/old-run/DerivedData" > "$lock/derived"
+    printf '%s' "$case_dir/old-run/out" > "$lock/out"
     mklist k1 Sources/A.swift "= 88" "= 88 // SELFTEST_KILL" "$T_A"
     run_runner
     expect_rc 0 && expect_out "pid $dead is dead; taking over" \
-        && expect_out "pgrep -f $case_dir/old-run/DerivedData" && [ ! -e "$lock" ] \
-        || say "the lock was not released, or the hint did not name the old run's derived data"
+        && expect_out "its runner can still run: pgrep -f $case_dir/old-run/out" && [ ! -e "$lock" ] \
+        || say "the lock was not released, or the hint did not name the old run's output folder"
 }
 
 r11_lock_without_pid() {
@@ -42,8 +42,8 @@ r11_dead_lock_stale_list() {
     mklist k1 Sources/A.swift "= 88" "= 88 // SELFTEST_KILL" "$T_A"
     run_runner
     expect_rc 0 && expect_out "pid $dead is dead; taking over" \
-        && expect_out "the old run's derived data is unknown" && [ ! -e "$lock" ] \
-        || say "a stale read-only list.json blocked the takeover, or the hint did not say the old run's derived data is unknown"
+        && expect_out "the old run's output folder is unknown" && [ ! -e "$lock" ] \
+        || say "a stale read-only list.json blocked the takeover, or the hint did not say the old run's output folder is unknown"
 }
 
 r11_lock_released_after_a_run() {
@@ -89,9 +89,14 @@ r12_label_with_a_slash() {
     list_refused "label"
 }
 
-r12_test_name_with_a_space() {
-    mklist a Sources/A.swift "= 88" "= 89" "AppTests/ATests/test A"
-    list_refused "must name its target"
+r12_test_id_with_a_newline() {
+    mklist a Sources/A.swift "= 88" "= 89" "suite/a_test/one"$'\n'"two"
+    list_refused "control character"
+}
+
+r12_test_id_empty() {
+    mklist a Sources/A.swift "= 88" "= 89" ""
+    list_refused "test is empty"
 }
 
 r12_file_name_with_a_tab() {
@@ -130,21 +135,60 @@ r12_list_frozen_at_the_start() {
         || say "the list was not frozen at the start; rc=$rc"
 }
 
-# ── Row 13: configuration, and the fake-tools label ───────────────────────
+# ── Row 13: where the runner comes from ───────────────────────────────────
 
-r13_configuration() {
-    mklist k1 Sources/A.swift "= 88" "= 88 // SELFTEST_KILL" "$T_A"
-    run_runner --configuration UITest
-    expect_rc 0 && [ "$(grep -c -x 'ARG -configuration' "$SELFTEST_CALL_LOG")" -eq 2 ] && expect_arg UITest \
-        || say "-configuration UITest did not reach both calls"
+r13_summary_names_the_runner() {
+    mklist s1 Sources/A.swift "= 1" "= 2" "$T_A"
+    run_runner
+    [ "$(head -1 "$out/mutate-summary.txt")" = "runner: $FAKE_RUNNER" ] && expect_out "runner: $FAKE_RUNNER" \
+        || say "the summary does not start with the runner line"
 }
 
-r13_fake_tools_label() {
-    mklist k1 Sources/A.swift "= 88" "= 88 // SELFTEST_KILL" "$T_A"
+r13_no_runner() {
+    mklist s1 Sources/A.swift "= 1" "= 2" "$T_A"
+    run_args --manifest "$case_dir/list.json" --out "$out"
+    expect_rc 2 && expect_err "--runner" && expect_err "mutation_runner" && expect_calls 0 && expect_clean
+}
+
+r13_no_runner_key() {
+    add_project_file "base_branch: develop" && commit_all project
+    mklist s1 Sources/A.swift "= 1" "= 2" "$T_A"
+    run_args --manifest "$case_dir/list.json" --out "$out"
+    expect_rc 2 && expect_err "--runner" && expect_err "mutation_runner" && expect_calls 0
+}
+
+r13_runner_from_the_project_file() {
+    add_wrapper tools/selftest-runner.sh && add_project_file "mutation_runner: tools/selftest-runner.sh" && commit_all project
+    mklist s1 Sources/A.swift "= 1" "= 2" "$T_A"
+    run_from "$repo/Sources" --manifest "$case_dir/list.json" --out "$out"
+    expect_rc 1 && expect_calls 2 && expect_out "survived  s1" && expect_out "runner: $repo/tools/selftest-runner.sh"
+}
+
+r13_relative_runner_from_the_top() {
+    add_wrapper tools/selftest-runner.sh && commit_all wrapper
+    mklist s1 Sources/A.swift "= 1" "= 2" "$T_A"
+    run_from "$repo/Sources" --manifest "$case_dir/list.json" --runner tools/selftest-runner.sh --out "$out"
+    expect_rc 1 && expect_calls 2 && expect_out "survived  s1"
+}
+
+r13_runner_flag_wins() {
+    add_project_file "mutation_runner: tools/absent-runner.sh" && commit_all project
+    mklist s1 Sources/A.swift "= 1" "= 2" "$T_A"
     run_runner
-    [ "$(head -1 "$out/mutate-summary.txt")" = "FAKE TOOLS: this run did not use the real xcodebuild or xcresulttool" ] \
-        && expect_out "FAKE TOOLS: this run did not use the real xcodebuild or xcresulttool" \
-        || say "the summary does not start with the FAKE TOOLS line"
+    expect_rc 1 && expect_calls 2 && expect_out "survived  s1"
+}
+
+r13_runner_missing() {
+    mklist s1 Sources/A.swift "= 1" "= 2" "$T_A"
+    run_args --manifest "$case_dir/list.json" --runner "$case_dir/absent-runner.sh" --out "$out"
+    expect_rc 2 && expect_err "$case_dir/absent-runner.sh is not a file" && expect_calls 0
+}
+
+r13_runner_not_executable() {
+    printf '#!/bin/bash\nexit 0\n' > "$case_dir/plain-runner.sh"
+    mklist s1 Sources/A.swift "= 1" "= 2" "$T_A"
+    run_args --manifest "$case_dir/list.json" --runner "$case_dir/plain-runner.sh" --out "$out"
+    expect_rc 2 && expect_err "$case_dir/plain-runner.sh is not executable" && expect_calls 0
 }
 
 # ── Row 14: byte-exact on awkward files ───────────────────────────────────
@@ -180,5 +224,5 @@ r14_space_in_the_path() {
 r14_label_named_baseline() {
     mklist baseline Sources/A.swift "= 88" "= 88 // SELFTEST_KILL" "$T_A"
     run_runner
-    expect_rc 0 && [ -d "$out/mutant-baseline.xcresult" ] || say "the mutation labelled baseline did not get its own bundle"
+    expect_rc 0 && [ -f "$out/mutant-baseline.json" ] || say "the mutation labelled baseline did not get its own result file"
 }
