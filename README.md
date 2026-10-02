@@ -184,7 +184,9 @@ person's word, such as signing and secrets. The tracker steps are in plain words
 works.
 
 To start, copy `templates/agentic-delivery.md` from the plugin to `.claude/agentic-delivery.md` in
-your repository. The template explains each key. Fill in the sections for your team. Write the
+your repository. The template explains each key. The keys for the platform, the branches, the
+docs folder, the screen patterns, and the screenshot branch are empty, so fill them in. If one is
+empty, `/feature` asks you for it before it starts. Fill in the sections for your team. Write the
 place to find a sign-in, never the sign-in itself. Put a device id that belongs to one person in
 local settings, not in the project file.
 
@@ -283,13 +285,14 @@ The tool says that its counts are estimates.
 | `feature` | about 30 | about 1.7k |
 
 Step 0 of `/feature` loads one platform skill, so each run pays its size on top of the table. By
-`wc -c`, the `platform-flutter` skill is 31,301 characters long, and the `platform-ios` skill is
+`wc -c`, the `platform-flutter` skill is 31,303 characters long, and the `platform-ios` skill is
 20,222 characters long. Nobody measured either one with `claude plugin details`. The name and
 description of each one also add to the always-on figure.
 
 The tool does not count hook output. The start-up hook adds its pointer to a session in a project
 that has the project file. With `platform: flutter`, the pointer is 326 characters long, plus the
-length of the path of the plugin folder.
+length of the path of the plugin folder. If the `platform` key is empty, the pointer only says
+that the project file has no platform and that `/feature` asks for each empty key.
 
 ## Platforms
 

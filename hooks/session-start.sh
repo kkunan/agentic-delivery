@@ -1,8 +1,12 @@
 #!/bin/bash
 root=$(cd "$(dirname "$0")/.." 2>/dev/null && pwd -P) || exit 0
 cfg="$root/scripts/project-config.sh"
-platform=$(bash "$cfg" platform 2>/dev/null) || exit 0
-[ -n "$platform" ] || exit 0
+platform=$(bash "$cfg" platform 2>/dev/null)
+case $? in
+    0) ;;
+    3) platform="" ;;
+    *) exit 0 ;;
+esac
 minimum=$(bash "$cfg" min_plugin_version "" 2>/dev/null) || minimum=""
 python3 - "$root/.claude-plugin/plugin.json" "$platform" "$minimum" "$root" 2>/dev/null <<'PY'
 import json
@@ -10,7 +14,7 @@ import re
 import sys
 
 plugin_file, platform, minimum, root = sys.argv[1:5]
-if not re.fullmatch(r"[A-Za-z0-9_-]{1,40}", platform):
+if platform and not re.fullmatch(r"[A-Za-z0-9_-]{1,40}", platform):
     sys.exit(0)
 
 def parts(value):
@@ -31,12 +35,18 @@ try:
 except Exception:
     warning = ""
 
-pointer = (
-    "Agentic delivery is on in this project. To build a feature, run /feature. "
-    "Its first step loads the controller skill and the run-rules skill, "
-    "then the platform-%s skill. After a compaction, load the controller skill again. "
-    "In the plugin skills and commands, scripts/ means the folder %s/scripts, not a folder in the project." % (platform, root)
-)
+if platform:
+    pointer = (
+        "Agentic delivery is on in this project. To build a feature, run /feature. "
+        "Its first step loads the controller skill and the run-rules skill, "
+        "then the platform-%s skill. After a compaction, load the controller skill again. "
+        "In the plugin skills and commands, scripts/ means the folder %s/scripts, not a folder in the project." % (platform, root)
+    )
+else:
+    pointer = (
+        "Agentic delivery is on in this project, but the project file .claude/agentic-delivery.md has no platform. "
+        "Run /feature. Its first step asks the developer for each empty key."
+    )
 print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": warning + pointer}}))
 PY
 exit 0

@@ -10,11 +10,12 @@ in your context, so do not open it again.
 
 0. Read `.claude/agentic-delivery.md`. If it is missing, stop. Offer to copy the file
    `templates/agentic-delivery.md` of the plugin into the project, and wait for the answer. If the file
-   exists, load the `controller` skill and the `run-rules` skill. Then load `platform-<platform>`,
+   exists, check these keys first: `platform`, `base_branch`, `release_branch`, `branch_prefix`,
+   `protected_branches`, `docs_dir`, `view_globs`, and `screenshot_branch`. If one is empty or
+   missing, stop. Ask the developer for each empty key, and write the answers into the project file
+   only after the developer agrees. Never guess a value from the branches or the folders that you
+   see. Then load the `controller` skill and the `run-rules` skill. Then load `platform-<platform>`,
    with the `platform` key of the project file. Read the controller skill again after a compaction.
-   If `base_branch`, `release_branch`, `branch_prefix`, or `protected_branches` is empty or missing,
-   stop. Ask the developer for each empty key, and write the answers into the project file only
-   after the developer agrees. Never guess a branch from the branches that git shows.
 
 Agents. Take each agent from the project file: `implementer_agent`, `reviewer_agent`, and `qa_agent`.
 The defaults are the plugin agents `implementer`, `reviewer`, and `qa-reviewer`. If a key names an

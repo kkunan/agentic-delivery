@@ -79,8 +79,14 @@ text=$(bash "$start" | text_of)
 check "start: the platform value names the skill" yes "$(has "$text" "platform-dart")"
 
 printf -- '---\nmin_plugin_version: 0.1.0\n---\n' > "$proj"
-out=$(bash "$start"); check "start: no platform key gives no output" "" "$out"
+text=$(bash "$start" | text_of)
+check "start: no platform key asks for the empty keys" yes "$(has "$text" "has no platform")"
+check "start: no platform key names no platform skill" no "$(has "$text" "platform-")"
 bash "$start" >/dev/null 2>&1; check "start: no platform key exits 0" 0 $?
+
+printf -- '---\nplatform:\nmin_plugin_version: 0.1.0\n---\n' > "$proj"
+text=$(bash "$start" | text_of)
+check "start: an empty platform asks for the empty keys" yes "$(has "$text" "has no platform")"
 
 mkdir -p "$fake/hooks" "$fake/scripts" "$fake/.claude-plugin"
 cp "$start" "$fake/hooks/session-start.sh"

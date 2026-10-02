@@ -1,15 +1,15 @@
 ---
-platform: flutter
+platform:
 min_plugin_version: 0.1.0
 base_branch:
 release_branch:
 branch_prefix:
 protected_branches:
 docs: repo
-docs_dir: docs/features
-view_globs: lib/**/views/**,lib/**/widgets/**
+docs_dir:
+view_globs:
 test_processes: flutter_tester,dartvm,xcodebuild,java
-screenshot_branch: screenshots
+screenshot_branch:
 mutation_runner: scripts/mutation-runner.sh
 implementer_agent: agentic-delivery:implementer
 reviewer_agent: agentic-delivery:reviewer
@@ -21,18 +21,18 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 
 ## Keys
 
-- `platform` names the platform skill. The value `flutter` loads the skill `platform-flutter`, and the value `ios` loads the skill `platform-ios`. The front matter of this file has Flutter values. For an iOS project, also add the keys `ios_workspace`, `ios_scheme`, `ios_test_plan`, and `ios_runtime`. The skill `platform-ios` explains each one, and says what `test_processes` and `view_globs` hold for iOS.
+- Eight keys have no value in this file, because each team makes its own choice: `platform`, the four branch keys, `docs_dir`, `view_globs`, and `screenshot_branch`. Fill in all eight before the first run. If one is empty, the feature command asks you for it and does not start. The ready check also stops and names the key.
+- `platform` names the platform skill. The value `flutter` loads the skill `platform-flutter`, and the value `ios` loads the skill `platform-ios`. The value of `test_processes` in this file is for Flutter. For an iOS project, also add the keys `ios_workspace`, `ios_scheme`, `ios_test_plan`, and `ios_runtime`. The skill `platform-ios` explains each one, and says what `test_processes` and `view_globs` hold for iOS.
 - `min_plugin_version` is the oldest plugin version that this project accepts.
-- The four branch keys below have no value in this file, because each team uses its own branch model. Fill in all four before the first run. If one is empty, the feature command asks you for it and does not start. The ready check also stops and names the key.
 - `base_branch` is the branch that each feature branch starts from and merges into, for example `main` or `develop`. The run merges through the pull request, as a merge commit. There is no key for the merge method.
 - `release_branch` is the branch that holds the released code, for example `main`. Releases come from this branch. If your team releases from the base branch, give the same name twice.
 - `branch_prefix` starts the name of each feature branch, for example `feature/`.
 - `protected_branches` lists the branches that no run can push to or commit on, for example `main` or `main,develop`. List the base branch and the release branch at least.
 - `docs` is `repo` or `private`. The value `repo` keeps the ledger folder inside the repository. The value `private` keeps it outside the repository, so that the notes of a run stay off the history. A `private` project needs an absolute `docs_dir` beside the repository.
-- `docs_dir` is the folder for the specs, the plans, the ledgers, and the retros. The ledger folder is `<docs_dir>/<date>-<slug>` in both `docs` modes. A relative `docs_dir` resolves from the top of the repository.
-- `view_globs` lists the file patterns for the screens of the app. A change to a file that matches them needs a screenshot. The ready check matches each pattern as a shell `case` pattern, and it ignores spaces around each comma. In a `case` pattern, `**` matches the same text as `*`, so the slashes around it still need a folder between them. Thus `lib/**/views/**` does not match `lib/views/x`. To match both, use `lib/views/**,lib/**/views/**`.
+- `docs_dir` is the folder for the specs, the plans, the ledgers, and the retros, for example `docs/features`. The ledger folder is `<docs_dir>/<date>-<slug>` in both `docs` modes. A relative `docs_dir` resolves from the top of the repository.
+- `view_globs` lists the file patterns for the screens of the app, for example `lib/views/**,lib/**/views/**,lib/**/widgets/**` for a Flutter app. A change to a file that matches them needs a screenshot. The ready check matches each pattern as a shell `case` pattern, and it ignores spaces around each comma. In a `case` pattern, `**` matches the same text as `*`, so the slashes around it still need a folder between them. Thus `lib/**/views/**` does not match `lib/views/x`. To match both, use `lib/views/**,lib/**/views/**`.
 - `test_processes` lists the names of the processes that the tests start. The stall watch uses them. The value in this file holds the names that `pgrep -x` matched on Flutter 3.38.9 stable. `flutter_tester` runs the unit and widget tests, and `dartvm` runs the `flutter` tool. `xcodebuild` runs an iOS device build, and `java` runs the Gradle build of an Android device run. The processor time of `java` alone does not show a hung Gradle build. Idle Gradle and Kotlin daemons keep adding processor time, so also check that the build log still grows. `pgrep -x java` also matches other Java programs, for example the Gradle daemon of an editor. So read the command of the process before you report a freeze. The section "A stalled test run" of the `platform-flutter` skill gives the detail. Measure the names again on your machine.
-- `screenshot_branch` is the branch that holds the screenshots for the review.
+- `screenshot_branch` is the branch that holds the screenshots for the review, for example `screenshots`. The run never deletes it.
 - `mutation_runner` is the path from the top of the repository to an executable that follows the runner contract of `scripts/mutate.sh`. The Flutter adapter of the plugin is `skills/platform-flutter/mutation-runner.sh`. The path of a plugin install differs on each machine. So copy that file to `scripts/mutation-runner.sh` in your repository, which is the value in this file, and commit it.
 - `implementer_agent`, `reviewer_agent`, and `qa_agent` name the agent for each seat. See the Agents section.
 
