@@ -1,10 +1,10 @@
 ---
 platform: flutter
 min_plugin_version: 0.1.0
-base_branch: develop
-release_branch: main
-branch_prefix: feature/
-protected_branches: main,develop
+base_branch:
+release_branch:
+branch_prefix:
+protected_branches:
 docs: repo
 docs_dir: docs/features
 view_globs: lib/**/views/**,lib/**/widgets/**
@@ -23,10 +23,11 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 
 - `platform` names the platform skill. The value `flutter` loads the skill `platform-flutter`, and the value `ios` loads the skill `platform-ios`. The front matter of this file has Flutter values. For an iOS project, also add the keys `ios_workspace`, `ios_scheme`, `ios_test_plan`, and `ios_runtime`. The skill `platform-ios` explains each one, and says what `test_processes` and `view_globs` hold for iOS.
 - `min_plugin_version` is the oldest plugin version that this project accepts.
-- `base_branch` is the branch that each feature branch starts from and merges into. The run merges through the pull request, as a merge commit. There is no key for the merge method.
-- `release_branch` is the branch that holds the released code. Releases come from this branch.
-- `branch_prefix` starts the name of each feature branch.
-- `protected_branches` lists the branches that no run can push to or commit on.
+- The four branch keys below have no value in this file, because each team uses its own branch model. Fill in all four before the first run. If one is empty, the feature command asks you for it and does not start. The ready check also stops and names the key.
+- `base_branch` is the branch that each feature branch starts from and merges into, for example `main` or `develop`. The run merges through the pull request, as a merge commit. There is no key for the merge method.
+- `release_branch` is the branch that holds the released code, for example `main`. Releases come from this branch. If your team releases from the base branch, give the same name twice.
+- `branch_prefix` starts the name of each feature branch, for example `feature/`.
+- `protected_branches` lists the branches that no run can push to or commit on, for example `main` or `main,develop`. List the base branch and the release branch at least.
 - `docs` is `repo` or `private`. The value `repo` keeps the ledger folder inside the repository. The value `private` keeps it outside the repository, so that the notes of a run stay off the history. A `private` project needs an absolute `docs_dir` beside the repository.
 - `docs_dir` is the folder for the specs, the plans, the ledgers, and the retros. The ledger folder is `<docs_dir>/<date>-<slug>` in both `docs` modes. A relative `docs_dir` resolves from the top of the repository.
 - `view_globs` lists the file patterns for the screens of the app. A change to a file that matches them needs a screenshot. The ready check matches each pattern as a shell `case` pattern, and it ignores spaces around each comma. In a `case` pattern, `**` matches the same text as `*`, so the slashes around it still need a folder between them. Thus `lib/**/views/**` does not match `lib/views/x`. To match both, use `lib/views/**,lib/**/views/**`.
