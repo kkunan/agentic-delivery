@@ -7,9 +7,10 @@ build_after=4
 roots=""
 procs=""
 excludes=""
+logs=""
 max_polls=0
 
-usage='usage: stall-watch.sh [--interval s] [--idle-after min] [--build-after min] [--roots "<paths>"] [--process <name>]... [--exclude <path>]... [--polls n]'
+usage='usage: stall-watch.sh [--interval s] [--idle-after min] [--build-after min] [--roots "<paths>"] [--process <name>]... [--exclude <path>]... [--log <path>]... [--polls n]'
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -19,6 +20,8 @@ while [ $# -gt 0 ]; do
         --roots)       [ $# -ge 2 ] || { printf '%s\n' "$usage" >&2; exit 2; }; roots=$2; shift 2 ;;
         --process)     [ $# -ge 2 ] || { printf '%s\n' "$usage" >&2; exit 2; }; procs="$procs $2"; shift 2 ;;
         --exclude)     [ $# -ge 2 ] || { printf '%s\n' "$usage" >&2; exit 2; }; excludes="$excludes
+$2"; shift 2 ;;
+        --log)         [ $# -ge 2 ] || { printf '%s\n' "$usage" >&2; exit 2; }; logs="$logs
 $2"; shift 2 ;;
         --polls)       [ $# -ge 2 ] || { printf '%s\n' "$usage" >&2; exit 2; }; max_polls=$2; shift 2 ;;
         *) printf '%s\n' "$usage" >&2; exit 2 ;;
@@ -114,6 +117,8 @@ while :; do
         emit "WARN state directory vanished under the watch, recreated at $state"
     fi
 
+    frozen_polls=$(( build_after * 60 / interval ))
+    [ "$frozen_polls" -lt 1 ] && frozen_polls=1
     seen_procs=0
     for pname in $procs; do
         for pid in $(pgrep -x "$pname" 2>/dev/null); do
@@ -132,14 +137,39 @@ while :; do
                 rm -f "$state/reported.$pid"
             fi
             printf '%s\n%s\n' "$cpu" "$count" > "$f"
-            frozen_polls=$(( build_after * 60 / interval ))
-            [ "$frozen_polls" -lt 1 ] && frozen_polls=1
             if [ "$count" -ge "$frozen_polls" ] && [ ! -f "$state/reported.$pid" ]; then
                 emit "BUILD FROZEN $pname pid $pid, cpu total stuck at $cpu across $count polls"
                 : > "$state/reported.$pid"
             fi
         done
     done
+
+    n=0
+    while IFS= read -r log; do
+        [ -n "$log" ] || continue
+        n=$((n + 1))
+        [ -f "$log" ] || continue
+        size=$(stat -f %z "$log" 2>/dev/null)
+        [ -n "$size" ] || continue
+        f="$state/log.$n"
+        prev=""; count=0
+        if [ -f "$f" ]; then
+            prev=$(sed -n 1p "$f"); count=$(sed -n 2p "$f")
+        fi
+        if [ "$size" = "$prev" ]; then
+            count=$((count + 1))
+        else
+            count=0
+            rm -f "$state/log-reported.$n"
+        fi
+        printf '%s\n%s\n' "$size" "$count" > "$f"
+        if [ "$count" -ge "$frozen_polls" ] && [ ! -f "$state/log-reported.$n" ]; then
+            emit "LOG STALLED $log"
+            : > "$state/log-reported.$n"
+        fi
+    done <<EOF3
+$logs
+EOF3
 
     for root in $roots; do
         [ -d "$root" ] || continue

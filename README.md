@@ -36,7 +36,7 @@ Run `claude plugin list` to check that `agentic-delivery` shows as enabled.
 
 Each project that uses the plugin has a file at `.claude/agentic-delivery.md`. It holds the facts of that project. These are the platform, the branch names, and the folders for the ledger and the retro. They also include the screen patterns, the test processes, and the agent for each seat. The plugin never guesses these values.
 
-To start, copy `templates/agentic-delivery.md` from the plugin to `.claude/agentic-delivery.md` in your repository. The template explains each key. It also has sections for the tracker steps, the devices, and the accounts. A last section lists the areas that need a word from the gate owner. Fill them in for your team. Write the place to find a sign-in, never the sign-in itself, and no device ids.
+To start, copy `templates/agentic-delivery.md` from the plugin to `.claude/agentic-delivery.md` in your repository. The template explains each key. It also has sections for the tracker steps, the devices, and the accounts. A last section lists the areas that need a word from the gate owner. Fill them in for your team. Write the place to find a sign-in, never the sign-in itself. Put a device id that belongs to one person in local settings, not in the project file.
 
 The plugin reads the front matter with `scripts/project-config.sh`. If the file is missing, `/feature` stops and offers to copy the template.
 
@@ -61,7 +61,7 @@ To use an agent of your team for a seat, set `implementer_agent`, `reviewer_agen
 
 The plugin has two hooks. Each one adds a short text to the session:
 
-- At the start of a session, a hook adds a pointer to `/feature`. It does so for a project that has the project file. It names the skills that the first step loads.
+- At the start of a session, a hook adds a pointer to `/feature`. It does so for a project that has the project file. It names the skills that the first step loads, and the folder of the plugin scripts.
 - After a write to a retro file, a hook adds a reminder. The agent must not edit plugin files. It proposes each change as a pull request.
 
 ## Scripts and tests
@@ -70,7 +70,7 @@ The scripts are in `scripts/`. Each one has a test in `tests/`.
 
 - `project-config.sh` reads one key from the front matter of the project file.
 - `claim-device.sh` claims a device for one worktree, so that two runs never use the same one, and releases it.
-- `stall-watch.sh` watches the worktrees and the test processes of a run, and reports a stall.
+- `stall-watch.sh` watches the worktrees, the test processes, and the command logs of a run, and reports a stall.
 - `ready-check.sh` checks the pull request and the ledger. It says whether the pull request is ready.
 - `settle-screenshot.swift` runs a capture command until the screen stops changing, then saves the last frame.
 - `mutate.sh` applies each mutation from a manifest, runs the test that must catch it, records the verdict, and restores the file.
@@ -85,9 +85,9 @@ Nobody measured a token saving for this mode, so the plugin makes no claim of on
 
 ## Token cost
 
-The figure comes from `claude plugin details agentic-delivery`, run on plugin version 0.1.0 after a local install. The tool says that its counts are estimates.
+The figures come from `claude plugin details agentic-delivery`, run on plugin version 0.1.0 after a local install. That run was before the `platform-flutter` skill existed, so the figures do not include it. The tool says that its counts are estimates.
 
-- Always on: about 250 tokens in every session. This is the name and description of each skill and agent.
+- Always on: about 250 tokens in every session, as measured before the `platform-flutter` skill existed. This is the name and description of each skill and agent.
 - Paid on invoke, each time the item fires:
 
 | Item | Always on | On invoke |
@@ -99,8 +99,10 @@ The figure comes from `claude plugin details agentic-delivery`, run on plugin ve
 | `implementer` | about 40 | about 1.6k |
 | `feature` | about 30 | about 1.7k |
 
-The tool does not count hook output. The start-up hook adds its pointer, which is 226 characters long, to a session in a project that has the project file.
+The `platform-flutter` skill is 31,301 characters long, by `wc -c`. Step 0 of `/feature` loads it for a Flutter project, so each run pays that size on top of the table. Nobody measured it with `claude plugin details`. Its name and description also add to the always-on figure.
+
+The tool does not count hook output. The start-up hook adds its pointer to a session in a project that has the project file. The pointer is 326 characters long, plus the length of the path of the plugin folder.
 
 ## Status
 
-The Flutter layer is the part that is not finished. The rest of the plugin is in place and has tests.
+The Flutter layer is written, and two runs on Flutter 3.38.9 stable measured its commands. The rest of the plugin is in place and has tests. The team pilot has not run yet, so version 0.1.0 is not tested on a real feature.

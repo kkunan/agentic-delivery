@@ -29,7 +29,7 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 - `protected_branches` lists the branches that no run can push to or commit on.
 - `docs` is `repo` or `private`. The value `repo` keeps the ledger folder inside the repository. The value `private` keeps it outside the repository, so that the notes of a run stay off the history. A `private` project needs an absolute `docs_dir` beside the repository.
 - `docs_dir` is the folder for the ledger and the retro. The ledger folder is `<docs_dir>/<date>-<slug>` in both `docs` modes. A relative `docs_dir` resolves from the top of the repository.
-- `view_globs` lists the file patterns for the screens of the app. A change to a file that matches them needs a screenshot.
+- `view_globs` lists the file patterns for the screens of the app. A change to a file that matches them needs a screenshot. The ready check matches each pattern as a shell `case` pattern, and it ignores spaces around each comma. In a `case` pattern, `**` matches the same text as `*`, so the slashes around it still need a folder between them. Thus `lib/**/views/**` does not match `lib/views/x`. To match both, use `lib/views/**,lib/**/views/**`.
 - `test_processes` lists the names of the processes that the tests start. The stall watch uses them. The value in this file holds the names that `pgrep -x` matched on Flutter 3.38.9 stable. `flutter_tester` runs the unit and widget tests, and `dartvm` runs the `flutter` tool. `xcodebuild` runs an iOS device build, and `java` runs the Gradle build of an Android device run. The processor time of `java` alone does not show a hung Gradle build. Idle Gradle and Kotlin daemons keep adding processor time, so also check that the build log still grows. `pgrep -x java` also matches other Java programs, for example the Gradle daemon of an editor. So read the command of the process before you report a freeze. The section "A stalled test run" of the `platform-flutter` skill gives the detail. Measure the names again on your machine.
 - `screenshot_branch` is the branch that holds the screenshots for the review.
 - `mutation_runner` is the path from the top of the repository to an executable that follows the runner contract of `scripts/mutate.sh`. The Flutter adapter of the plugin is `skills/platform-flutter/mutation-runner.sh`. The path of a plugin install differs on each machine. So copy that file to `scripts/mutation-runner.sh` in your repository, which is the value in this file, and commit it.
@@ -41,7 +41,9 @@ Say how the ticket tracker works for your team. Fill in the status that a ticket
 
 ## Devices
 
-Say which devices and simulators the team uses for the tests on screen. Fill in the name of each one and how to start it. Say how a run claims a device, so that two runs never use the same one. Do not write device ids or addresses that belong to one person.
+Say which device kinds the tests use, and the base image of each kind: the simulator runtime, the emulator system image, and Chrome. Each ticket creates its own simulator and emulator from these images, and deletes them at the end. The ids of the devices that one ticket creates go in the ledger of that ticket, not in this file. Say how a run claims a device, so that two runs never use the same one.
+
+Name each protected device. A protected device holds a signed-in session, and tests must never touch it. If the id of a protected device belongs to one person, put it in local settings and not in this file, which git tracks. Examples of local settings are `.claude/settings.local.json` and a file that git ignores. Then say here where the controller finds that id.
 
 ## Accounts
 

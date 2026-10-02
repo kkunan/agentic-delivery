@@ -25,12 +25,12 @@ build() {
     if [ "$docs" = private ]; then
         docs_dir="$root/private-notes"
         ledger="$docs_dir/2026-10-02-demo"
-    else
+    elif [ "${T_TRACK:-}" != 1 ]; then
         printf 'docs/\nnotes/\n' >> "$repo/.git/info/exclude"
-        ledger="$repo/$docs_dir/2026-10-02-demo"
     fi
-    printf -- '---\nplatform: flutter\nbase_branch: %s\nbranch_prefix: %s\ndocs: %s\ndocs_dir: %s\nview_globs: lib/**/views/**,lib/**/widgets/**\nscreenshot_branch: screenshots\n---\n' \
-        "$base" "$prefix" "$docs" "${T_DOCS_DIR_VALUE:-$docs_dir}" > "$repo/.claude/agentic-delivery.md"
+    [ "$docs" = private ] || ledger="$repo/$docs_dir/2026-10-02-demo"
+    printf -- '---\nplatform: flutter\nbase_branch: %s\nbranch_prefix: %s\ndocs: %s\ndocs_dir: %s\nview_globs: %s\nscreenshot_branch: screenshots\n---\n' \
+        "$base" "$prefix" "$docs" "${T_DOCS_DIR_VALUE:-$docs_dir}" "${T_GLOBS:-lib/**/views/**,lib/**/widgets/**}" > "$repo/.claude/agentic-delivery.md"
     printf 'start\n' > "$repo/README.txt"
     git_in add -A
     git_in commit -q -m "start"
@@ -112,6 +112,27 @@ run
 check "unnamed commit: exit 1" 1 "$rc"
 check "unnamed commit: fails" yes "$(has 'FAIL  ledger names every commit')"
 check "unnamed commit: names the sha" yes "$(has "$(git_in rev-parse --short HEAD)")"
+cleanup
+
+# ── A ledger that git tracks ──────────────────────────────────────────────
+T_TRACK=1 build
+git_in add -A
+git_in commit -q -m "record the ledger"
+git_in push -q origin feature/demo
+ledger_sha=$(git_in rev-parse --short HEAD)
+run
+check "tracked ledger: exit 0" 0 "$rc"
+check "tracked ledger: ledger names every commit" yes "$(has 'PASS  ledger names every commit')"
+printf 'three\n' > "$repo/lib/a/data/three.dart"
+printf 'more\n' >> "$ledger/progress.md"
+git_in add -A
+git_in commit -q -m "add three"
+git_in push -q origin feature/demo
+run
+check "tracked ledger, unnamed code commit: exit 1" 1 "$rc"
+check "tracked ledger, unnamed code commit: fails" yes "$(has 'FAIL  ledger names every commit')"
+check "tracked ledger, unnamed code commit: names the sha" yes "$(has "$(git_in rev-parse --short HEAD)")"
+check "tracked ledger, unnamed code commit: skips the ledger commit" no "$(has "$ledger_sha")"
 cleanup
 
 # ── A missing final cost line ─────────────────────────────────────────────
@@ -236,6 +257,17 @@ printf 'No screen changed.\n' > "$root/bin/body-extra"
 run_with_pr
 check "no screen changed line: exit 0" 0 "$rc"
 check "no screen changed line: passes as asserted" yes "$(has 'PASS  no screenshots, asserted')"
+cleanup
+
+T_GLOBS='lib/**/views/**, lib/**/widgets/**' build
+mkdir -p "$repo/lib/a/widgets"
+printf 'widget\n' > "$repo/lib/a/widgets/card.dart"
+git_in add -A
+git_in commit -q -m "add a widget"
+git_in push -q origin feature/demo
+write_ledger "$(git_in log --first-parent develop..HEAD --format=%h | tr '\n' ' ')"
+run_with_pr
+check "space after a comma in view_globs: counts the view file" yes "$(has '1 view file(s) changed')"
 cleanup
 
 build

@@ -59,6 +59,7 @@ check "start: text names controller" yes "$(has "$text" "controller")"
 check "start: text names run-rules" yes "$(has "$text" "run-rules")"
 check "start: text names the platform skill" yes "$(has "$text" "platform-flutter")"
 check "start: text has no warning" no "$(has "$text" "is older than")"
+check "start: text names the plugin scripts folder" yes "$(has "$text" "scripts/ means the folder $root/scripts, not a folder in the project.")"
 bash "$start" >/dev/null 2>&1; check "start: normal file exits 0" 0 $?
 
 printf -- '---\nplatform: flutter\nmin_plugin_version: 9.0.0\n---\n' > "$proj"
@@ -67,6 +68,7 @@ want="agentic-delivery 0.1.0 is older than this project needs (9.0.0). Update th
 check "start: older plugin warns first" "$want" "${text:0:${#want}}"
 check "start: warning plus pointer is at most 600 characters" yes "$([ "${#text}" -le 600 ] && echo yes || echo no)"
 check "start: warning text still names the skills" yes "$(has "$text" "platform-flutter")"
+check "start: warning text still names the plugin scripts folder" yes "$(has "$text" "$root/scripts")"
 
 printf -- '---\nplatform: flutter\n---\n' > "$proj"
 text=$(bash "$start" | text_of)

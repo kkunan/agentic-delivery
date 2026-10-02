@@ -35,6 +35,15 @@ for id in "$@"; do
         say "REFUSED: the test id '$id' needs a test file before '::' and a test name after it"
         exit 2
     fi
+    case "$file" in
+        test/*|./test/*) ;;
+        *)
+            if [ -z "${AGENTIC_TEST_DEVICE:-}" ]; then
+                say "REFUSED: the test file $file is outside test/, so it runs on a device. Set AGENTIC_TEST_DEVICE to the id of the device of this run"
+                exit 2
+            fi
+            ;;
+    esac
     case "$seen" in *$'\n'"$id"$'\n'*) continue ;; esac
     seen="$seen$id"$'\n'
     ids+=("$id")
@@ -58,8 +67,13 @@ for id in "${ids[@]}"; do
         continue
     fi
     report="$work/$n.json"
+    device=()
+    case "$file" in
+        test/*|./test/*) ;;
+        *) device=(-d "$AGENTIC_TEST_DEVICE") ;;
+    esac
     say "running $id"
-    "$flutter" test "$file" "--plain-name=$name" --reporter expanded "--file-reporter" "json:$report" >> "$log" 2>&1 < /dev/null
+    "$flutter" test "$file" ${device[@]+"${device[@]}"} "--plain-name=$name" --reporter expanded "--file-reporter" "json:$report" >> "$log" 2>&1 < /dev/null
     say "flutter test exit $? for $id"
     records+=("$id" "$file" "$name" "$report")
 done

@@ -59,7 +59,9 @@ ledger.
    carries the failing input for each check, figure, or premise in it. The scoped re-review runs
    that input before it marks the item addressed. When a phase ends, write its cost line in the
    ledger: one each for the spec review, the plan review, every task, the final review, and ship.
-   `scripts/ready-check.sh` refuses a ledger without them. Do not stop for approval between tasks.
+   `scripts/ready-check.sh` refuses a ledger without them. In this command, `scripts/...` means
+   the `scripts` folder of the plugin, not a folder of the project. The start-up pointer gives its
+   full path. Do not stop for approval between tasks.
    If the run passes the estimate or hits a stall, say so at that time.
 6. Run `superpowers:requesting-code-review` at the checkpoints that the plan defines, and again when
    the final task lands. Critical and Important findings block, with one fix wave and one

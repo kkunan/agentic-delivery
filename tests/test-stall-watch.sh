@@ -50,6 +50,19 @@ check "low space still prints the heartbeat figure" 2 "$(printf '%s\n' "$out" | 
 rm "$work/bin/df"
 rmdir "$work/bin"
 
+printf 'start\n' > "$work/still.log"
+out=$(bash "$watch" --process fake_tester --roots "$work/root" --interval 1 --build-after 0 --polls 3 --log "$work/still.log" 2>&1)
+check "a still log gives one stalled line" 1 "$(printf '%s\n' "$out" | grep -c "LOG STALLED $work/still.log$")"
+( while :; do printf 'x\n' >> "$work/grow.log"; sleep 0.2; done ) &
+grow_pid=$!
+out=$(bash "$watch" --process fake_tester --roots "$work/root" --interval 1 --build-after 0 --polls 3 --log "$work/grow.log" --log "$work/still.log" --log "$work/absent.log" 2>&1)
+kill "$grow_pid" 2>/dev/null
+wait "$grow_pid" 2>/dev/null
+check "a growing log gives no stalled line" 0 "$(printf '%s\n' "$out" | grep -c 'LOG STALLED.*grow.log')"
+check "a missing log gives no stalled line" 0 "$(printf '%s\n' "$out" | grep -c 'LOG STALLED.*absent.log')"
+check "--log is repeatable" 1 "$(printf '%s\n' "$out" | grep -c "LOG STALLED $work/still.log$")"
+rm -f "$work/still.log" "$work/grow.log"
+
 mkdir "$work/main" "$work/wt-a" "$work/wt-b"
 git -C "$work/main" init -q
 git -C "$work/main" -c user.name=t -c user.email=t@example.com commit -q --allow-empty -m init

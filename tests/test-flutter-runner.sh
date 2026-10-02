@@ -87,6 +87,21 @@ check "no '::': exit 2" 2 "$rc"
 check "no '::': no result file" no "$([ -e "$work/nocolon.json" ] && echo yes || echo no)"
 check "no '::': the log says why" yes "$(grep -q "REFUSED: the test id 'test/calc_test.dart' has no '::'" "$work/nocolon.log" && echo yes || echo no)"
 
+run device 'integration_test/app_test.dart::app starts'
+check "integration_test id without AGENTIC_TEST_DEVICE: exit 2" 2 "$rc"
+check "integration_test id without AGENTIC_TEST_DEVICE: no result file" no "$([ -e "$work/device.json" ] && echo yes || echo no)"
+check "integration_test id without AGENTIC_TEST_DEVICE: the log says why" yes "$(grep -q 'REFUSED: the test file integration_test/app_test.dart is outside test/' "$work/device.log" && echo yes || echo no)"
+
+mkdir -p "$app/integration_test" "$work/stub"
+printf 'void main() {}\n' > "$app/integration_test/app_test.dart"
+printf '#!/bin/bash\nprintf "stub args: %%s\\n" "$*"\n' > "$work/stub/flutter"
+chmod +x "$work/stub/flutter"
+rc=0
+(cd "$app" && AGENTIC_TEST_DEVICE=placeholder-device FLUTTER_BIN="$work/stub/flutter" "$runner" --out "$work/stubbed.json" --log "$work/stubbed.log" -- 'integration_test/app_test.dart::app starts' 'test/calc_test.dart::add' < /dev/null 2>/dev/null) || rc=$?
+check "AGENTIC_TEST_DEVICE: passed as -d to the device test" yes "$(grep -q 'stub args: test integration_test/app_test.dart -d placeholder-device --plain-name=app starts' "$work/stubbed.log" && echo yes || echo no)"
+check "AGENTIC_TEST_DEVICE: not passed to a test under test/" yes "$(grep -q 'stub args: test test/calc_test.dart --plain-name=add' "$work/stubbed.log" && echo yes || echo no)"
+rm -rf "$app/integration_test" "$work/stub"
+
 rc=0
 (cd "$app" && "$runner" --out "$work/usage.json" -- 'test/calc_test.dart::add' < /dev/null > /dev/null 2>&1) || rc=$?
 check "usage error: exit 2" 2 "$rc"

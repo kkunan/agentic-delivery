@@ -103,11 +103,21 @@ else
         report fail "ledger present" "$ledger_dir has no progress.md"
     else
         report pass "ledger present"
+        ledger_rel=""
+        case "$ledger_dir" in
+            "$repo"/*) ledger_rel=${ledger_dir#"$repo"/} ;;
+        esac
         missing=""
-        while read -r sha; do
+        while read -r sha full; do
             [ -n "$sha" ] || continue
-            grep -qF "$sha" "$progress" || missing="$missing $sha"
-        done < <(git log --first-parent "$base..HEAD" --format=%h)
+            grep -qF "$sha" "$progress" && continue
+            if [ -n "$ledger_rel" ]; then
+                paths=$(git diff --name-only "$full^" "$full" 2>/dev/null)
+                outside=$(printf '%s\n' "$paths" | awk -v p="$ledger_rel/" 'NF && index($0, p) != 1')
+                [ -n "$paths" ] && [ -z "$outside" ] && continue
+            fi
+            missing="$missing $sha"
+        done < <(git log --first-parent "$base..HEAD" --format='%h %H')
         if [ -n "$missing" ]; then
             report fail "ledger names every commit" "absent from progress.md:$missing"
         else
@@ -184,6 +194,9 @@ else
     while read -r changed; do
         [ -n "$changed" ] || continue
         for pattern in "${view_patterns[@]}"; do
+            pattern=${pattern#"${pattern%%[![:space:]]*}"}
+            pattern=${pattern%"${pattern##*[![:space:]]}"}
+            [ -n "$pattern" ] || continue
             case "$changed" in
                 $pattern) views=$((views + 1)); break ;;
             esac

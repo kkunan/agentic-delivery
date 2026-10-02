@@ -17,7 +17,7 @@ Two runs on the Flutter Mac measured each command in this skill. They used Flutt
 On a new Flutter install, the first run of some commands downloads files for that version. The first `flutter devices` and the first iOS device run download the engine files. The first web build downloads the web SDK. The first Android build downloads the Android engine files, and Gradle downloads its own version and the Kotlin Gradle plugin. So the first run takes longer than the times here.
 
 - Write `flutter` as the command. If the project pins a Flutter version, run the `flutter` of that version.
-- A device id in this skill is a placeholder: `<simulator-id>` or `<emulator-id>`. For the web, `-d` takes `chrome`, but you claim a port: `chrome-<driver-port>` for the driver and `web-<web-port>` for the web server. The Devices section of the project file and the ledger hold the real ids.
+- A device id in this skill is a placeholder: `<simulator-id>` or `<emulator-id>`. For the web, `-d` takes `web-server`, for a drive run and for the server of a capture. Do not use `-d chrome`. For the web, you claim ports and not a device: `chrome-<driver-port>` for the driver and `web-<web-port>` for the web server. The Devices section of the project file and the ledger hold the real ids.
 - `<ledger>` is the ledger folder of the run, and `<slug>` is the slug of the run.
 
 Every command writes its output to its own log file in the ledger folder. This is the form, and each command below uses it:
@@ -26,7 +26,7 @@ Every command writes its output to its own log file in the ledger folder. This i
 <command> > <ledger>/logs/<step>.log 2>&1
 ```
 
-Below, `<log>` means that path, with a new `<step>` name for each command. The stall watch and the evidence rules of `run-rules` read logs, and a pipe hides the output until the command ends.
+Create the `logs`, `results`, and `screens` folders in the ledger folder before the first redirect, because a redirect to a missing folder fails. Below, `<log>` means that path, with a new `<step>` name for each command. The stall watch and the evidence rules of `run-rules` read logs, and a pipe hides the output until the command ends.
 
 ## Test tiers
 
@@ -108,7 +108,7 @@ Chrome needs no create or delete step. `flutter devices --device-connection atta
 
 ### The device claim
 
-Claim each device after it boots and before the first install. Always pass `--worktree`. Without it, the script holds the device for the folder above the script, not for your worktree.
+Claim each device after it boots and before the first install. In this skill, `scripts/...` means the `scripts` folder of the plugin, not a folder of the project. The start-up pointer gives its full path. The one exception is `scripts/mutation-runner.sh`, which is a copy in the project, as the Mutation tests section says. Always pass `--worktree`. Without it, the script holds the device for the folder above the script, not for your worktree.
 
 - Claim: `scripts/claim-device.sh --device <simulator-id> --worktree <worktree-path> > <log> 2>&1` (measured: exit 0, under 1 second). Use the same form with `<emulator-id>`, `chrome-<driver-port>`, and `web-<web-port>`. The log says `<worktree-path> now holds <id>`, with the id in capital letters.
 - Release: `scripts/claim-device.sh --device <simulator-id> --worktree <worktree-path> --release > <log> 2>&1` (measured: exit 0, under 1 second). The log says `released <id>`.
@@ -158,7 +158,7 @@ The golden update switch overwrites each reference image with whatever renders. 
 - Run `scripts/mutate.sh` from the top of the Flutter project, where `pubspec.yaml` is. The runner calls `flutter test` from that folder.
 - The runner uses the `flutter` on the `PATH`. If the project pins a Flutter version, set `FLUTTER_BIN` to the `flutter` of that version.
 
-A test id has the form `<test file>::<full test name>`, for example `test/counter_test.dart::Counter increments`. The full name holds the group names and the test name, with one space between them, as the JSON reporter writes it. The runner splits the id at the first `::`. An id without `::` gets no result file, so the run stops at the baseline.
+A test id has the form `<test file>::<full test name>`, for example `test/counter_test.dart::Counter increments`. The full name holds the group names and the test name, with one space between them, as the JSON reporter writes it. The runner splits the id at the first `::`. An id without `::` gets no result file, so the run stops at the baseline. A test file outside `test/`, for example under `integration_test/`, runs on a device. The runner refuses it unless the environment variable `AGENTIC_TEST_DEVICE` holds the id of the device that the run claimed. With the variable set, the runner passes its value to `flutter test` as `-d <id>` for that file. A refusal writes a line in the log, writes no result file, and exits 2.
 
 The runner calls `flutter test <test file> --plain-name=<name> --reporter expanded --file-reporter json:<file>` once for each id. Two `--plain-name` flags must both match (measured), so one call cannot run two names. The name filter matches a part of a name, so other tests can also run. The result holds only the named ids, with the exact full name and the same file.
 
@@ -209,12 +209,12 @@ The rule for two dead runs in a row is in the Diagnosis and evidence section of 
 
 ### The stall watch
 
-Arm one watch for each name in `test_processes`, as the controller skill says:
+Arm one watch that takes every name in `test_processes`, as the controller skill says. Pass one `--log` flag for each command log of the run. `<command-log>` is the log of a test or build command, not the log of the watch. Use one of these two forms:
 
-- `scripts/stall-watch.sh --process flutter_tester --interval 60 > <log> 2>&1`
-- `scripts/stall-watch.sh --process dartvm --interval 60 > <log> 2>&1`
-- `scripts/stall-watch.sh --process xcodebuild --interval 60 > <log> 2>&1`
-- `scripts/stall-watch.sh --process java --interval 60 > <log> 2>&1`
+- With no `--process` flag, the script reads `test_processes` by itself: `scripts/stall-watch.sh --interval 60 --log <command-log> > <log> 2>&1`
+- With one `--process` flag for each name: `scripts/stall-watch.sh --process flutter_tester --process dartvm --process xcodebuild --process java --interval 60 --log <command-log> > <log> 2>&1`
+
+When a command log keeps the same size for `--build-after` minutes, the watch writes one `LOG STALLED <command-log>` line. The processor total of `java` alone does not show a hung Gradle build. So on an Android device run, pass `--log` with the log of the build.
 
 In the measured run, a watch on `flutter_tester` and `dartvm` during `flutter test` wrote `HEARTBEAT procs=2` on each poll (measured: exit 0). A watch on `dart` wrote `procs=0`. A watch on `java` after an Android build wrote `procs=3` on each poll and no `BUILD FROZEN` (measured). Read the log for a heartbeat line before you dispatch. During a test run, `pgrep -lx flutter_tester` prints the id and the name of each match (measured). The template holds the names of this run. Measure them again on your machine, and put them in the project file.
 
