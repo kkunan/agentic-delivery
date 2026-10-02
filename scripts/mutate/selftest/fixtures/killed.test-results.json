@@ -1,0 +1,52 @@
+{
+  "devicesAndConfigurations" : [
+    {
+      "device" : {
+        "architecture" : "arm64",
+        "deviceId" : "AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA",
+        "deviceName" : "iPhone 17 Pro Max",
+        "modelName" : "iPhone 17 Pro Max",
+        "osBuildNumber" : "23F77",
+        "osVersion" : "26.5",
+        "platform" : "iOS Simulator"
+      },
+      "expectedFailures" : 0,
+      "failedTests" : 1,
+      "passedTests" : 0,
+      "skippedTests" : 0,
+      "testPlanConfiguration" : {
+        "configurationId" : "1",
+        "configurationName" : "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription" : "App · Built with macOS 26.6.2",
+  "expectedFailures" : 0,
+  "failedTests" : 1,
+  "finishTime" : 1790407442.379,
+  "passedTests" : 0,
+  "result" : "Failed",
+  "runtimeWarnings" : [
+
+  ],
+  "skippedTests" : 0,
+  "startTime" : 1790407391.325,
+  "statistics" : [
+
+  ],
+  "testFailures" : [
+    {
+      "failureText" : "XCTAssertEqual failed: (\"89.0\") is not equal to (\"88.0\")",
+      "targetName" : "AppTests",
+      "testIdentifier" : 1,
+      "testIdentifierString" : "ChatScrollGeometryTests/testTheThresholdIs88()",
+      "testIdentifierURL" : "test://com.apple.xcode/App/AppTests/ChatScrollGeometryTests/testTheThresholdIs88",
+      "testName" : "testTheThresholdIs88()"
+    }
+  ],
+  "title" : "Test - App",
+  "topInsights" : [
+
+  ],
+  "totalTestCount" : 1
+}

@@ -1,0 +1,10 @@
+{
+  "name": "agentic-delivery",
+  "displayName": "Agentic Delivery",
+  "description": "A spec-driven feature pipeline for Claude Code: one plan gate, reviewed tasks, a ledger, and a retro, with platform layers.",
+  "version": "0.1.0",
+  "author": { "name": "kkunan" },
+  "repository": "https://github.com/kkunan/agentic-delivery",
+  "license": "MIT",
+  "keywords": ["workflow", "agents", "spec-driven", "flutter"]
+}

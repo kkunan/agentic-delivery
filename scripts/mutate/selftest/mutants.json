@@ -1,0 +1,320 @@
+[
+  {
+    "name": "killed-requires-exit-0",
+    "row": 0,
+    "replacements": [
+      {
+        "file": "mutate/results.py",
+        "find": "if exit_code == 65 and built and is_count(total)",
+        "replace": "if exit_code == 0 and built and is_count(total)"
+      }
+    ]
+  },
+  {
+    "name": "existing-bundle-allowed",
+    "row": 1,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "[ -z \"$found\" ] || refuse \"these already exist",
+        "replace": "[ -z \"$found\" ] || true \"these already exist"
+      }
+    ]
+  },
+  {
+    "name": "no-recheck-before-apply",
+    "row": 1,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "    if [ -e \"$bundle\" ]; then\n        record \"$i\" error \"bundle appeared before the call\"\n        return\n    fi\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "name": "no-sha-check-after-restore",
+    "row": 2,
+    "replacements": [
+      {
+        "file": "mutate/journal.py",
+        "find": "    if after != r[\"original\"]:\n",
+        "replace": "    if False:\n"
+      }
+    ]
+  },
+  {
+    "name": "no-recheck-in-apply",
+    "row": 2,
+    "replacements": [
+      {
+        "file": "mutate/journal.py",
+        "find": "    if count(data, find) != 1:\n        raise Refusal(f\"{label}: find no longer occurs exactly once\")",
+        "replace": "    if False:\n        raise Refusal(f\"{label}: find no longer occurs exactly once\")"
+      }
+    ]
+  },
+  {
+    "name": "verdict-from-exit-code",
+    "row": 3,
+    "replacements": [
+      {
+        "file": "mutate/results.py",
+        "find": "if exit_code == 65 and status == \"failed\" and is_count(errors) and errors >= 1:",
+        "replace": "if False:"
+      },
+      {
+        "file": "mutate/results.py",
+        "find": "if exit_code == 65 and built and is_count(total) and total >= 1 and is_count(failed) and failed >= 1:",
+        "replace": "if exit_code == 65:"
+      }
+    ]
+  },
+  {
+    "name": "did-not-compile-without-exit-65",
+    "row": 3,
+    "replacements": [
+      {
+        "file": "mutate/results.py",
+        "find": "if exit_code == 65 and status == \"failed\"",
+        "replace": "if status == \"failed\""
+      }
+    ]
+  },
+  {
+    "name": "non-overlapping-count",
+    "row": 4,
+    "replacements": [
+      {
+        "file": "mutate/manifest.py",
+        "find": "data.find(needle, i + 1)",
+        "replace": "data.find(needle, i + len(needle))"
+      }
+    ]
+  },
+  {
+    "name": "no-clean-check",
+    "row": 5,
+    "replacements": [
+      {
+        "file": "mutate/manifest.py",
+        "find": "if status.returncode != 0 or status.stdout.strip():",
+        "replace": "if False:"
+      }
+    ]
+  },
+  {
+    "name": "xcodebuild-in-the-foreground",
+    "row": 6,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "    \"$xcodebuild_cmd\" \"${args[@]}\" < /dev/null > \"$log\" 2>&1 &\n    child=$!\n    set +m\n    wait \"$child\"\n    test_exit=$?\n",
+        "replace": "    \"$xcodebuild_cmd\" \"${args[@]}\" < /dev/null > \"$log\" 2>&1\n    test_exit=$?\n    set +m\n"
+      }
+    ]
+  },
+  {
+    "name": "signal-the-pid-not-the-group",
+    "row": 6,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "kill -TERM -- \"-$child\"",
+        "replace": "kill -TERM \"$child\""
+      },
+      {
+        "file": "mutate/run.sh",
+        "find": "kill -KILL -- \"-$child\"",
+        "replace": "kill -KILL \"$child\""
+      }
+    ]
+  },
+  {
+    "name": "helper-crash-ignored",
+    "row": 6,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "    printf 'mutate: the helper failed with exit %s\\n' \"$1\" >&2\n    exit 2",
+        "replace": "    printf 'mutate: the helper failed with exit %s\\n' \"$1\" >&2\n    return 0"
+      }
+    ]
+  },
+  {
+    "name": "no-kill-after-the-wait",
+    "row": 6,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "    kill -KILL -- \"-$child\" 2>/dev/null\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "name": "no-recovery-at-start",
+    "row": 6,
+    "replacements": [
+      {
+        "file": "mutate.sh",
+        "find": "helper recover \"$repo\" \"$journal\" || refuse_after_helper $?",
+        "replace": "true"
+      }
+    ]
+  },
+  {
+    "name": "no-recovery-in-the-trap",
+    "row": 6,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "said=$(helper recover \"$repo\" \"$journal\" --interrupted) ||",
+        "replace": "said=\"\" ||"
+      }
+    ]
+  },
+  {
+    "name": "no-device-refusal",
+    "row": 7,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "[ \"$upper\" = \"$owner_udid\" ] && refuse",
+        "replace": "[ \"$upper\" = \"none\" ] && refuse"
+      }
+    ]
+  },
+  {
+    "name": "baseline-result-ignored",
+    "row": 8,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "    [ $? -eq 0 ] || refuse \"the baseline did not pass",
+        "replace": "    true || refuse \"the baseline did not pass"
+      }
+    ]
+  },
+  {
+    "name": "no-per-name-check",
+    "row": 8,
+    "replacements": [
+      {
+        "file": "mutate/results.py",
+        "find": "return problems + [p for p in (name_problem(n, found) for n in names) if p]",
+        "replace": "return problems"
+      }
+    ]
+  },
+  {
+    "name": "suffix-match",
+    "row": 8,
+    "replacements": [
+      {
+        "file": "mutate/results.py",
+        "find": "cases = [c for node in found.get(name, []) for c in cases_under(node)]",
+        "replace": "cases = [c for key, nodes in found.items() if key.endswith(name) for node in nodes for c in cases_under(node)]"
+      }
+    ]
+  },
+  {
+    "name": "prefix-match",
+    "row": 8,
+    "replacements": [
+      {
+        "file": "mutate/results.py",
+        "find": "cases = [c for node in found.get(name, []) for c in cases_under(node)]",
+        "replace": "cases = [c for key, nodes in found.items() if key.startswith(name) for node in nodes for c in cases_under(node)]"
+      }
+    ]
+  },
+  {
+    "name": "survived-without-a-pass",
+    "row": 9,
+    "replacements": [
+      {
+        "file": "mutate/results.py",
+        "find": "if exit_code == 0 and built and is_count(passed) and passed >= 1 and is_count(failed) and failed == 0:",
+        "replace": "if exit_code == 0 and built and is_count(failed) and failed == 0:"
+      }
+    ]
+  },
+  {
+    "name": "symbolic-link-allowed",
+    "row": 10,
+    "replacements": [
+      {
+        "file": "mutate/manifest.py",
+        "find": "    if os.path.realpath(path) != path:\n",
+        "replace": "    if False:\n"
+      }
+    ]
+  },
+  {
+    "name": "no-lock",
+    "row": 11,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "    if mkdir \"$lock\" 2>/dev/null; then",
+        "replace": "    if rm -rf \"$lock\" && mkdir \"$lock\" 2>/dev/null; then"
+      }
+    ]
+  },
+  {
+    "name": "lock-kept-after-a-fresh-run",
+    "row": 11,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "        echo $$ > \"$lock/pid\"\n        trap release_lock EXIT\n        return",
+        "replace": "        echo $$ > \"$lock/pid\"\n        return"
+      }
+    ]
+  },
+  {
+    "name": "duplicate-keys-allowed",
+    "row": 12,
+    "replacements": [
+      {
+        "file": "mutate/manifest.py",
+        "find": "object_pairs_hook=no_duplicates",
+        "replace": "object_pairs_hook=dict"
+      }
+    ]
+  },
+  {
+    "name": "list-not-frozen",
+    "row": 12,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "    manifest=\"$lock/list.json\"\n",
+        "replace": ""
+      }
+    ]
+  },
+  {
+    "name": "configuration-dropped",
+    "row": 13,
+    "replacements": [
+      {
+        "file": "mutate/run.sh",
+        "find": "[ -n \"$configuration\" ] && args+=(-configuration \"$configuration\")",
+        "replace": "true"
+      }
+    ]
+  },
+  {
+    "name": "restore-in-text-mode",
+    "row": 14,
+    "replacements": [
+      {
+        "file": "mutate/journal.py",
+        "find": "    with open(saved, \"rb\") as f:\n        atomic_write(target, f.read(), journal, saved)",
+        "replace": "    with open(saved, \"r\") as f:\n        atomic_write(target, f.read().encode(), journal, saved)"
+      }
+    ]
+  }
+]

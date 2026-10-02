@@ -1,0 +1,8 @@
+FAKE TOOLS: this run did not use the real xcodebuild or xcresulttool
+mutate: 2 mutations, 1 killed, 1 survived, 0 did-not-compile, 0 error
+killed:
+  k1  Sources/A.swift  AppTests/ATests/testA
+survived:
+  s1  Sources/A.swift  AppTests/ATests/testB
+did-not-compile: none
+error: none
