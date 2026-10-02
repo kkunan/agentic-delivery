@@ -2,6 +2,7 @@
 platform: flutter
 min_plugin_version: 0.1.0
 base_branch: develop
+release_branch: main
 branch_prefix: feature/
 protected_branches: main,develop
 docs: repo
@@ -9,9 +10,9 @@ docs_dir: docs/features
 view_globs: lib/**/views/**,lib/**/widgets/**
 test_processes: flutter_tester,dart
 screenshot_branch: screenshots
-implementer_agent: general-purpose
-reviewer_agent: general-purpose
-qa_agent: general-purpose
+implementer_agent: agentic-delivery:implementer
+reviewer_agent: agentic-delivery:reviewer
+qa_agent: agentic-delivery:qa-reviewer
 ---
 # Agentic delivery project file
 
@@ -21,7 +22,8 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 
 - `platform` names the platform skill. The value `flutter` loads the skill `platform-flutter`.
 - `min_plugin_version` is the oldest plugin version that this project accepts.
-- `base_branch` is the branch that each feature branch starts from and merges into.
+- `base_branch` is the branch that each feature branch starts from and merges into. The run merges through the pull request, as a merge commit. There is no key for the merge method.
+- `release_branch` is the branch that holds the released code. Releases come from this branch.
 - `branch_prefix` starts the name of each feature branch.
 - `protected_branches` lists the branches that no run can push to or commit on.
 - `docs` is `repo` or `private`. The value `repo` keeps the ledger folder inside the repository. The value `private` keeps it outside the repository, so that the notes of a run stay off the history. A `private` project needs an absolute `docs_dir` beside the repository.
@@ -49,4 +51,4 @@ List the parts of the code and the actions that need a word from the gate owner 
 
 ## Agents
 
-By default the seats use `general-purpose`. To use a custom agent for a seat, put its name in `implementer_agent`, `reviewer_agent`, or `qa_agent`. Use the name as the agent list of Claude Code shows it. The brief still makes that agent load the run rules and the platform skill. So a custom agent gets the same rules as the default one. Write here what each custom agent is for and why the team chose it.
+By default each seat uses the agent of this plugin. Claude Code lists a plugin agent as `<plugin>:<agent>`, so the defaults are `agentic-delivery:implementer`, `agentic-delivery:reviewer`, and `agentic-delivery:qa-reviewer`. To use an agent of your team for a seat, put its name in `implementer_agent`, `reviewer_agent`, or `qa_agent`. For example, name an agent from a file in the `.claude/agents/` folder of the project by its `name` line. A key that names a missing agent stops the run at its first dispatch and names the key. There is no fallback to another agent. The brief still makes that agent load the run rules and the platform skill. So an agent of your team gets the same rules as the default one. Write here what each custom agent is for and why the team chose it.
