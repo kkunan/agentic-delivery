@@ -8,7 +8,7 @@ protected_branches: main,develop
 docs: repo
 docs_dir: docs/features
 view_globs: lib/**/views/**,lib/**/widgets/**
-test_processes: flutter_tester,dart
+test_processes: flutter_tester,dartvm,xcodebuild
 screenshot_branch: screenshots
 implementer_agent: agentic-delivery:implementer
 reviewer_agent: agentic-delivery:reviewer
@@ -29,7 +29,7 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 - `docs` is `repo` or `private`. The value `repo` keeps the ledger folder inside the repository. The value `private` keeps it outside the repository, so that the notes of a run stay off the history. A `private` project needs an absolute `docs_dir` beside the repository.
 - `docs_dir` is the folder for the ledger and the retro. The ledger folder is `<docs_dir>/<date>-<slug>` in both `docs` modes. A relative `docs_dir` resolves from the top of the repository.
 - `view_globs` lists the file patterns for the screens of the app. A change to a file that matches them needs a screenshot.
-- `test_processes` lists the names of the processes that the tests start. The stall watch uses them. The value in this file is a placeholder for Flutter. Replace it with the names that you measure on your machine.
+- `test_processes` lists the names of the processes that the tests start. The stall watch uses them. The value in this file holds the names that `pgrep -x` matched on Flutter 3.38.9 stable: `flutter_tester` for unit and widget tests, `dartvm` for the `flutter` tool, and `xcodebuild` for an iOS device build. Measure them again on your machine. The run did not measure an Android build, so the list has no name for it.
 - `screenshot_branch` is the branch that holds the screenshots for the review.
 - `implementer_agent`, `reviewer_agent`, and `qa_agent` name the agent for each seat. See the Agents section.
 

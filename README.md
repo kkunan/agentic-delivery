@@ -2,7 +2,7 @@
 
 A Claude Code plugin for a spec-driven feature pipeline. It has one plan gate, reviewed tasks, a ledger, and a retro. Platform layers hold the build and test rules for each kind of project.
 
-The core is ready. The Flutter layer, the skill `platform-flutter`, is not finished: a later task adds it. Until then, a project that sets `platform: flutter` has no platform skill to load.
+The core is ready. The Flutter layer is the skill `platform-flutter`. A run on Flutter 3.38.9 stable measured its commands, and the skill marks each command that the run did not measure.
 
 ## What it does
 
@@ -47,7 +47,7 @@ The plugin reads the front matter with `scripts/project-config.sh`. If the file 
 | `/feature` (listed as `agentic-delivery:feature`) | The command that runs the pipeline | You run it |
 | `agentic-delivery:controller` | The rules that only the controller follows: dispatch, review seats, estimates, stall watch, tracker steps, ship, merge, report, and retro | Step 0 of `/feature`, and again after a compaction |
 | `agentic-delivery:run-rules` | The rules that every agent follows | Step 0 of `/feature`, and at the start of every dispatched task and review |
-| `platform-flutter` | The Flutter layer, with the commands for build and test | Step 0 of `/feature`, after the two above. A later task adds it |
+| `platform-flutter` | The Flutter layer, with the commands for build and test | Step 0 of `/feature`, after the two above. Its commands were measured on Flutter 3.38.9 stable |
 
 The plugin also has three agents. The project file names the one for each seat, and the defaults are these:
 
