@@ -38,14 +38,14 @@ dependency, so Claude Code can install it with this plugin. If it does not, inst
 Add the repository as a marketplace, then install the plugin from it:
 
 ```bash
-claude plugin marketplace add <path or GitHub repo>
+claude plugin marketplace add kkunan/agentic-delivery
 ```
 
 ```bash
 claude plugin install agentic-delivery@agentic-delivery
 ```
 
-For the first command, give a path to a local clone, or the GitHub form `kkunan/agentic-delivery`.
+To install from a local clone instead, give the path of the clone to the first command.
 The option `--scope local`, `--scope project`, or `--scope user` on each command picks where Claude
 Code stores the setting: your own local settings for this project, the settings file that the team
 shares in the repository, or your settings for every project.
