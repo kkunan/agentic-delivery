@@ -1,8 +1,8 @@
-FAKE TOOLS: this run did not use the real xcodebuild or xcresulttool
+runner: <selftest>/fake-runner.sh
 mutate: 2 mutations, 1 killed, 1 survived, 0 did-not-compile, 0 error
 killed:
-  k1  Sources/A.swift  AppTests/ATests/testA
+  k1  Sources/A.swift  suite/a_test/one
 survived:
-  s1  Sources/A.swift  AppTests/ATests/testB
+  s1  Sources/A.swift  suite/a_test/two
 did-not-compile: none
 error: none

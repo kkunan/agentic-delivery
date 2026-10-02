@@ -1,31 +1,37 @@
 #!/bin/sh
 set -u
 
-LOCKS=${APP_DEVICE_LOCK_DIR:-$HOME/Library/Caches/app-device-locks}
+LOCKS=${AGENTIC_DEVICE_LOCK_DIR:-$HOME/Library/Caches/agentic-delivery/device-locks}
 
 usage() {
-    echo "usage: scripts/claim-device.sh --udid <simulator UDID> [--release] [--worktree <path>]" >&2
+    echo "usage: scripts/claim-device.sh --device <device id> [--release] [--worktree <path>]" >&2
     exit 2
 }
 
-UDID=""
+DEVICE=""
 TREE=""
 RELEASE=0
 while [ $# -gt 0 ]; do
     case "$1" in
-        --udid) [ $# -ge 2 ] || usage; UDID=$2; shift 2 ;;
+        --device) [ $# -ge 2 ] || usage; DEVICE=$2; shift 2 ;;
         --worktree) [ $# -ge 2 ] || usage; TREE=$2; shift 2 ;;
         --release) RELEASE=1; shift ;;
         *) usage ;;
     esac
 done
-[ -n "$UDID" ] || usage
+[ -n "$DEVICE" ] || usage
 
-UPPER=$(printf '%s' "$UDID" | tr '[:lower:]' '[:upper:]')
-if ! printf '%s' "$UPPER" | grep -Eq '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$'; then
-    echo "claim-device: '$UDID' is not a simulator UDID. Pass exactly one 36-character UDID." >&2
+valid_device() {
+    case "$DEVICE" in
+        ""|.|..|*[!A-Za-z0-9._-]*) return 1 ;;
+    esac
+    [ "${#DEVICE}" -le 64 ]
+}
+if ! valid_device; then
+    echo "claim-device: '$DEVICE' is not a valid device id. Use 1 to 64 characters from A-Z a-z 0-9 . _ - and not . or .." >&2
     exit 4
 fi
+UPPER=$(printf '%s' "$DEVICE" | tr '[:lower:]' '[:upper:]')
 
 [ -n "$TREE" ] || TREE=$(dirname "$0")/..
 if ! TREE=$(cd "$TREE" 2>/dev/null && pwd -P); then

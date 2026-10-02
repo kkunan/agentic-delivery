@@ -7,7 +7,7 @@ description: The rules that only the controller of an agentic-delivery run follo
 
 The controller is the session that dispatches agents and coordinates the run. A dispatched agent does not read this skill. The rules for every agent are in the `run-rules` skill, which also defines the terms that this skill uses.
 
-The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, and `screenshot_branch`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
+The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `release_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, `screenshot_branch`, and `mutation_runner`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
 
 Where a rule here says "the gate owner", it means the person who approves the plan and who says merge.
 
@@ -37,7 +37,7 @@ Name each helper's report after its task, for example `task-3-report.md`, and ne
 
 Between notifications, examine `git status` and `git diff` in each worktree. Do not trust the reports alone.
 
-Every brief and every resume message that builds or tests names the device by its id from the Devices section. The words "the same device" never stand alone, because a resumed agent cannot tell which device you mean.
+Every brief and every resume message that builds or tests names the device by its id. The ledger holds the id of each device that the ticket creates. The words "the same device" never stand alone, because a resumed agent cannot tell which device you mean.
 
 A check that compares the base against the head takes its base half in Task 0. Take it from the worktree of the run, before the first task commit. Never take it from a second worktree, because the device claim refuses a second worktree on the device that the run holds.
 
@@ -100,7 +100,7 @@ A reviewer reviews the plan. Its author does not review it alone. In the brief, 
 The plan reviewer does four things, and it does not only read about them. It does all four in one pass over the plan, not one pass each. The review reports what it ran and what it skipped.
 
 1. Typecheck the code of the plan against the platform SDK. Do not build it and do not run it. The implementer compiles and runs the code of the plan, and a build in the review makes every gate slow.
-2. Mutate the code that the plan writes with `scripts/mutate.sh`, one time for each task that adds tests. Make sure that a test goes red. Do not mutate the whole tree, and do not mutate every branch that you find. Pick the branch that the acceptance criteria of that task depend on. For each row test, also record whether the test is green before the action that it tests. A test that is already green without the action proves nothing about the action.
+2. Mutate the code that the plan writes with `scripts/mutate.sh`, one time for each task that adds tests. In the skills and commands of this plugin, `scripts/...` means the `scripts` folder of the plugin, not a folder of the project. The start-up pointer gives its full path. Make sure that a test goes red. Do not mutate the whole tree, and do not mutate every branch that you find. Pick the branch that the acceptance criteria of that task depend on. For each row test, also record whether the test is green before the action that it tests. A test that is already green without the action proves nothing about the action.
 3. Run each check that the plan writes against the input that its author thinks the check misses. The plan carries that input beside the check, written at the same time. If a plan arrives without that input, send it back and do not review it. The reviewer runs the input of the author and does not invent more.
 4. Read each check for the case where its inputs are missing. The rule about missing inputs is in the `run-rules` skill. This step is reading only, and it costs nothing.
 
@@ -138,9 +138,11 @@ Count tokens for each distinct agent, and use the final cumulative count of each
 
 Arm a stall watch at dispatch, and keep it armed until every agent returns. Task notifications report completion. They cannot report that progress stopped, so an agent blocked on a hung build stays "running" forever. Two problems occur. In the first, a build freezes and its processor time stops. In the second, an agent does nothing at all, and no build watch can see it.
 
-Use `scripts/stall-watch.sh`. Do not write another watch, because hand-written watches usually fail from the start. Arm one watch for each name in `test_processes`:
+Use `scripts/stall-watch.sh`. Do not write another watch, because hand-written watches usually fail from the start. Arm one watch that takes every name in `test_processes`. With no `--process` flag, the script reads `test_processes` from the project file by itself. You can also pass one `--process` flag for each name. Pass one `--log <path>` flag for each command log of the run:
 
-    scripts/stall-watch.sh --process <name> --interval 60
+    scripts/stall-watch.sh --interval 60 --log <log> --log <log>
+
+When a log keeps the same size for `--build-after` minutes, the watch writes one `LOG STALLED <path>` line. It writes the line again only after the log grows and then stops again. The processor total alone does not show a hung Gradle build, because idle build daemons keep adding a little processor time. The log size shows it.
 
 With no `--roots`, the script asks `git worktree list`. If nothing resolves, it refuses to start, so it never polls an empty set and reports all clear. It writes a heartbeat line on every poll. Do not dispatch until you see a heartbeat. If the heartbeat stops, treat that as a stall in the watcher. An unverified watcher is worse than none, because it looks like coverage.
 
@@ -206,7 +208,7 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
        waiver: M1 by gate owner on <yyyy-mm-dd>: <reason>
 
 3. Read the spec again against what shipped, and fix any drift.
-4. Make sure that the ledger has an entry that names every commit on the branch. Do this after the final push, because at write time the ready check cannot see the commit that you are writing.
+4. Make sure that the ledger has an entry that names every commit on the branch. Do this after the final push, because at write time the ready check cannot see the commit that you are writing. A commit that changes only files in the ledger folder needs no entry, so a ledger that git tracks can record itself.
 5. Take the screenshots again on the final tree, after all the steps above, and push them to the branch that `screenshot_branch` names. Use `scripts/settle-screenshot.swift --capture "<command>"` so that each capture waits for the screen to settle.
 6. Rewrite the pull request description.
 7. Run `scripts/ready-check.sh`. It must exit 0. Then mark the pull request ready. Do not ask the gate owner.
@@ -216,13 +218,13 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 `scripts/ready-check.sh` covers the things that a machine can prove:
 
 - The base is merged into the branch, and the tree is committed and pushed.
-- The ledger names every commit in `<base_branch>..HEAD`.
+- The ledger names every commit in `<base_branch>..HEAD`, except a commit that changes only files in the ledger folder.
 - The ledger has cost lines for the spec review, the plan review, the final review, and at least one task.
 - The QA tally line reads all run, or each waived check has a waiver line from the gate owner.
 - The pull request body is a real description.
 - If the branch touches a file that matches `view_globs`, the body links screenshots on the screenshot branch.
 
-It skips the screenshot proof on a branch that changes no view. Run it from the checkout that holds the ledger.
+The screenshot proof is a URL in the body that contains `/<screenshot_branch>/`. If a view file changed but no screen changed, the body has a line that reads `No screen changed.` and the ready check accepts it. It skips the screenshot proof on a branch that changes no view. Run it from the checkout that holds the ledger.
 
 The script cannot prove steps 1 and 3, the review verdict and the spec re-read. State those two yourself, with one line each in the handoff. A green ready check does not mean that the run was good. If it fails, fix what it names, or ask the gate owner to waive it. Do not mark the pull request ready first.
 
@@ -249,7 +251,7 @@ The run ends here, after the gate owner says so. Marking the pull request ready 
 
    Never delete a branch in `protected_branches`. Never delete the branch that `screenshot_branch` names, or any branch whose name starts with it. It is usually an orphan branch with no pull request, and it holds the screenshots that pull request bodies link to.
 
-   Remove the worktrees of this run and every build folder of this run, including build folders that sit beside the worktrees. List them with `ls -d .worktrees/<slug>-*` and remove only the paths that the list prints. Stop each stall watch whose roots name a worktree of this run. Do not touch devices that hold a signed-in session, and never remove a worktree that such a device builds from. The Devices section of the project file names them.
+   Remove the worktrees of this run and every build folder of this run, including build folders that sit beside the worktrees. List them with `ls -d .worktrees/<slug>-*` and remove only the paths that the list prints. Stop each stall watch whose roots name a worktree of this run. Do not touch devices that hold a signed-in session, and never remove a worktree that such a device builds from. The Devices section of the project file names them, or says where their ids are kept.
 3. Move the ticket to done. Resolve the transition from the available transitions of the issue. Then post or update the trail comment.
 4. Write the feature report in the format of the next section. It is last because it shows work that shipped.
 

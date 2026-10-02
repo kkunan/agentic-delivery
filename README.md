@@ -9,7 +9,7 @@ A Claude Code plugin that takes a feature from an idea to a merged pull request.
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Version](https://img.shields.io/badge/version-0.1.0-informational)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A63D2)
-![Status](https://img.shields.io/badge/status-under%20construction-orange)
+![Status](https://img.shields.io/badge/status-pilot%20not%20run-orange)
 ![Platforms](https://img.shields.io/badge/platforms-Flutter%20%7C%20iOS%20(in%20progress)-lightgrey)
 
 </div>
@@ -24,12 +24,18 @@ The workflow comes from a real mobile project that ran it for weeks. Each rule e
 something went wrong without it, and [`lessons.md`](lessons.md) tells the story behind each one.
 
 > [!NOTE]
-> The plugin is under construction. The rules, the agents, and the feature command are in place.
-> The project file, the generic scripts, the hooks, and the Flutter layer are next. No platform layer
-> is ready yet, so see [Platforms](#platforms) before you install. The plan is in
-> [`docs/superpowers/plans/`](docs/superpowers/plans/).
+> The core is in place and has tests: the rules, the agents, the feature command, the project file,
+> the scripts, and the hooks. The Flutter layer is written, and two runs on Flutter 3.38.9 stable
+> measured its commands. The team pilot has not run yet, so version 0.1.0 is not tested on a real
+> feature. See [Status](#status) and [Platforms](#platforms) before you install.
 
 ## Quick start
+
+The plugin needs the superpowers plugin from the `claude-plugins-official` marketplace. The feature
+command uses four of its skills. If one is missing, the command stops. The manifest names superpowers as a
+dependency, so Claude Code can install it with this plugin. If it does not, install it first.
+
+Add the repository as a marketplace, then install the plugin from it:
 
 ```bash
 claude plugin marketplace add kkunan/agentic-delivery
@@ -39,10 +45,18 @@ claude plugin marketplace add kkunan/agentic-delivery
 claude plugin install agentic-delivery@agentic-delivery
 ```
 
-Then add `.claude/agentic-delivery.md` to your repository, and run `/feature` in Claude Code.
+To install from a local clone instead, give the path of the clone to the first command.
+The option `--scope local`, `--scope project`, or `--scope user` on each command picks where Claude
+Code stores the setting: your own local settings for this project, the settings file that the team
+shares in the repository, or your settings for every project.
+
+Run `claude plugin list` to check that `agentic-delivery` shows as enabled. Then copy the template
+to `.claude/agentic-delivery.md` in your repository, as [Set up a project](#set-up-a-project) says,
+and run `/feature` in Claude Code.
 
 > [!IMPORTANT]
-> The install commands come from the Claude Code help. Nobody tested them end to end yet.
+> An install test ran both commands with a local clone and `--scope local`. Each one gave exit 0,
+> and `claude plugin list` showed the plugin as enabled. Nobody tested the GitHub form yet.
 
 ## How a feature runs
 
@@ -158,17 +172,31 @@ You give the visual source of truth.
 
 ## Set up a project
 
-Each project adds one file, `.claude/agentic-delivery.md`, which git tracks. It names:
+Each project adds one file, `.claude/agentic-delivery.md`, which git tracks. It holds the facts of
+that project, and the plugin never guesses these values. Its front matter names:
 
-- the platform, for example `flutter`
-- the base branch and the branch prefix for features
-- where specs, plans, ledgers, and retros go: in the repository, or in a private folder
-- the test devices and the test account
-- how to move a ticket in your tracker, in plain words, so that any tracker works
-- the actions that need a person's word, such as signing and secrets
+- the platform: `flutter` or `ios`
+- the oldest plugin version that the project accepts
+- the base branch, the release branch, the branch prefix for features, and the protected branches
+- where the specs, plans, ledgers, and retros go: in the repository, or in a private folder that
+  the run never commits, such as `~/agentic-notes/<project>`
+- the file patterns of the screens, the names of the test processes, and the branch for screenshots
+- the mutation runner for the platform
 - optionally, your own agent for any of the three seats
 
-A template for this file is coming with the project file task in the plan.
+Its body has sections for the tracker steps, the devices, the accounts, and the actions that need a
+person's word, such as signing and secrets. The tracker steps are in plain words, so any tracker
+works.
+
+To start, copy `templates/agentic-delivery.md` from the plugin to `.claude/agentic-delivery.md` in
+your repository. The template explains each key. The keys for the platform, the branches, the
+docs folder, the screen patterns, and the screenshot branch are empty, so fill them in. If one is
+empty, `/feature` asks you for it before it starts. Fill in the sections for your team. Write the
+place to find a sign-in, never the sign-in itself. Put a device id that belongs to one person in
+local settings, not in the project file.
+
+The plugin reads the front matter with `scripts/project-config.sh`. If the file is missing,
+`/feature` stops and offers to copy the template.
 
 ## What is inside
 
@@ -177,10 +205,99 @@ commands/feature.md      the pipeline, started with /feature
 agents/                  implementer, reviewer, qa-reviewer
 skills/run-rules/        the rules that every agent follows
 skills/controller/       the rules for the session that runs the pipeline
+skills/platform-*/       one platform layer in each folder: flutter, ios
+templates/               the project file template
+hooks/                   the start-up pointer and the retro reminder
+output-styles/lean.md    the optional lean output style
 lessons.md               the story behind each rule
+docs/superpowers/specs/  the design of the plugin
+docs/superpowers/plans/  the plan that builds it
 scripts/                 ready check, stall watch, device claim, screenshot settle, mutation runner
 tests/                   a test file for each script
 ```
+
+### Skills, command, and agents
+
+| Name | What it is | When it loads |
+| --- | --- | --- |
+| `/feature` (listed as `agentic-delivery:feature`) | The command that runs the pipeline | You run it |
+| `agentic-delivery:controller` | The rules that only the controller follows: dispatch, review seats, estimates, stall watch, tracker steps, ship, merge, report, and retro | Step 0 of `/feature`, and again after a compaction |
+| `agentic-delivery:run-rules` | The rules that every agent follows | Step 0 of `/feature`, and at the start of every dispatched task and review |
+| `platform-flutter` | The Flutter layer, with the commands for build and test | For a project with `platform: flutter`, step 0 of `/feature` loads it after the two above. Its commands were measured on Flutter 3.38.9 stable |
+| `platform-ios` | The iOS layer, SwiftUI first with UIKit notes | For a project with `platform: ios`, step 0 of `/feature` loads it after the two above. Its commands were not measured in this repository |
+
+The plugin also has three agents. The project file names the one for each seat, and the defaults
+are these:
+
+- `agentic-delivery:implementer` does one coding task from a brief.
+- `agentic-delivery:reviewer` reviews the diff of one task, and the plan.
+- `agentic-delivery:qa-reviewer` judges a spec or a plan for testability.
+
+To use an agent of your team for a seat, set `implementer_agent`, `reviewer_agent`, or `qa_agent`
+in the project file. A name that does not exist stops the run, with no fallback.
+
+### Hooks
+
+The plugin has two hooks. Each one adds a short text to the session:
+
+- At the start of a session, a hook adds a pointer to `/feature`. It does so for a project that has
+  the project file. It names the skills that the first step loads, and the folder of the plugin
+  scripts.
+- After a write to a retro file, a hook adds a reminder. The agent must not edit plugin files. It
+  proposes each change as a pull request.
+
+### Scripts and tests
+
+The scripts are in `scripts/`. Each one has a test in `tests/`.
+
+- `project-config.sh` reads one key from the front matter of the project file.
+- `claim-device.sh` claims a device for one worktree, so that two runs never use the same one, and
+  releases it.
+- `stall-watch.sh` watches the worktrees, the test processes, and the command logs of a run, and
+  reports a stall.
+- `ready-check.sh` checks the pull request and the ledger. It says whether the pull request is ready.
+- `settle-screenshot.swift` runs a capture command until the screen stops changing, then saves the
+  last frame.
+- `mutate.sh` applies each mutation from a manifest, runs the test that must catch it, records the
+  verdict, and restores the file. A platform runner runs the tests. The Flutter runner is
+  `skills/platform-flutter/mutation-runner.sh`. The iOS runner does not exist yet.
+
+### Lean mode
+
+The plugin ships an optional output style named `lean`, in `output-styles/lean.md`. It asks for
+short replies: the answer first, no filler, one word for one meaning. Each developer turns it on for
+themselves, through the output style setting of Claude Code. No step of the pipeline needs it.
+
+Nobody measured a token saving for this mode, so the plugin makes no claim of one.
+
+### Token cost
+
+The figures come from `claude plugin details agentic-delivery`, run on plugin version 0.1.0 after a
+local install. That run was before the platform skills existed, so the figures do not include them.
+The tool says that its counts are estimates.
+
+- Always on: about 250 tokens in every session, as measured before the platform skills existed.
+  This is the name and description of each skill and agent.
+- Paid on invoke, each time the item fires:
+
+| Item | Always on | On invoke |
+| --- | --- | --- |
+| `run-rules` | about 40 | about 6.3k |
+| `controller` | about 60 | about 8.6k |
+| `reviewer` | about 40 | about 1.3k |
+| `qa-reviewer` | about 50 | about 1.3k |
+| `implementer` | about 40 | about 1.6k |
+| `feature` | about 30 | about 1.7k |
+
+Step 0 of `/feature` loads one platform skill, so each run pays its size on top of the table. By
+`wc -c`, the `platform-flutter` skill is 31,303 characters long, and the `platform-ios` skill is
+20,222 characters long. Nobody measured either one with `claude plugin details`. The name and
+description of each one also add to the always-on figure.
+
+The tool does not count hook output. The start-up hook adds its pointer to a session in a project
+that has the project file. With `platform: flutter`, the pointer is 326 characters long, plus the
+length of the path of the plugin folder. If the `platform` key is empty, the pointer only says
+that the project file has no platform and that `/feature` asks for each empty key.
 
 ## Platforms
 
@@ -190,14 +307,20 @@ screenshots. Without a layer, the agents have the rules but no platform commands
 
 | Platform | Targets | Status |
 |---|---|---|
-| Flutter | iOS, Android, web | In progress. The first layer. |
-| Native iOS | iOS, SwiftUI first, with UIKit notes | Rules written. Project file keys and the runner adapter are next. |
+| Flutter | iOS, Android, web | Written. Two runs on Flutter 3.38.9 stable measured its commands. It has the mutation runner. |
+| Native iOS | iOS, SwiftUI first, with UIKit notes | Rules written. Its commands were not measured in this repository. The mutation runner is next. |
 | Native Android | Android | Not started |
 | Backend services | APIs and workers | Not started |
 | Web front ends | Browsers | Not started |
 
 A platform layer is one skill in `skills/platform-<name>/`. To add one, follow the shape of the
 Flutter layer, and propose it as a pull request.
+
+## Status
+
+The Flutter layer is written, and two runs on Flutter 3.38.9 stable measured its commands. The iOS
+layer has its rules, but no mutation runner yet. The rest of the plugin is in place and has tests.
+The team pilot has not run yet, so version 0.1.0 is not tested on a real feature.
 
 ## Contributing
 
@@ -210,6 +333,9 @@ Run the tests before you push:
 ```bash
 bash tests/run-all.sh
 ```
+
+The test of the Flutter runner uses the `flutter` that `FLUTTER_BIN` names, or else the one on the
+`PATH`. Without either one, that test skips.
 
 ## License
 

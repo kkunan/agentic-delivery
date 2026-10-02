@@ -32,9 +32,7 @@ group() {
 }
 
 summary() {
-    if [ -n "${MUTATE_XCODEBUILD:-}" ] || [ -n "${MUTATE_XCRESULTTOOL:-}" ]; then
-        echo "FAKE TOOLS: this run did not use the real xcodebuild or xcresulttool"
-    fi
+    printf 'runner: %s\n' "$runner"
     printf 'mutate: %s mutations, %s killed, %s survived, %s did-not-compile, %s error\n' \
         "${#labels[@]}" "$(tally killed)" "$(tally survived)" "$(tally did-not-compile)" "$(tally error)"
     local v

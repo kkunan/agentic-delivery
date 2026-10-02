@@ -11,7 +11,7 @@ runner_gone() {
 start_sleeping_mutation() {
     mklist s1 Sources/A.swift "= 88" "= 88 // SELFTEST_SLEEP" "$T_A"
     start_runner_bg
-    wait_for 100 ticking || { kill -KILL "$runner"; say "the fake xcodebuild never started"; }
+    wait_for 100 ticking || { kill -KILL "$runner"; say "the fake runner never started"; }
 }
 
 ticks_stopped() {
@@ -121,7 +121,7 @@ r6_stubborn_child_is_killed() {
     export MUTATE_STOP_POLLS=5
     mklist s1 Sources/A.swift "= 88" "= 88 // SELFTEST_STUBBORN" "$T_A"
     start_runner_bg
-    wait_for 100 called_twice || { kill -KILL "$runner"; say "the fake xcodebuild never started"; return 1; }
+    wait_for 100 called_twice || { kill -KILL "$runner"; say "the fake runner never started"; return 1; }
     sleep 0.5
     kill -TERM "$runner"
     wait_for 50 runner_gone || { kill -KILL "$runner"; say "the runner did not exit within 5 s of TERM"; return 1; }

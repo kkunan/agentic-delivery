@@ -62,7 +62,8 @@ Each project adds `.claude/agentic-delivery.md`, which git tracks. It holds thes
 - `platform`: `flutter` for the first target.
 - `min_plugin_version`: the lowest plugin version that the project needs. A session on an older version
   gets a warning at start.
-- Branches: the base branch for features, the release branch, and the merge method.
+- Branches: the base branch for features and the release branch. The run merges through the pull
+  request, as a merge commit. The file has no key for the merge method.
 - Gate: who approves a plan. The default is the developer who runs the feature.
 - Tracker steps: how to start a ticket, post a comment, and close it. If agents cannot reach the
   tracker, the run writes the comment text into its report, and the developer posts it.

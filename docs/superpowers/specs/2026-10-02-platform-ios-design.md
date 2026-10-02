@@ -19,7 +19,7 @@ of the scripts exist already.
 3. The layer adds four project file keys, and builds every command from them:
    - `ios_workspace`: the workspace or project file that every build opens
    - `ios_scheme`: the scheme for builds and tests
-   - `ios_test_plan`: the test plan, if the project uses one
+   - `ios_test_plan`: the test plan. This key is optional.
    - `ios_runtime`: the simulator runtime that new devices use
 4. The mutation runner keeps its current Xcode result parser as the iOS adapter of the runner
    contract in the main plan.

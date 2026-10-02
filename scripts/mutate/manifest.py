@@ -75,9 +75,10 @@ def check_fields(i, e):
         raise Refusal(f"{e['label']}: find is empty")
     if e["find"] == e["replace"]:
         raise Refusal(f"{e['label']}: replace is the same as find")
-    t = e["test"]
-    if "/" not in t or "(" in t or re.search(r"\s", t):
-        raise Refusal(f"{e['label']}: test {t!r} must name its target, and hold no ( and no space")
+    if not e["test"]:
+        raise Refusal(f"{e['label']}: test is empty")
+    if re.search(r"[\x00-\x1f\x7f]", e["test"]):
+        raise Refusal(f"{e['label']}: test {e['test']!r} holds a tab, a newline or another control character")
 
 
 def check_labels(entries):
@@ -103,7 +104,7 @@ def check_target(repo, self_dir, e):
     if not os.path.isfile(path):
         raise Refusal(f"{e['label']}: {rel} is not a regular file")
     if is_runner_file(path, repo, self_dir):
-        raise Refusal(f"{e['label']}: {rel} is one of the runner's own files")
+        raise Refusal(f"{e['label']}: {rel} is one of the files of mutate.sh")
     check_clean(repo, e["label"], rel)
     return path
 

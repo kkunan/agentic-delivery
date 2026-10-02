@@ -1,13 +1,8 @@
-import os
 import sys
 
 from journal import apply, recover
 from manifest import Refusal, validate
 from results import baseline, verdict
-
-
-def tool():
-    return os.environ.get("MUTATE_XCRESULTTOOL") or "xcrun xcresulttool"
 
 
 def main(argv):
@@ -20,9 +15,9 @@ def main(argv):
         flags = args[2:]
         recover(args[0], args[1], "--quiet" in flags, "--interrupted" in flags)
     elif cmd == "verdict":
-        print("\t".join(verdict(int(args[0]), args[1], tool())))
+        print("\t".join(verdict(int(args[0]), args[1], args[2:])))
     elif cmd == "baseline":
-        problems = baseline(int(args[0]), args[1], args[2:], tool())
+        problems = baseline(int(args[0]), args[1], args[2:])
         for p in problems:
             print(p)
         return 2 if problems else 0
