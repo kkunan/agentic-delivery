@@ -8,7 +8,7 @@ protected_branches: main,develop
 docs: repo
 docs_dir: docs/features
 view_globs: lib/**/views/**,lib/**/widgets/**
-test_processes: flutter_tester,dartvm,xcodebuild
+test_processes: flutter_tester,dartvm,xcodebuild,java
 screenshot_branch: screenshots
 mutation_runner: scripts/mutation-runner.sh
 implementer_agent: agentic-delivery:implementer
@@ -30,9 +30,9 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 - `docs` is `repo` or `private`. The value `repo` keeps the ledger folder inside the repository. The value `private` keeps it outside the repository, so that the notes of a run stay off the history. A `private` project needs an absolute `docs_dir` beside the repository.
 - `docs_dir` is the folder for the ledger and the retro. The ledger folder is `<docs_dir>/<date>-<slug>` in both `docs` modes. A relative `docs_dir` resolves from the top of the repository.
 - `view_globs` lists the file patterns for the screens of the app. A change to a file that matches them needs a screenshot.
-- `test_processes` lists the names of the processes that the tests start. The stall watch uses them. The value in this file holds the names that `pgrep -x` matched on Flutter 3.38.9 stable: `flutter_tester` for unit and widget tests, `dartvm` for the `flutter` tool, and `xcodebuild` for an iOS device build. Measure them again on your machine. The run did not measure an Android build, so the list has no name for it.
+- `test_processes` lists the names of the processes that the tests start. The stall watch uses them. The value in this file holds the names that `pgrep -x` matched on Flutter 3.38.9 stable. `flutter_tester` runs the unit and widget tests, and `dartvm` runs the `flutter` tool. `xcodebuild` runs an iOS device build, and `java` runs the Gradle build of an Android device run. Measure them again on your machine.
 - `screenshot_branch` is the branch that holds the screenshots for the review.
-- `mutation_runner` is the path from the top of the repository to an executable that follows the runner contract of `scripts/mutate.sh`. The Flutter adapter of the plugin, `skills/platform-flutter/mutation-runner.sh`, is one such runner.
+- `mutation_runner` is the path from the top of the repository to an executable that follows the runner contract of `scripts/mutate.sh`. The Flutter adapter of the plugin is `skills/platform-flutter/mutation-runner.sh`. The path of a plugin install differs on each machine. So copy that file to `scripts/mutation-runner.sh` in your repository, which is the value in this file, and commit it.
 - `implementer_agent`, `reviewer_agent`, and `qa_agent` name the agent for each seat. See the Agents section.
 
 ## Tracker steps

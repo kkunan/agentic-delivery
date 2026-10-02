@@ -2,7 +2,7 @@
 
 A Claude Code plugin for a spec-driven feature pipeline. It has one plan gate, reviewed tasks, a ledger, and a retro. Platform layers hold the build and test rules for each kind of project.
 
-The core is ready. The Flutter layer is the skill `platform-flutter`. A run on Flutter 3.38.9 stable measured its commands, and the skill marks each command that the run did not measure.
+The core is ready. The Flutter layer is the skill `platform-flutter`. Two runs on Flutter 3.38.9 stable measured its commands. The skill also holds the Flutter runner for `scripts/mutate.sh`.
 
 ## What it does
 

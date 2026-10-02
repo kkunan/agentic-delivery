@@ -9,13 +9,12 @@ This skill holds the rules that depend on Flutter. The `run-rules` skill holds t
 
 ## How to read the commands
 
-A run on the Flutter Mac measured each command in this skill. It used Flutter 3.38.9 on the stable channel, with Dart 3.10.8, Xcode 26.6, an Android emulator with an API 36 image, and Chrome 154. The project was a new app from `flutter create`, with the iOS, Android, and web targets and one test for each tier.
+Two runs on the Flutter Mac measured each command in this skill. They used Flutter 3.38.9 on the stable channel, with Dart 3.10.8 and Xcode 26.6. They also used an Android emulator with an API 36 image, Gradle 8.14, and Chrome 154 with `chromedriver` 154. The project was a new app from `flutter create`, with the iOS, Android, and web targets and one test for each tier.
 
 - The mark `(measured: exit <code>, <time>)` gives the result of that run. A time is for a small app, so a real project takes longer.
-- The mark `(not measured: <reason>)` says why a command did not run. The run downloaded nothing, so a command that needs a download did not run.
 - Flags change between Flutter versions. On another version, run the `--help` of the tool before you rely on a flag.
 
-On a new Flutter install, the first `flutter devices` and the first iOS device run download the engine files of that version. So the first run takes longer than the times here.
+On a new Flutter install, the first run of some commands downloads files for that version. The first `flutter devices` and the first iOS device run download the engine files. The first web build downloads the web SDK. The first Android build downloads the Android engine files, and Gradle downloads its own version and the Kotlin Gradle plugin. So the first run takes longer than the times here.
 
 - Write `flutter` as the command. If the project pins a Flutter version, run the `flutter` of that version.
 - A device id in this skill is a placeholder: `<simulator-id>` or `<emulator-id>`. For the web, `-d` takes `chrome`, but you claim a port: `chrome-<driver-port>` for the driver and `web-<web-port>` for the web server. The Devices section of the project file and the ledger hold the real ids.
@@ -102,9 +101,10 @@ On the Flutter Mac, `adb` is on the `PATH`, but `avdmanager` and `emulator` are 
 Chrome needs no create or delete step. `flutter devices --device-connection attached > <log> 2>&1` lists it as `chrome` (measured: exit 0, 5 seconds). A web integration test runs through `flutter drive`, which talks to a WebDriver server on `--driver-port`, with the default 4444, as `flutter drive --help` says. Each worktree uses its own driver port and its own `chromedriver`. Two drive runs on one port talk to the same WebDriver server.
 
 - Pick a driver port, and claim it with the claim script as the id `chrome-<driver-port>`. Claim it before you start `chromedriver`. Then no other worktree takes the same port.
-- Start `chromedriver` on that port, detached: `chromedriver --port=<driver-port> > <log> 2>&1 &` (not measured: `chromedriver` is not installed). Write its process id, from `$!`, in the ledger.
-- After the drive run, stop it by that process id: `kill <chromedriver-pid>` (not measured: `chromedriver` is not installed). Never stop it by name, because a name also matches the `chromedriver` of another worktree.
-- `chromedriver` is not part of Flutter, and the Flutter Mac does not have it. The project installs a version that matches the installed Chrome.
+- Start `chromedriver` on that port, detached: `chromedriver --port=<driver-port> > <log> 2>&1 &` (measured: ready in 1 second). The log says `ChromeDriver was started successfully on port <driver-port>`. Write its process id, from `$!`, in the ledger.
+- After the drive run, stop it by that process id: `kill <chromedriver-pid>` (measured: exit 0, the process ended in 1 second, and the port was free). Never stop it by name, because a name also matches the `chromedriver` of another worktree.
+- `chromedriver` is not part of Flutter. Its version must match the installed Chrome. The measured run took the `chromedriver` of the exact Chrome version from the Chrome for Testing downloads, a zip of 9 MB.
+- If a drive run is stopped, the Chrome that `chromedriver` started can stay alive. Find it with `pgrep -P <chromedriver-pid>`, and stop it by its id.
 
 ### The device claim
 
@@ -145,10 +145,32 @@ Run each test command detached, as `run-rules` says under Commands and files.
 - Unit and widget tests: `flutter test --reporter expanded --file-reporter json:<ledger>/results/<step>.json > <log> 2>&1` (measured: exit 0, 2 seconds). The expanded reporter writes one line for each test, so the log grows while the run makes progress. The default reporter rewrites one line, so its log shows little until the end.
 - One test file: `flutter test test/<path>_test.dart --reporter expanded > <log> 2>&1` (measured: exit 0, 1 second). One test by name: add `--plain-name "<name>"` (measured: exit 0, 2 seconds). A name that matches no test gives exit 79 and `No tests match`.
 - The golden update switch: `flutter test --update-goldens test/<path>_test.dart > <log> 2>&1` (measured: exit 0, 2 seconds).
-- Integration tests on a simulator or an emulator: `flutter test integration_test -d <simulator-id> --reporter expanded --file-reporter json:<ledger>/results/<step>.json > <log> 2>&1` (measured on the simulator: exit 0, 114 seconds, with a pod install and a 56-second Xcode build). Use `<emulator-id>` for the emulator (not measured: the Android build needs Gradle 8.14, the Kotlin Gradle plugin 2.2.20, and the Android engine files, and the cache had none of them). At the end of the run, the app is no longer on the device.
-- Integration tests on Chrome: `flutter drive --driver=test_driver/integration_test.dart --target=integration_test/<name>_test.dart -d chrome --driver-port=<driver-port> > <log> 2>&1` (not measured: `chromedriver` is not installed). Start the `chromedriver` of the worktree first, as the Chrome section says. `flutter drive --help` says that the browser runs headless by default. The same driver file, with `integrationDriver()` in it, ran the test on the simulator (measured: exit 0, 28 seconds).
+- Integration tests on a simulator or an emulator: `flutter test integration_test -d <simulator-id> --reporter expanded --file-reporter json:<ledger>/results/<step>.json > <log> 2>&1` (measured on the simulator: exit 0, 114 seconds, with a pod install and a 56-second Xcode build). Use `<emulator-id>` for the emulator (measured: exit 0, 266 seconds, with a 234-second Gradle build and the first downloads). At the end of the run on the simulator, the app is no longer on the device.
+- Integration tests in Chrome: `flutter drive --driver=test_driver/integration_test.dart --target=integration_test/<name>_test.dart -d web-server --driver-port=<driver-port> > <log> 2>&1` (measured: exit 0 in three runs, 14 to 16 seconds). Start the `chromedriver` of the worktree first, as the Chrome section says. `chromedriver` starts a headless Chrome for the test and closes it at the end. `flutter drive --help` says that the browser runs headless by default. Do not use `-d chrome` here. In three measured runs, one passed, one failed with `AppConnectionException` and did not end, and one passed but did not end. Bound the run, as the stall rules say. The same driver file, with `integrationDriver()` in it, ran the test on the simulator (measured: exit 0, 28 seconds).
 
 The golden update switch overwrites each reference image with whatever renders. Run it only on the test files that the task changes. Open each changed PNG before you commit it, because a defect that renders becomes the new reference.
+
+## Mutation tests
+
+`scripts/mutate.sh` runs the tests through a platform runner, as its usage text says. The Flutter runner of this plugin is `skills/platform-flutter/mutation-runner.sh`.
+
+- Copy it into the project as `scripts/mutation-runner.sh`, and commit it. That path is the default of the `mutation_runner` key in the project file. The path of a plugin install differs on each machine, so the key cannot point into the plugin.
+- Run `scripts/mutate.sh` from the top of the Flutter project, where `pubspec.yaml` is. The runner calls `flutter test` from that folder.
+- The runner uses the `flutter` on the `PATH`. If the project pins a Flutter version, set `FLUTTER_BIN` to the `flutter` of that version.
+
+A test id has the form `<test file>::<full test name>`, for example `test/counter_test.dart::Counter increments`. The full name holds the group names and the test name, with one space between them, as the JSON reporter writes it. The runner splits the id at the first `::`. An id without `::` gets no result file, so the run stops at the baseline.
+
+The runner calls `flutter test <test file> --plain-name=<name> --reporter expanded --file-reporter json:<file>` once for each id. Two `--plain-name` flags must both match (measured), so one call cannot run two names. The name filter matches a part of a name, so other tests can also run. The result holds only the named ids, with the exact full name and the same file.
+
+These are the results that the runner reported in the measured run:
+
+- A test that passes gives `passed`, and a mutant that the test does not see survives.
+- A mutant that breaks the code under the test gives `failed`, so the verdict is `killed`.
+- A syntax error gives `compiled: false`, so the verdict is `did-not-compile`. The JSON reporter marks this as a failed `loading <file>` test, with `Failed to load` and `Compilation failed` in its error.
+- A name that does not exist, or a test file that does not exist, gives no entry, so the verdict is `error`.
+- A skipped test gives `skipped`, so the verdict is also `error`.
+
+Each `flutter test` call took 1 to 3 seconds on the small app. The baseline runs one call for each test id.
 
 ## A stalled test run
 
@@ -158,7 +180,7 @@ These processes do the work of a run. `pgrep -x` matched each of these names in 
 
 - `flutter_tester` runs the unit and widget tests.
 - `dartvm` runs the `flutter` tool. The name `dart` matches nothing, because the `dart` command starts `dartvm`.
-- On an iOS device run, `xcodebuild` builds the app. On an Android device run, the Gradle build runs in `java` (not measured: the Android build did not run).
+- On an iOS device run, `xcodebuild` builds the app. On an Android device run, the Gradle build runs in `java`. In the measured run, `pgrep -x java` found from 1 to 4 processes: the Gradle daemon and the Kotlin compile daemons.
 
 A device run has no `flutter_tester`, because the tests run inside the app on the device. Do not watch the app process. On iOS its name is `Runner`, and the app of another ticket has the same name. Do not watch `dartaotruntime` either. It runs the compiler of `flutter test`, and it sits idle after the compile.
 
@@ -170,9 +192,10 @@ In a stalled run, both of these values stay the same across several polls:
 These cases look like a stall but are not one:
 
 - `dartvm` sits still while `xcodebuild` or `java` adds processor time. The build does the work at that time.
+- The Gradle daemon and the Kotlin daemons stay alive after an Android build, and they sit idle. An idle daemon still adds a little processor time (measured), so the watch does not report it as frozen. For the same reason, the processor total alone does not show a hung Gradle build. Look at the log size too.
 - The processor total stays at zero while a device boots.
 
-Another Dart program, such as the analysis server of an editor, can also run as `dartvm`. Before you report a frozen `dartvm` process, read its command with `ps -o command= -p <pid>` (measured: exit 0). The command of the `flutter` tool holds the path of its Flutter install.
+Another Dart program, such as the analysis server of an editor, can also run as `dartvm`. Any Java program, such as an editor, runs as `java`. Before you report a frozen `dartvm` or `java` process, read its command with `ps -o command= -p <pid>` (measured: exit 0). The command of the `flutter` tool holds the path of its Flutter install. The command of a Gradle daemon holds the path of the Gradle folder.
 
 ### Remedies, in order
 
@@ -191,8 +214,9 @@ Arm one watch for each name in `test_processes`, as the controller skill says:
 - `scripts/stall-watch.sh --process flutter_tester --interval 60 > <log> 2>&1`
 - `scripts/stall-watch.sh --process dartvm --interval 60 > <log> 2>&1`
 - `scripts/stall-watch.sh --process xcodebuild --interval 60 > <log> 2>&1`
+- `scripts/stall-watch.sh --process java --interval 60 > <log> 2>&1`
 
-In the measured run, a watch on `flutter_tester` and `dartvm` during `flutter test` wrote `HEARTBEAT procs=2` on each poll (measured: exit 0). A watch on `dart` wrote `procs=0`. Read the log for a heartbeat line before you dispatch. During a test run, `pgrep -lx flutter_tester` prints the id and the name of each match (measured). The template holds the names of this run. Measure them again on your machine, and put them in the project file.
+In the measured run, a watch on `flutter_tester` and `dartvm` during `flutter test` wrote `HEARTBEAT procs=2` on each poll (measured: exit 0). A watch on `dart` wrote `procs=0`. A watch on `java` after an Android build wrote `procs=3` on each poll and no `BUILD FROZEN` (measured). Read the log for a heartbeat line before you dispatch. During a test run, `pgrep -lx flutter_tester` prints the id and the name of each match (measured). The template holds the names of this run. Measure them again on your machine, and put them in the project file.
 
 ## Screenshots
 
@@ -206,16 +230,17 @@ scripts/settle-screenshot.swift --capture "<capture command>" --out <ledger>/scr
 
 - iOS simulator: `xcrun simctl io <simulator-id> screenshot {out}` (measured: exit 0, 3 seconds, settled after one comparison). Install and start the app first. At the end of an integration test run, the app is no longer on the device.
 - Android emulator: `flutter screenshot -d <emulator-id> -o {out}` (measured: exit 0, 14 seconds, settled after one comparison). Each capture starts the `flutter` tool. `adb -s <emulator-id> exec-out screencap -p > {out}` is faster (measured: exit 0, 7 seconds).
-- Chrome: `'<chrome-binary>' --headless --user-data-dir=<profile-dir> --screenshot={out} --window-size=<width>,<height> http://localhost:<web-port>/ & p=\$!; i=0; while [ ! -s {out} ] && [ \$i -lt 30 ]; do sleep 1; i=\$((i+1)); done; sleep 1; kill \$p; [ -s {out} ]` (measured on a static page: exit 0, 7 seconds, settled after one comparison).
+- Chrome: `'<chrome-binary>' --headless --user-data-dir=<profile-dir> --virtual-time-budget=5000 --screenshot={out} --window-size=<width>,<height> http://localhost:<web-port>/ & p=\$!; i=0; while [ ! -s {out} ] && [ \$i -lt 30 ]; do sleep 1; i=\$((i+1)); done; sleep 1; kill \$p; [ -s {out} ]` (measured on a release page from `flutter run`: exit 0, 5 seconds, settled after one comparison, and the frame showed the app).
 
 Notes on the Chrome capture:
 
-- Headless Chrome writes the frame in about one second, but then it does not exit. In the measured run it was still alive after 219 seconds. So the command starts Chrome in the background, waits up to 30 seconds for the file, and stops that Chrome by its own process id.
+- Without `--virtual-time-budget`, Chrome writes the frame at the page load, before Flutter draws its first frame. The measured frame was blank, and two blank frames matched, so the settle script reported a settled screen. With `--virtual-time-budget=5000`, the frame of a release page showed the app.
+- Headless Chrome does not always exit after it writes the frame. In one measured run it was still alive after 219 seconds. With the time budget, it was alive after 20 seconds in one run of four. So the command starts Chrome in the background, waits up to 30 seconds for the file, and stops that Chrome by its own process id.
 - The capture command sits inside double quotes, so write each `$` as `\$`, as shown. Put single quotes around the Chrome path, because it holds spaces.
 - `<profile-dir>` is an empty folder of the worktree. A separate profile keeps headless Chrome away from the profile of a Chrome window that is open.
 - The shell joins `--screenshot=` and the quoted path into one argument.
 
-For the Chrome capture, claim the port as `web-<web-port>` first. Then serve the app with its own log, detached: `flutter run -d web-server --web-port <web-port> > <log> 2>&1 &` (not measured: the web SDK of Flutter 3.38.9 was not in the cache). `--web-port` is a hidden option that only `flutter run -v --help` shows (measured). `flutter devices --show-web-server-device` lists the `web-server` device (measured: exit 0, 8 seconds). Write the process id of the server in the ledger, and stop it by that id after the capture. This capture shows the page after it loads, not a state that a test reached by interaction. Two blank frames also match, so open the settled frame and make sure that it shows the screen. A page from `flutter run` was not measured, so nobody knows yet whether Chrome writes the frame before Flutter draws its first frame.
+For the Chrome capture, claim the port as `web-<web-port>` first. Then serve the app in release mode with its own log, detached: `flutter run -d web-server --web-port <web-port> --release > <log> 2>&1 &` (measured: the log said `is being served at http://localhost:<web-port>` after 13 seconds). Do not serve a debug build for a capture. In the measured run, the debug page drew nothing in a headless Chrome, with or without a time budget. Through `chromedriver`, it was still blank after 8 seconds. `--web-port` is a hidden option that only `flutter run -v --help` shows (measured). `flutter devices --show-web-server-device` lists the `web-server` device (measured: exit 0, 8 seconds). Write the process id of the server in the ledger, and stop it by that id after the capture. This capture shows the page after it loads, not a state that a test reached by interaction. Two blank frames also match, so open the settled frame and make sure that it shows the screen.
 
 The script replaces `{out}` with the path of the frame, and it quotes that path for the shell. Do not put quotes around `{out}`. A second pair of quotes puts quote characters into the path, and the script then finds no file.
 
@@ -232,15 +257,15 @@ The default tolerance is 0.001, as a fraction of the pixels. If exit 1 names a t
 Build release mode for each target that the project ships. A debug build does not stand for a release build, as the Checks section of `run-rules` says.
 
 - iOS: `flutter build ios --release --no-codesign > <log> 2>&1` (measured: exit 0, 34 seconds). The log ends with `Built build/ios/iphoneos/Runner.app`. Signing needs the signing identity of the team, and a run does not use an account that the project file does not name.
-- Android: `flutter build apk --release > <log> 2>&1`. For a store build, use `flutter build appbundle --release > <log> 2>&1` (not measured: the Android build needs Gradle 8.14, the Kotlin Gradle plugin 2.2.20, and the Android engine files, and the cache had none of them).
-- Web: `flutter build web --release > <log> 2>&1` (not measured: the web SDK of Flutter 3.38.9 was not in the cache).
+- Android: `flutter build apk --release > <log> 2>&1` (measured: exit 0, 49 seconds). The log ends with `Built build/app/outputs/flutter-apk/app-release.apk`. For a store build, use `flutter build appbundle --release > <log> 2>&1` (measured: exit 0, 9 seconds after the APK build). The log ends with `Built build/app/outputs/bundle/release/app-release.aab`.
+- Web: `flutter build web --release > <log> 2>&1` (measured: exit 0, 24 seconds, with the web SDK download). The log ends with `Built build/web`.
 
 The iOS simulator does not run a release build. `flutter build ios --simulator` makes a debug build in `build/ios/iphonesimulator/Runner.app` (measured: exit 0, 24 seconds). With `--release`, it stops with exit 1 and `Release mode is not supported for simulators` (measured). So check the iOS release build on a real device, and write that check for QA.
 
 Install the build from the path that the build log prints, not from a search, as `run-rules` says.
 
 - On the iOS simulator: `xcrun simctl install <simulator-id> <app-path> > <log> 2>&1`, then `xcrun simctl launch <simulator-id> <bundle-id> > <log> 2>&1` (measured: exit 0, 1 second each). `flutter install --use-application-binary` does not take the `.app` folder of a simulator build: it stops with exit 1 and says that the binary does not exist (measured).
-- A release APK on the emulator: `flutter install --release -d <emulator-id> --use-application-binary=<apk-path> > <log> 2>&1` (not measured: the Android build did not run).
+- A release APK on the emulator: `flutter install --release -d <emulator-id> --use-application-binary=<apk-path> > <log> 2>&1` (measured: exit 0, 3 seconds). To start it, run `adb -s <emulator-id> shell am start -n <application-id>/.MainActivity > <log> 2>&1` (measured: exit 0).
 
 ## QA: a change since the last suite run
 
