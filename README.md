@@ -34,6 +34,60 @@ something went wrong without it. `lessons.md` tells the story behind each rule.
 - Rule changes go through review. A retro never edits the rules. It proposes a pull request to this
   repository.
 
+## How each role uses it
+
+### Engineer
+
+You run the pipeline for your own features.
+
+1. Start a session at the root of the repository, and run `/feature` with the ticket or the idea.
+2. Answer the brainstorm questions. The run writes the spec and the plan.
+3. Read the plan and approve it. After that, the run works through the tasks without asking you.
+4. When the pull request is ready, read the handoff, and say "merge" when you agree.
+
+You can stop a run at any time. A status line that needs no answer is not a question for you.
+
+### Tech lead
+
+You own how the team works with the plugin.
+
+- Write the project file once for each repository: branches, devices, test accounts, the tracker
+  steps, and the actions that need a person's word.
+- Review the pull requests that retros propose against the rules. A rule changes only through that
+  review.
+- Read the cost lines in each ledger. They give real numbers for the next estimate.
+- If the default agent does not know your stack, replace it with your team's own. Name it in the
+  project file, and the run uses it for that seat.
+- Optionally, name a delegate who approves plans that change nothing that a user sees.
+
+### Product owner
+
+You decide what a feature must do and how it must look.
+
+- Take part in the brainstorm, or give the engineer a ticket with clear acceptance rules.
+- Each manual check in the plan states a value that can fail, so you can read the plan and know
+  what "done" means.
+- A plan that changes what a user sees comes to a person, even under a delegate.
+- After the merge, read the feature report. It takes about one minute: screenshots of each screen,
+  side by side with the screen before the change.
+
+### QA
+
+You make sure that each check can fail.
+
+- The QA reviewer agent reviews the spec and the plan for testability before any code exists.
+- Manual checks go into the plan in a form that someone can disagree with, never "looks right".
+- The run keeps a QA log that ends with a tally. The ready check refuses a branch with a check that
+  did not run, unless a person waived it in writing.
+
+### Designer
+
+You give the visual source of truth.
+
+- A spec that changes a screen gets a design review and an accessibility review.
+- The pull request links a screenshot of each changed screen, taken on the final branch.
+- A visual change beside an approved design always comes to a person.
+
 ## What is in the plugin
 
 - `commands/feature.md`: the pipeline, started with `/feature`.
