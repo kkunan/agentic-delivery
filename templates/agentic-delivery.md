@@ -21,7 +21,7 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 
 ## Keys
 
-- `platform` names the platform skill. The value `flutter` loads the skill `platform-flutter`.
+- `platform` names the platform skill. The value `flutter` loads the skill `platform-flutter`, and the value `ios` loads the skill `platform-ios`. The front matter of this file has Flutter values. For an iOS project, also add the keys `ios_workspace`, `ios_scheme`, `ios_test_plan`, and `ios_runtime`. The skill `platform-ios` explains each one, and says what `test_processes` and `view_globs` hold for iOS.
 - `min_plugin_version` is the oldest plugin version that this project accepts.
 - `base_branch` is the branch that each feature branch starts from and merges into. The run merges through the pull request, as a merge commit. There is no key for the merge method.
 - `release_branch` is the branch that holds the released code. Releases come from this branch.

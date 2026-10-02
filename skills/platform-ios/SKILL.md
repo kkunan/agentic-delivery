@@ -25,7 +25,7 @@ In the commands, `<open flag>` stands for one of two forms:
 
 If the project has both a workspace and a project file, the project file lists the workspace. A project that links a sibling framework builds only through the workspace.
 
-The project file also holds `test_processes`. For an iOS project, the value is `xcodebuild` and `xctest`. The ledger folder is `<docs_dir>/<date>-<slug>/`.
+The project file also holds `test_processes`. For an iOS project, the value is `xcodebuild,xctest`. Set `view_globs` to the patterns of the SwiftUI and UIKit view files. The ready check asks for screenshots only for a change to a file that matches them. The ledger folder is `<docs_dir>/<date>-<slug>/`.
 
 ## Test tiers
 
@@ -59,7 +59,7 @@ If the output lists a file, run the suite again. If the output is empty, cite th
 - Create a device. Do not clone one. `xcrun simctl clone` refuses a booted source, and the device that you want to copy is booted because another ticket uses it.
 - A new device has no keychain, so the app starts signed out. Name the device in the plan header, beside the test-data line.
 - Pass a device by its id in every command, never by name. Several runtimes can be installed at once, and a name resolves against whichever runtime `xcodebuild` picks.
-- Hold the device for your worktree with the claim script. Run it before the first build or test that uses the device. It refuses a device that another live worktree holds, with exit 5.
+- Hold the device for your worktree with the claim script. Run it before the first build or test that uses the device. It refuses a device that another live worktree holds, with exit 5. Always pass `--worktree <worktree path>`. Without it, the script holds the device for the folder above the script, not for your worktree.
 - Delete the device at the end of the ticket. Release the claim first.
 - A device that holds the live sign-in of a person is not a test device. Never erase it, never uninstall the app from it, and never aim automated tests at it. The project file, in its Devices section, names such devices. `run-rules`, Devices and other sessions, gives the reason.
 - At every step, read the boot state again, because the simulator shuts itself down between runs.
@@ -72,10 +72,10 @@ These are the commands, in the order of a ticket:
 xcrun simctl list runtimes
 xcrun simctl list devicetypes
 xcrun simctl create <device name> <device type id> <ios_runtime>
-scripts/claim-device.sh --device <simulator id>
+scripts/claim-device.sh --device <simulator id> --worktree <worktree path>
 xcrun simctl boot <simulator id>
 xcrun simctl list devices | grep Booted
-scripts/claim-device.sh --device <simulator id> --release
+scripts/claim-device.sh --device <simulator id> --worktree <worktree path> --release
 xcrun simctl delete <simulator id>
 ```
 
@@ -91,8 +91,8 @@ Each command has these flags and these habits:
 - Give each build configuration its own `-derivedDataPath`. A shared folder makes Xcode print hundreds of "Removed stale file" lines for the products of the other configuration. Those lines hide the products path that proves which configuration built.
 - Redirect the output to a log file and read the file. Never pipe a build or a test run to `tail` or `head`. A pipe buffers, so the log looks empty until the command finishes.
 - Run the command detached, in the background. Do not use a foreground `sleep`. To wait, poll the log in a background loop.
-- Let the stall watch read the run: `scripts/stall-watch.sh --process xcodebuild --interval 60`. Do not dispatch until the first heartbeat line appears. `controller`, The stall watch, gives the rules.
-- For a run that you drive yourself outside a dispatched worktree, watch the log yourself. The stall watch does not see it.
+- Let the stall watch read the run: `scripts/stall-watch.sh --interval 60 --log <log file>`. With no `--process` flag, it watches each name in `test_processes`. Pass one `--log` flag for each command log. Do not dispatch until the first heartbeat line appears. Each heartbeat line ends with `disk=<n>G`, the free space on the disk of the worktree. `controller`, The stall watch, gives the rules.
+- For a run that you drive yourself outside a dispatched worktree, watch the log yourself. The stall watch reads only the logs that its `--log` flags name.
 
 Build:
 
@@ -146,6 +146,10 @@ xcrun simctl install <simulator id> <derived data path>/Build/Products/<configur
 
 Never use `find` to locate an app. A search returns whatever is oldest or first on disk, which is a build of a previous run with the code of a previous branch. If the expected `.app` is not at that path, stop. Do not search for one. `run-rules`, Devices and other sessions, tells the incident.
 
+## Mutation tests
+
+This layer has no iOS runner for `scripts/mutate.sh` yet. The runner contract is in `scripts/mutate.sh` and `skills/platform-flutter/SKILL.md`.
+
 ## Stalled runs
 
 Diagnose a stalled run by processor time, not by clock time. Read the processor time total of the `xcodebuild` process twice, a few minutes apart. A hung build sits near zero percent, and its total is frozen. One hang ran for 8 minutes and 51 seconds of clock time and used 6.5 seconds of processor time. A build with no processor time for a long span can still finish. Make sure that the total is frozen before you call a run dead. `run-rules`, Diagnosis and evidence, gives the rule.
@@ -179,7 +183,7 @@ A task that touches a view is not done until someone renders the screen and look
 scripts/settle-screenshot.swift --capture "xcrun simctl io <simulator id> screenshot {out}" --out <path>
 ```
 
-The script runs the capture command until two consecutive frames match. It replaces `{out}` with the frame path. It writes the settled frame to `--out` and fails fast instead of hanging.
+The script runs the capture command until two consecutive frames match. It replaces `{out}` with the frame path in shell quotes, so do not put quotes around `{out}`. It writes the settled frame to `--out` and fails fast instead of hanging.
 
 - Exit 0 means that the screen settled.
 - Exit 1 means that the screen never settled. The error output names the region that kept moving and its size. The file at `--out` holds the last frame.

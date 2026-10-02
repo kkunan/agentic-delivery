@@ -6,5 +6,5 @@
   "author": { "name": "kkunan" },
   "repository": "https://github.com/kkunan/agentic-delivery",
   "license": "MIT",
-  "keywords": ["workflow", "agents", "spec-driven", "flutter"]
+  "keywords": ["workflow", "agents", "spec-driven", "flutter", "ios"]
 }
