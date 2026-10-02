@@ -10,7 +10,7 @@ A Claude Code plugin that takes a feature from an idea to a merged pull request.
 ![Version](https://img.shields.io/badge/version-0.1.0-informational)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A63D2)
 ![Status](https://img.shields.io/badge/status-under%20construction-orange)
-![Platforms](https://img.shields.io/badge/platforms-Flutter%20(in%20progress)-lightgrey)
+![Platforms](https://img.shields.io/badge/platforms-Flutter%20%7C%20iOS%20(in%20progress)-lightgrey)
 
 </div>
 
@@ -187,7 +187,8 @@ screenshots. Without a layer, the agents have the rules but no platform commands
 | Platform | Targets | Status |
 |---|---|---|
 | Flutter | iOS, Android, web | In progress. The first layer. |
-| Native iOS and Android | iOS, Android | Not started |
+| Native iOS | iOS, SwiftUI first, with UIKit notes | Rules written. Project file keys and the runner adapter are next. |
+| Native Android | Android | Not started |
 | Backend services | APIs and workers | Not started |
 | Web front ends | Browsers | Not started |
 
