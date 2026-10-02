@@ -47,17 +47,20 @@ Then add `.claude/agentic-delivery.md` to your repository, and run `/feature` in
 ## How a feature runs
 
 ```mermaid
-flowchart LR
-    A[Brainstorm] --> B[Spec]
-    B --> C[Spec review]
-    C --> D[Plan]
-    D --> E[Plan review]
-    E --> G{{You approve}}
-    G --> T[Tasks: build, then review]
-    T --> F[Final review]
-    F --> Q[QA and ship checklist]
-    Q --> P{{You say merge}}
-    P --> R[Retro]
+flowchart TB
+    subgraph S1 [" 1. Shape the work "]
+        direction LR
+        A[Brainstorm] --> B[Spec] --> C[Spec review] --> D[Plan] --> E[Plan review] --> G{{You approve}}
+    end
+    subgraph S2 [" 2. Build "]
+        direction LR
+        T[Tasks: build, then review] --> F[Final review] --> Q[QA and ship checklist] --> P{{You say merge}}
+    end
+    subgraph S3 [" 3. Land "]
+        direction LR
+        M[Merge] --> R[Retro]
+    end
+    S1 --> S2 --> S3
 ```
 
 Two steps need you: the plan, and the merge. Everything between them runs on its own.
