@@ -10,6 +10,7 @@ A Claude Code plugin that takes a feature from an idea to a merged pull request.
 ![Version](https://img.shields.io/badge/version-0.1.0-informational)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A63D2)
 ![Status](https://img.shields.io/badge/status-under%20construction-orange)
+![Platforms](https://img.shields.io/badge/platforms-Flutter%20(in%20progress)-lightgrey)
 
 </div>
 
@@ -24,7 +25,8 @@ something went wrong without it, and [`lessons.md`](lessons.md) tells the story 
 
 > [!NOTE]
 > The plugin is under construction. The rules, the agents, and the feature command are in place.
-> The project file, the generic scripts, the hooks, and the Flutter layer are next. The plan is in
+> The project file, the generic scripts, the hooks, and the Flutter layer are next. No platform layer
+> is ready yet, so see [Platforms](#platforms) before you install. The plan is in
 > [`docs/superpowers/plans/`](docs/superpowers/plans/).
 
 ## Quick start
@@ -175,12 +177,19 @@ tests/                   a test file for each script
 
 ## Platforms
 
+The core works with any project: the pipeline, the rules, the ledger, the reviews, and the retro do
+not depend on a platform. A platform layer adds the commands to build, test, run devices, and take
+screenshots. Without a layer, the agents have the rules but no platform commands.
+
 | Platform | Targets | Status |
 |---|---|---|
-| Flutter | iOS, Android, web | Next |
+| Flutter | iOS, Android, web | In progress. The first layer. |
+| Native iOS and Android | iOS, Android | Not started |
+| Backend services | APIs and workers | Not started |
+| Web front ends | Browsers | Not started |
 
-A platform layer is one skill that names the build, test, device, and screenshot commands. More
-layers can follow the same shape.
+A platform layer is one skill in `skills/platform-<name>/`. To add one, follow the shape of the
+Flutter layer, and propose it as a pull request.
 
 ## Contributing
 
