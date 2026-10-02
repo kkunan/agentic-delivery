@@ -91,19 +91,24 @@ The tools `avdmanager` and `emulator` take only the name of the virtual device. 
 
 ### Chrome
 
-Chrome needs no create or delete step. `flutter devices --device-connection attached > <log> 2>&1` lists it as `chrome` (unverified). A web integration test runs through `flutter drive`, which talks to one WebDriver port, `--driver-port`, with the default 4444 (unverified). Claim `chrome` for each drive run, or give each worktree its own `--driver-port` (unverified). Two drive runs on one port talk to the same WebDriver server.
+Chrome needs no create or delete step. `flutter devices --device-connection attached > <log> 2>&1` lists it as `chrome` (unverified). A web integration test runs through `flutter drive`, which talks to a WebDriver server on `--driver-port`, with the default 4444 (unverified). Each worktree uses its own driver port and its own `chromedriver`. Two drive runs on one port talk to the same WebDriver server.
+
+- Pick a driver port, and claim it with the claim script as the id `chrome-<driver-port>`. Then no other worktree takes the same port.
+- Start `chromedriver` on that port, detached: `chromedriver --port=<driver-port> > <log> 2>&1 &` (unverified). Write its process id, from `$!`, in the ledger.
+- After the drive run, stop it by that process id: `kill <chromedriver-pid>` (unverified). Never stop it by name, because a name also matches the `chromedriver` of another worktree.
+- `chromedriver` is not part of Flutter, and the Flutter Mac does not have it yet. The project installs a version that matches the installed Chrome (unverified).
 
 ### The device claim
 
 Claim each device after it boots and before the first install. Always pass `--worktree`. Without it, the script holds the device for the folder above the script, not for your worktree.
 
-- Claim: `scripts/claim-device.sh --device <simulator-id> --worktree <worktree-path> > <log> 2>&1` (unverified). Use the same form with `<emulator-id>` and with `chrome`.
+- Claim: `scripts/claim-device.sh --device <simulator-id> --worktree <worktree-path> > <log> 2>&1` (unverified). Use the same form with `<emulator-id>`, `chrome-<driver-port>`, and `web-<web-port>`.
 - Release: `scripts/claim-device.sh --device <simulator-id> --worktree <worktree-path> --release > <log> 2>&1` (unverified).
 
 The exit codes of the claim script:
 
 - 0: the worktree holds the device, or the release is done.
-- 5: another worktree holds the device. After a claim, create your own device of the same type and runtime. For `chrome`, wait, or use another `--driver-port` (unverified). After a release, nothing was released.
+- 5: another worktree holds the device. After a claim, create your own device of the same type and runtime. For a port id, pick another port. After a release, nothing was released.
 - 4: the device id or the worktree is not valid.
 - 3: the script cannot create its lock folder.
 - 2: a usage error.
@@ -133,7 +138,7 @@ Run each test command detached, as `run-rules` says under Commands and files.
 - One test file: `flutter test test/<path>_test.dart --reporter expanded > <log> 2>&1` (unverified). One test by name: add `--plain-name "<name>"` (unverified).
 - The golden update switch: `flutter test --update-goldens test/<path>_test.dart > <log> 2>&1` (unverified).
 - Integration tests on a simulator or an emulator: `flutter test integration_test -d <simulator-id> --reporter expanded --file-reporter json:<ledger>/results/<step>.json > <log> 2>&1` (unverified). Use `<emulator-id>` for the emulator.
-- Integration tests on Chrome: `flutter drive --driver=test_driver/integration_test.dart --target=integration_test/<name>_test.dart -d chrome > <log> 2>&1` (unverified). The drive command runs the browser headless by default (unverified).
+- Integration tests on Chrome: `flutter drive --driver=test_driver/integration_test.dart --target=integration_test/<name>_test.dart -d chrome --driver-port=<driver-port> > <log> 2>&1` (unverified). Start the `chromedriver` of the worktree first, as the Chrome section says. The drive command runs the browser headless by default (unverified).
 
 The golden update switch overwrites each reference image with whatever renders. Run it only on the test files that the task changes. Open each changed PNG before you commit it, because a defect that renders becomes the new reference.
 
@@ -165,7 +170,7 @@ The controller applies these remedies, or tells the agent of that worktree to ap
 
 1. Clean the device clones. Count the devices first. Then shut down and delete each device of a finished ticket that the list printed and that no claim holds. Then remove the empty folders. Leftover devices load the machine and slow every boot and every run.
 2. Kill and relaunch. Kill only the process ids of your own run, with `kill <pid>` (unverified). Run the same command again with a new log file. A hung test process does not recover, and the new log keeps the evidence of the dead run.
-3. Make sure that the device still runs. For a simulator, run `xcrun simctl bootstatus <simulator-id> > <log> 2>&1` (unverified). For an emulator, `adb -s <emulator-id> get-state > <log> 2>&1` must print `device` (unverified). The id must also appear in `flutter devices` (unverified). If the device stopped, boot it again and relaunch. A run that waits on a stopped device looks exactly like a hung run.
+3. Make sure that the device still runs. Do not use `bootstatus` here, because it waits until the device boots, and on a stopped device it never returns. For a simulator, run `xcrun simctl list devices > <log> 2>&1`, and the line with `<simulator-id>` must show `(Booted)` (unverified). For an emulator, `adb -s <emulator-id> get-state > <log> 2>&1` must print `device` (unverified). The id must also appear in `flutter devices` (unverified). If the device stopped, boot it again and relaunch. A run that waits on a stopped device looks exactly like a hung run.
 
 The rule for two dead runs in a row is in the Diagnosis and evidence section of `run-rules`.
 
@@ -190,7 +195,9 @@ scripts/settle-screenshot.swift --capture "<capture command>" --out <ledger>/scr
 
 - iOS simulator: `xcrun simctl io <simulator-id> screenshot {out}` (unverified).
 - Android emulator: `flutter screenshot -d <emulator-id> -o {out}` (unverified).
-- Chrome: `screencapture -x -o -l<chrome-window-id> {out}` (unverified). This needs a visible window, so run the drive command with `--no-headless` (unverified). No command in this skill gives the window id yet.
+- Chrome: `'<chrome-binary>' --headless --screenshot={out} --window-size=<width>,<height> http://localhost:<web-port>/` (unverified). The script quotes the path, and the shell joins `--screenshot=` and the quoted path into one argument. Put single quotes around the Chrome path, because it holds spaces and the capture command sits inside double quotes.
+
+For the Chrome capture, serve the app first with its own log, detached: `flutter run -d web-server --web-port <web-port> > <log> 2>&1 &` (unverified). `--web-port` is a hidden option that only `flutter run -v --help` shows. The hidden `--show-web-server-device` lists the `web-server` device (unverified). Claim the port as `web-<web-port>`. Write the process id of the server in the ledger, and stop it by that id after the capture. This capture shows the page after it loads, not a state that a test reached by interaction. Two blank frames also match, so open the settled frame and make sure that it shows the screen. A run on the Flutter Mac measures this path.
 
 The script replaces `{out}` with the path of the frame, and it quotes that path for the shell. Do not put quotes around `{out}`. A second pair of quotes puts quote characters into the path, and the script then finds no file.
 
