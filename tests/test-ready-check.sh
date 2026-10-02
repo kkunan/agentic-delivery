@@ -29,7 +29,7 @@ build() {
         printf 'docs/\nnotes/\n' >> "$repo/.git/info/exclude"
         ledger="$repo/$docs_dir/2026-10-02-demo"
     fi
-    printf -- '---\nplatform: flutter\nbase_branch: %s\nbranch_prefix: %s\ndocs: %s\ndocs_dir: %s\nview_globs: lib/**/views/**,lib/**/widgets/**\n---\n' \
+    printf -- '---\nplatform: flutter\nbase_branch: %s\nbranch_prefix: %s\ndocs: %s\ndocs_dir: %s\nview_globs: lib/**/views/**,lib/**/widgets/**\nscreenshot_branch: screenshots\n---\n' \
         "$base" "$prefix" "$docs" "${T_DOCS_DIR_VALUE:-$docs_dir}" > "$repo/.claude/agentic-delivery.md"
     printf 'start\n' > "$repo/README.txt"
     git_in add -A
@@ -45,7 +45,9 @@ build() {
     cat > "$root/bin/gh" <<'STUB'
 #!/bin/bash
 printf 'called\n' >> "$(dirname "$0")/gh-calls"
-printf '{"number":1,"isDraft":true,"baseRefName":"develop","body":"%s"}\n' "$(printf 'x%.0s' $(seq 1 250))"
+body=$(printf 'x%.0s' $(seq 1 250))
+[ -f "$(dirname "$0")/body-extra" ] && body=$(printf '%s\n%s' "$body" "$(cat "$(dirname "$0")/body-extra")")
+jq -n --arg b "$body" '{number:1,isDraft:true,baseRefName:"develop",body:$b}'
 STUB
     chmod +x "$root/bin/gh"
 }
@@ -214,6 +216,26 @@ check "view change: gh is called" yes "$([ -e "$root/bin/gh-calls" ] && echo yes
 check "view change: exit 1" 1 "$rc"
 check "view change: counts the view files" yes "$(has '1 view file(s) changed')"
 check "view change: no Swift in the message" no "$(has 'Swift')"
+check "view change: failure names the screenshot branch" yes "$(has '/screenshots/')"
+
+printf 'https://example.test/o/r/blob/screenshots/x/a.png\n' > "$root/bin/body-extra"
+run_with_pr
+check "screenshot link: exit 0" 0 "$rc"
+check "screenshot link: passes" yes "$(has 'PASS  PR links screenshots')"
+
+printf '[shot](https://example.test/o/r/blob/other/x/a.png)\n' > "$root/bin/body-extra"
+run_with_pr
+check "link on another branch: exit 1" 1 "$rc"
+check "link on another branch: fails" yes "$(has 'FAIL  PR links screenshots')"
+
+printf 'screenshots/x/a.png\n' > "$root/bin/body-extra"
+run_with_pr
+check "path without a URL: fails" yes "$(has 'FAIL  PR links screenshots')"
+
+printf 'No screen changed.\n' > "$root/bin/body-extra"
+run_with_pr
+check "no screen changed line: exit 0" 0 "$rc"
+check "no screen changed line: passes as asserted" yes "$(has 'PASS  no screenshots, asserted')"
 cleanup
 
 build

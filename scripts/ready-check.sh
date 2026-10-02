@@ -11,6 +11,7 @@ branch_prefix=$(bash "$reader" branch_prefix) || exit $?
 base_branch=$(bash "$reader" base_branch) || exit $?
 docs_dir=$(bash "$reader" docs_dir) || exit $?
 view_globs=$(bash "$reader" view_globs) || exit $?
+screenshot_branch=$(bash "$reader" screenshot_branch) || exit $?
 docs=$(bash "$reader" docs repo) || exit $?
 
 docs_dir=${docs_dir%/}
@@ -190,12 +191,12 @@ else
     done < <(git diff --name-only "$base...HEAD")
     if [ "$views" -eq 0 ]; then
         printf 'SKIP  PR links screenshots\n      no file that matches view_globs changed on this branch\n'
-    elif printf '%s' "$body" | grep -q 'assets/screenshots'; then
+    elif printf '%s' "$body" | tr ' ()<>[]"' '\n' | grep -F "/$screenshot_branch/" | grep -qE '^https?://'; then
         report pass "PR links screenshots"
     elif printf '%s' "$body" | grep -qiE '^no screen changed\.'; then
         printf 'PASS  no screenshots, asserted\n      the PR body states no screen changed; that is your claim, not a measurement\n'
     else
-        report fail "PR links screenshots" "$views view file(s) changed and the PR body has neither an assets/screenshots URL nor a line reading: No screen changed."
+        report fail "PR links screenshots" "$views view file(s) changed and the PR body has neither a URL on the $screenshot_branch branch (a link that contains /$screenshot_branch/) nor a line reading: No screen changed."
     fi
 fi
 

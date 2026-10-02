@@ -222,7 +222,7 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 - The pull request body is a real description.
 - If the branch touches a file that matches `view_globs`, the body links screenshots on the screenshot branch.
 
-It skips the screenshot proof on a branch that changes no view. Run it from the checkout that holds the ledger.
+The screenshot proof is a URL in the body that contains `/<screenshot_branch>/`. If a view file changed but no screen changed, the body has a line that reads `No screen changed.` and the ready check accepts it. It skips the screenshot proof on a branch that changes no view. Run it from the checkout that holds the ledger.
 
 The script cannot prove steps 1 and 3, the review verdict and the spec re-read. State those two yourself, with one line each in the handoff. A green ready check does not mean that the run was good. If it fails, fix what it names, or ask the gate owner to waive it. Do not mark the pull request ready first.
 
