@@ -174,7 +174,7 @@ that project, and the plugin never guesses these values. Its front matter names:
 - the platform: `flutter` or `ios`
 - the oldest plugin version that the project accepts
 - the base branch, the release branch, the branch prefix for features, and the protected branches
-- where the ledgers and the retros go: in the repository, or in a private folder
+- where the specs, plans, ledgers, and retros go: in the repository, or in a private folder
 - the file patterns of the screens, the names of the test processes, and the branch for screenshots
 - the mutation runner for the platform
 - optionally, your own agent for any of the three seats
@@ -203,6 +203,8 @@ templates/               the project file template
 hooks/                   the start-up pointer and the retro reminder
 output-styles/lean.md    the optional lean output style
 lessons.md               the story behind each rule
+docs/superpowers/specs/  the design of the plugin
+docs/superpowers/plans/  the plan that builds it
 scripts/                 ready check, stall watch, device claim, screenshot settle, mutation runner
 tests/                   a test file for each script
 ```
@@ -282,7 +284,7 @@ The tool says that its counts are estimates.
 
 Step 0 of `/feature` loads one platform skill, so each run pays its size on top of the table. By
 `wc -c`, the `platform-flutter` skill is 31,301 characters long, and the `platform-ios` skill is
-20,232 characters long. Nobody measured either one with `claude plugin details`. The name and
+20,222 characters long. Nobody measured either one with `claude plugin details`. The name and
 description of each one also add to the always-on figure.
 
 The tool does not count hook output. The start-up hook adds its pointer to a session in a project

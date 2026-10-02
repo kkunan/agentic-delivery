@@ -59,7 +59,7 @@ If the output lists a file, run the suite again. If the output is empty, cite th
 - Create a device. Do not clone one. `xcrun simctl clone` refuses a booted source, and the device that you want to copy is booted because another ticket uses it.
 - A new device has no keychain, so the app starts signed out. Name the device in the plan header, beside the test-data line.
 - Pass a device by its id in every command, never by name. Several runtimes can be installed at once, and a name resolves against whichever runtime `xcodebuild` picks.
-- Hold the device for your worktree with the claim script. Run it before the first build or test that uses the device. It refuses a device that another live worktree holds, with exit 5. Always pass `--worktree <worktree path>`. Without it, the script holds the device for the folder above the script, not for your worktree.
+- Hold the device for your worktree with the claim script. Run it before the first build or test that uses the device. It refuses a device that another live worktree holds, with exit 5. Always pass `--worktree <worktree path>`. Without it, the script holds the device for the plugin folder, not for your worktree.
 - Delete the device at the end of the ticket. Release the claim first.
 - A device that holds the live sign-in of a person is not a test device. Never erase it, never uninstall the app from it, and never aim automated tests at it. The project file, in its Devices section, names such devices. `run-rules`, Devices and other sessions, gives the reason.
 - At every step, read the boot state again, because the simulator shuts itself down between runs.
