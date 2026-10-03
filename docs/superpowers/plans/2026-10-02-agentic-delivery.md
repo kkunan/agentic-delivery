@@ -287,7 +287,7 @@ The iOS design, decision 4, keeps the Xcode result parser of the source project 
 
 - [x] **Step 1:** Write `skills/platform-ios/mutation-runner.sh`. It runs `xcodebuild test` once with an `-only-testing` flag for each test id, reads the result bundle with `xcresulttool`, and converts it into the contract file. It reads `ios_workspace`, `ios_scheme`, and `ios_test_plan` from the project file, and takes the simulator and the derived data folder from `AGENTIC_TEST_DEVICE` and `AGENTIC_DERIVED_DATA`.
 - [x] **Step 2:** Write `tests/test-ios-runner.sh`, with a fake `xcodebuild` and a fake `xcresulttool` that print the captured output in `tests/fixtures/ios/`. The test passes 108 of 108. Each of 13 broken copies of the runner turned it red.
-- [ ] **Step 3:** Test it on a real project on a Mac: one passing test gives `passed`, one test broken on purpose gives `failed`, and a compile error gives `compiled: false`. Record the Xcode version.
+- [x] **Step 3:** Test it on a real project on a Mac: one passing test gives `passed`, one test broken on purpose gives `failed`, and a compile error gives `compiled: false`. Record the Xcode version. Done by `tests/ios-xcode/check.sh` in the CI job "iOS layer on real Xcode": Xcode 16.4, an iOS 26.2 simulator, 21 of 21 checks, on 2026-10-03.
 - [x] **Step 4:** Commit.
 
 ---
