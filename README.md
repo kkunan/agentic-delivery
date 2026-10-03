@@ -260,7 +260,8 @@ The scripts are in `scripts/`. Each one has a test in `tests/`.
   last frame.
 - `mutate.sh` applies each mutation from a manifest, runs the test that must catch it, records the
   verdict, and restores the file. A platform runner runs the tests. The Flutter runner is
-  `skills/platform-flutter/mutation-runner.sh`. The iOS runner does not exist yet.
+  `skills/platform-flutter/mutation-runner.sh`, and the iOS runner is
+  `skills/platform-ios/mutation-runner.sh`.
 
 ### Lean mode
 
@@ -291,7 +292,7 @@ The tool says that its counts are estimates.
 
 Step 0 of `/feature` loads one platform skill, so each run pays its size on top of the table. By
 `wc -c`, the `platform-flutter` skill is 31,303 characters long, and the `platform-ios` skill is
-20,222 characters long. Nobody measured either one with `claude plugin details`. The name and
+23,518 characters long. Nobody measured either one with `claude plugin details`. The name and
 description of each one also add to the always-on figure.
 
 The tool does not count hook output. The start-up hook adds its pointer to a session in a project
@@ -308,7 +309,7 @@ screenshots. Without a layer, the agents have the rules but no platform commands
 | Platform | Targets | Status |
 |---|---|---|
 | Flutter | iOS, Android, web | Written. Two runs on Flutter 3.38.9 stable measured its commands. It has the mutation runner. |
-| Native iOS | iOS, SwiftUI first, with UIKit notes | Rules written. Its commands were not measured in this repository. The mutation runner is next. |
+| Native iOS | iOS, SwiftUI first, with UIKit notes | Rules written. Its commands were not measured in this repository. It has the mutation runner, tested with fake tools that print measured output. |
 | Native Android | Android | Not started |
 | Backend services | APIs and workers | Not started |
 | Web front ends | Browsers | Not started |
@@ -319,7 +320,8 @@ Flutter layer, and propose it as a pull request.
 ## Status
 
 The Flutter layer is written, and two runs on Flutter 3.38.9 stable measured its commands. The iOS
-layer has its rules, but no mutation runner yet. The rest of the plugin is in place and has tests.
+layer has its rules and its mutation runner. A test drives that runner with fake tools, and no run
+on a Mac has measured it in this repository yet. The rest of the plugin is in place and has tests.
 The team pilot has not run yet, so version 0.1.0 is not tested on a real feature.
 
 ## Contributing
