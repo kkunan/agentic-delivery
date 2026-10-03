@@ -12,8 +12,28 @@ dd="$work/DerivedData-Debug"
 device=""
 mkdir -p "$ev"
 
+start=$(date +%s)
+
 say() {
-    printf '\n== %s\n' "$*"
+    printf '\n== [%s s] %s\n' "$(($(date +%s) - start))" "$*"
+}
+
+step() {
+    printf '   [%s s] %s\n' "$(($(date +%s) - start))" "$*"
+}
+
+limit() {
+    local seconds=$1 pid watch rc
+    shift
+    "$@" &
+    pid=$!
+    perl -e 'sleep $ARGV[0]; print STDERR "TIME LIMIT: $ARGV[0] s passed; stopping $ARGV[2]\n"; kill "TERM", $ARGV[1]' "$seconds" "$pid" "$1" &
+    watch=$!
+    wait "$pid"
+    rc=$?
+    kill "$watch" 2>/dev/null
+    wait "$watch" 2>/dev/null
+    return "$rc"
 }
 
 yes_no() {
@@ -51,7 +71,13 @@ import json, sys
 ios = [r for r in json.load(sys.stdin)["runtimes"] if r.get("platform") == "iOS" and r.get("isAvailable")]
 best = max(ios, key=lambda r: [int(p) for p in r["version"].split(".")])
 phones = [t for t in best["supportedDeviceTypes"] if t.get("productFamily") == "iPhone"]
-print(best["identifier"], phones[-1]["identifier"])'
+print(best["identifier"], phones[-1]["identifier"])' | python3 -c '
+import json, subprocess, sys
+runtime, fallback = sys.stdin.read().split()
+types = json.loads(subprocess.run(["xcrun", "simctl", "list", "-j", "devicetypes"], capture_output=True).stdout)["devicetypes"]
+phones = [t for t in types if t.get("productFamily") == "iPhone" and t.get("minRuntimeVersion")]
+newest = max(phones, key=lambda t: (t["minRuntimeVersion"], t["identifier"]), default=None)
+print(runtime, newest["identifier"] if newest else fallback)'
 }
 
 make_project() {
@@ -86,7 +112,8 @@ make_device() {
 xcb() {
     local log=$1
     shift
-    (cd "$app" && xcodebuild "$@" < /dev/null > "$ev/$log" 2>&1)
+    step "xcodebuild ${1}, log $log"
+    (cd "$app" && limit 900 xcodebuild "$@" < /dev/null > "$ev/$log" 2>&1)
 }
 
 skill_commands() {
@@ -111,15 +138,16 @@ skill_commands() {
 
 screenshot() {
     say "skill: install, launch, screenshot"
-    xcrun simctl bootstatus "$device" -b > "$ev/boot.log" 2>&1
+    step "boot $device"
+    limit 300 xcrun simctl bootstatus "$device" -b > "$ev/boot.log" 2>&1
     check "boot" yes "$(yes_no sh -c "xcrun simctl list devices | grep -F '$device' | grep -qF Booted")"
     xcrun simctl install "$device" "$dd/Build/Products/Debug-iphonesimulator/Sample.app" > "$ev/install.log" 2>&1
     check "install from the derived data path" 0 $?
     xcrun simctl launch "$device" dev.agentic.Sample > "$ev/launch.log" 2>&1
     check "launch" 0 $?
-    "$top/scripts/settle-screenshot.swift" --capture "xcrun simctl io $device screenshot {out}" --out "$ev/screen.png" > "$ev/settle.log" 2>&1
+    step "settle-screenshot"
+    limit 300 "$top/scripts/settle-screenshot.swift" --capture "xcrun simctl io $device screenshot {out}" --out "$ev/screen.png" > "$ev/settle.log" 2>&1
     check "settle-screenshot: settled" 0 $?
-    xcrun simctl shutdown "$device" > /dev/null 2>&1
 }
 
 # ── The mutation runner ───────────────────────────────────────────────────
@@ -128,7 +156,8 @@ runner() {
     local name=$1
     shift
     rc=0
-    (cd "$app" && AGENTIC_TEST_DEVICE="$device" AGENTIC_DERIVED_DATA="$work/DerivedData-mutate" \
+    step "runner $name: $*"
+    (cd "$app" && AGENTIC_TEST_DEVICE="$device" AGENTIC_DERIVED_DATA="$dd" limit 600 \
         scripts/mutation-runner.sh --out "$ev/$name.json" --log "$ev/$name.log" -- "$@" < /dev/null > /dev/null 2>&1) || rc=$?
 }
 
@@ -160,7 +189,8 @@ mutations() {
 ]
 EOF
     rc=0
-    (cd "$app" && AGENTIC_TEST_DEVICE="$device" AGENTIC_DERIVED_DATA="$work/DerivedData-mutate" \
+    step "mutate.sh, 3 mutations and a baseline"
+    (cd "$app" && AGENTIC_TEST_DEVICE="$device" AGENTIC_DERIVED_DATA="$dd" limit 1500 \
         "$top/scripts/mutate.sh" --manifest "$work/manifest.json" --out "$ev/mutate" > "$ev/mutate.out" 2> "$ev/mutate.err") || rc=$?
     cat "$ev/mutate.out"
     check "mutate: exit 1, one survivor" 1 "$rc"
