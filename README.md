@@ -292,7 +292,7 @@ The tool says that its counts are estimates.
 
 Step 0 of `/feature` loads one platform skill, so each run pays its size on top of the table. By
 `wc -c`, the `platform-flutter` skill is 31,303 characters long, and the `platform-ios` skill is
-23,518 characters long. Nobody measured either one with `claude plugin details`. The name and
+24,388 characters long. Nobody measured either one with `claude plugin details`. The name and
 description of each one also add to the always-on figure.
 
 The tool does not count hook output. The start-up hook adds its pointer to a session in a project

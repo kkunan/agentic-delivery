@@ -150,6 +150,33 @@ Never use `find` to locate an app. A search returns whatever is oldest or first 
 
 `scripts/mutate.sh` runs the tests through a platform runner, as its usage text says. The iOS runner of this plugin is `skills/platform-ios/mutation-runner.sh`.
 
+A mutation breaks the code on purpose and shows whether a test catches the break. This is an example. The code:
+
+```swift
+func isAdult(age: Int) -> Bool {
+    return age >= 18
+}
+```
+
+The test:
+
+```swift
+func testAdult() {
+    XCTAssertTrue(isAdult(age: 30))
+    XCTAssertFalse(isAdult(age: 5))
+}
+```
+
+The manifest entry changes `>=` to `>`. After the change, the code says that a person of 18 is not an adult:
+
+```json
+{"label": "boundary", "file": "Sources/Age.swift",
+ "find": "age >= 18", "replace": "age > 18",
+ "test": "AppTests/AgeTests/testAdult"}
+```
+
+The test still passes, because 30 and 5 give the same answer with both operators. So the verdict is `survived`, and the test does not cover the boundary. Add `XCTAssertTrue(isAdult(age: 18))` to the test, and run the mutation again. The test fails, so the verdict is `killed`. The test now catches the break.
+
 - Copy it into the project as `scripts/mutation-runner.sh`, and commit it. That path is the default of the `mutation_runner` key in the project file. The path of a plugin install differs on each machine, so the key cannot point into the plugin.
 - Run `scripts/mutate.sh` from the worktree of the run. The runner reads `ios_workspace`, `ios_scheme`, and `ios_test_plan` from the project file at the top of that worktree.
 - Set `AGENTIC_TEST_DEVICE` to the id of the simulator that the run claimed. Every iOS test needs a destination, unit tests too.
