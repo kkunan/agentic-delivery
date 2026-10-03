@@ -7,7 +7,7 @@ runner="$top/skills/platform-ios/mutation-runner.sh"
 mutate="$top/scripts/mutate.sh"
 fakes="$here/fixtures/ios"
 
-work=$(mktemp -d)
+work=$(cd "$(mktemp -d)" && pwd -P)
 trap 'rm -rf "$work"' EXIT
 app="$work/app"
 export FAKE_CALLS="$work/calls"
