@@ -1,6 +1,7 @@
 #!/bin/bash
 set -u
 unset $(git rev-parse --local-env-vars 2>/dev/null)
+export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.excludesFile GIT_CONFIG_VALUE_0=/dev/null
 here=$(cd "$(dirname "$0")" && pwd -P)
 status=0
 found=0

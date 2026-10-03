@@ -45,6 +45,11 @@ ledger.
    in its header. Add the estimate: size, wall-clock range, token budget, and the number of times
    you expect to need the developer. `controller`, Estimates defines all four. Refine them in step 3.
    If the run passes them, tell the developer at that time.
+1b. If the ticket meets the conditions in `controller`, Lite mode, offer lite mode to the developer.
+   If the developer accepts, write the brief in place of the spec, and do step 2. Skip steps 2b and
+   3, and at step 4 show the brief in place of the plan. At step 5, do the work yourself from the
+   brief, tests first, with no implementer. At step 6, run one final review. Steps 6b to 9 do not
+   change.
 2. Create the branch with `branch_prefix` and a slug, from `base_branch`. If `docs` is `repo`,
    commit the spec, push it, and open a draft pull request against `base_branch`. If `docs` is
    `private`, wait for the first task commit. Then push the branch and open the draft pull request,

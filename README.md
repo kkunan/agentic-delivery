@@ -83,6 +83,10 @@ flowchart LR
 
 Two steps need you: the plan, and the merge. Everything between them runs on its own.
 
+A small ticket can run in lite mode, which is experimental. A short brief replaces the spec and the
+plan, and one session does the work, with one review at the end. The controller skill says when a
+ticket qualifies.
+
 ## Why it works
 
 | The problem | What the plugin does |
