@@ -1,0 +1,53 @@
+{
+  "devices" : [
+    {
+      "architecture" : "arm64",
+      "deviceId" : "00000000-0000-0000-0000-000000000000",
+      "deviceName" : "iPhone 17 Pro Max",
+      "modelName" : "iPhone 17 Pro Max",
+      "osBuildNumber" : "23F77",
+      "osVersion" : "26.5",
+      "platform" : "iOS Simulator"
+    }
+  ],
+  "testNodes" : [
+    {
+      "children" : [
+        {
+          "children" : [
+            {
+              "children" : [
+                {
+                  "duration" : "0.0015s",
+                  "durationInSeconds" : 0.0014979839324951172,
+                  "name" : "testAdd()",
+                  "nodeIdentifier" : "CalcTests/testAdd()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/App/AppTests/CalcTests/testAdd",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "CalcTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/App/AppTests/CalcTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            }
+          ],
+          "name" : "AppTests",
+          "nodeIdentifierURL" : "test://com.apple.xcode/App/AppTests",
+          "nodeType" : "Unit test bundle",
+          "result" : "Passed"
+        }
+      ],
+      "name" : "App",
+      "nodeType" : "Test Plan",
+      "result" : "Passed"
+    }
+  ],
+  "testPlanConfigurations" : [
+    {
+      "configurationId" : "1",
+      "configurationName" : "Test Scheme Action"
+    }
+  ]
+}

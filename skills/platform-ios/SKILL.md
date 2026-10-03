@@ -148,7 +148,56 @@ Never use `find` to locate an app. A search returns whatever is oldest or first 
 
 ## Mutation tests
 
-This layer has no iOS runner for `scripts/mutate.sh` yet. The runner contract is in `scripts/mutate.sh` and `skills/platform-flutter/SKILL.md`.
+`scripts/mutate.sh` runs the tests through a platform runner, as its usage text says. The iOS runner of this plugin is `skills/platform-ios/mutation-runner.sh`.
+
+A mutation breaks the code on purpose and shows whether a test catches the break. This is an example. The code:
+
+```swift
+func isAdult(age: Int) -> Bool {
+    return age >= 18
+}
+```
+
+The test:
+
+```swift
+func testAdult() {
+    XCTAssertTrue(isAdult(age: 30))
+    XCTAssertFalse(isAdult(age: 5))
+}
+```
+
+The manifest entry changes `>=` to `>`. After the change, the code says that a person of 18 is not an adult:
+
+```json
+{"label": "boundary", "file": "Sources/Age.swift",
+ "find": "age >= 18", "replace": "age > 18",
+ "test": "AppTests/AgeTests/testAdult"}
+```
+
+The test still passes, because 30 and 5 give the same answer with both operators. So the verdict is `survived`, and the test does not cover the boundary. Add `XCTAssertTrue(isAdult(age: 18))` to the test, and run the mutation again. The test fails, so the verdict is `killed`. The test now catches the break.
+
+- Copy it into the project as `scripts/mutation-runner.sh`, and commit it. That path is the default of the `mutation_runner` key in the project file. The path of a plugin install differs on each machine, so the key cannot point into the plugin.
+- Run `scripts/mutate.sh` from the worktree of the run. The runner reads `ios_workspace`, `ios_scheme`, and `ios_test_plan` from the project file at the top of that worktree.
+- Set `AGENTIC_TEST_DEVICE` to the id of the simulator that the run claimed. Every iOS test needs a destination, unit tests too.
+- Set `AGENTIC_DERIVED_DATA` to a derived data folder for the mutation runs. Keep it out of the ledger folder. One run without its own folder put 2.1 GB of build products into a ledger. Use the same folder for every call of one run, so that each mutation builds only what changed.
+- To test a configuration other than the default of the scheme, set `AGENTIC_CONFIGURATION`. The runner passes it as `-configuration`. Give each configuration its own `AGENTIC_DERIVED_DATA`.
+- Other environment variables reach the tests, for example a `TEST_RUNNER_` variable that a UI test reads.
+
+The runner refuses to start without one of the two variables, or with an empty `ios_workspace` or `ios_scheme`. A refusal writes a line in the log, writes no result file, and exits 2. The baseline then stops the run.
+
+A test id is an `-only-testing` name with two or three parts: `<test target>/<test class>` or `<test target>/<test class>/<test method>`, for example `AppTests/CalcTests/testAdd`. For an XCTest method, write the name without `()`. For a Swift Testing function, write the name with `()`, for example `AppTests/CalcSuite/addsTwoNumbers()`. A Swift Testing id without `()` runs no test, and `xcodebuild` still exits 0, so the verdict is `error`. A suite id, without a function name, works for both. A nested Swift Testing suite gives an id with more than three parts. The runner refuses that id, and nobody measured one. The runner calls `xcodebuild test` once with all the ids of the call, and writes the result bundle beside the result file, as `<result file name>.xcresult`. It reads the bundle with `xcrun xcresulttool`. A class id gives one entry for each test case in the class.
+
+Exit 65 from `xcodebuild` means a failed test or a failed build, so the runner never decides from the exit code alone:
+
+- A test name that matches nothing still gives exit 0 and `** TEST SUCCEEDED **`. The runner writes no entry for it, so the verdict is `error`, and the baseline stops the run.
+- A failed build with at least one error gives `compiled: false`, so the verdict is `did-not-compile`, not `killed`.
+- A failed test gives `failed`, so the verdict is `killed`.
+- A skipped test gives `skipped`, so the verdict is `error`.
+
+The runner writes no result file, and exits 3, when the facts disagree or the run did not finish: an exit code other than 0 or 65, no result bundle, a build that is neither a success nor a failure with errors, exit 0 with a failed test, exit 65 with a clean build and no failed test, or a test case result other than passed, failed, or skipped, for example `Expected Failure`. The verdict is then `error`. Read the log of the call.
+
+The source project measured the `xcodebuild` and `xcresulttool` behaviour above with XCTest on Xcode 27.0. In this repository, the CI job "iOS layer on real Xcode" measures it again on each pull request: `tests/ios-xcode/check.sh` runs the commands of this skill and the runner against a small sample app with XCTest and Swift Testing tests. On 2026-10-03, with Xcode 16.4 and an iOS 26.2 simulator on a GitHub `macos-15` runner, a passing test gave `passed`, a misnamed test gave exit 0 and no entry, a skipped test gave `skipped`, and the example above gave `survived`, then `killed`. A type error gave `did-not-compile`. A Swift Testing id with `()` gave `passed`, the same id without `()` gave exit 0 and no entry, and the mutation of the example killed the Swift Testing test. The test `tests/test-ios-runner.sh` covers the cases that a real run cannot cause on purpose, with fake tools that print measured output.
 
 ## Stalled runs
 

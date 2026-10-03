@@ -1,0 +1,63 @@
+{
+  "devices" : [
+    {
+      "architecture" : "arm64",
+      "deviceId" : "00000000-0000-0000-0000-000000000000",
+      "deviceName" : "iPhone 17 Pro Max",
+      "modelName" : "iPhone 17 Pro Max",
+      "osBuildNumber" : "23F77",
+      "osVersion" : "26.5",
+      "platform" : "iOS Simulator"
+    }
+  ],
+  "testNodes" : [
+    {
+      "children" : [
+        {
+          "children" : [
+            {
+              "children" : [
+                {
+                  "children" : [
+                    {
+                      "name" : "XCTAssertEqual failed: (\"6\") is not equal to (\"5\")",
+                      "nodeType" : "Failure Message",
+                      "sourceLocation" : {
+                        "filePath" : "/path/to/app/Tests/CalcTests.swift",
+                        "lineNumber" : 20
+                      }
+                    }
+                  ],
+                  "duration" : "0.34s",
+                  "durationInSeconds" : 0.3364359140396118,
+                  "name" : "testAdd()",
+                  "nodeIdentifier" : "CalcTests/testAdd()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/App/AppTests/CalcTests/testAdd",
+                  "nodeType" : "Test Case",
+                  "result" : "Failed"
+                }
+              ],
+              "name" : "CalcTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/App/AppTests/CalcTests",
+              "nodeType" : "Test Suite",
+              "result" : "Failed"
+            }
+          ],
+          "name" : "AppTests",
+          "nodeIdentifierURL" : "test://com.apple.xcode/App/AppTests",
+          "nodeType" : "Unit test bundle",
+          "result" : "Failed"
+        }
+      ],
+      "name" : "App",
+      "nodeType" : "Test Plan",
+      "result" : "Failed"
+    }
+  ],
+  "testPlanConfigurations" : [
+    {
+      "configurationId" : "1",
+      "configurationName" : "Test Scheme Action"
+    }
+  ]
+}

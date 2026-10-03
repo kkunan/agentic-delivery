@@ -224,7 +224,7 @@ tests/                   a test file for each script
 | `agentic-delivery:controller` | The rules that only the controller follows: dispatch, review seats, estimates, stall watch, tracker steps, ship, merge, report, and retro | Step 0 of `/feature`, and again after a compaction |
 | `agentic-delivery:run-rules` | The rules that every agent follows | Step 0 of `/feature`, and at the start of every dispatched task and review |
 | `platform-flutter` | The Flutter layer, with the commands for build and test | For a project with `platform: flutter`, step 0 of `/feature` loads it after the two above. Its commands were measured on Flutter 3.38.9 stable |
-| `platform-ios` | The iOS layer, SwiftUI first with UIKit notes | For a project with `platform: ios`, step 0 of `/feature` loads it after the two above. Its commands were not measured in this repository |
+| `platform-ios` | The iOS layer, SwiftUI first with UIKit notes | For a project with `platform: ios`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on Xcode 16.4 |
 
 The plugin also has three agents. The project file names the one for each seat, and the defaults
 are these:
@@ -260,7 +260,8 @@ The scripts are in `scripts/`. Each one has a test in `tests/`.
   last frame.
 - `mutate.sh` applies each mutation from a manifest, runs the test that must catch it, records the
   verdict, and restores the file. A platform runner runs the tests. The Flutter runner is
-  `skills/platform-flutter/mutation-runner.sh`. The iOS runner does not exist yet.
+  `skills/platform-flutter/mutation-runner.sh`, and the iOS runner is
+  `skills/platform-ios/mutation-runner.sh`.
 
 ### Lean mode
 
@@ -291,7 +292,7 @@ The tool says that its counts are estimates.
 
 Step 0 of `/feature` loads one platform skill, so each run pays its size on top of the table. By
 `wc -c`, the `platform-flutter` skill is 31,303 characters long, and the `platform-ios` skill is
-20,222 characters long. Nobody measured either one with `claude plugin details`. The name and
+25,228 characters long. Nobody measured either one with `claude plugin details`. The name and
 description of each one also add to the always-on figure.
 
 The tool does not count hook output. The start-up hook adds its pointer to a session in a project
@@ -308,7 +309,7 @@ screenshots. Without a layer, the agents have the rules but no platform commands
 | Platform | Targets | Status |
 |---|---|---|
 | Flutter | iOS, Android, web | Written. Two runs on Flutter 3.38.9 stable measured its commands. It has the mutation runner. |
-| Native iOS | iOS, SwiftUI first, with UIKit notes | Rules written. Its commands were not measured in this repository. The mutation runner is next. |
+| Native iOS | iOS, SwiftUI first, with UIKit notes | Rules written. It has the mutation runner. A CI job runs its commands and the runner against a sample app on Xcode 16.4. No real feature has used it yet. |
 | Native Android | Android | Not started |
 | Backend services | APIs and workers | Not started |
 | Web front ends | Browsers | Not started |
@@ -319,7 +320,10 @@ Flutter layer, and propose it as a pull request.
 ## Status
 
 The Flutter layer is written, and two runs on Flutter 3.38.9 stable measured its commands. The iOS
-layer has its rules, but no mutation runner yet. The rest of the plugin is in place and has tests.
+layer comes from a native iOS project that ran more than 30 tickets through earlier versions of this
+workflow and its scripts. A CI job runs the layer's commands and its mutation runner on Xcode 16.4
+against a sample app, on each pull request. No project has run a feature through the plugin itself
+yet. The rest of the plugin is in place and has tests.
 The team pilot has not run yet, so version 0.1.0 is not tested on a real feature.
 
 ## Contributing
