@@ -129,7 +129,7 @@ skill_commands() {
         -test-timeouts-enabled YES -default-test-execution-time-allowance 30 -collect-test-diagnostics never
     check "test: exit 0" 0 $?
     xcrun xcresulttool get test-results summary --path "$ev/test.xcresult" > "$ev/test-summary.json" 2> "$ev/xcresulttool.err"
-    check "test: 2 passed, 1 skipped, 0 failed" "2 1 0" "$(json "$ev/test-summary.json" 'd["passedTests"], d["skippedTests"], d["failedTests"]' | tr -d '(),')"
+    check "test: 3 passed (2 XCTest, 1 Swift Testing), 1 skipped, 0 failed" "3 1 0" "$(json "$ev/test-summary.json" 'd["passedTests"], d["skippedTests"], d["failedTests"]' | tr -d '(),')"
     say "skill: release build"
     xcb release.log "${open[@]}" -scheme "$scheme" -configuration Release -destination "$dest" \
         -derivedDataPath "$work/DerivedData-Release" build
@@ -179,6 +179,31 @@ runner_calls() {
     check "misnamed test: no entry" "True " "$(entries absent)"
 }
 
+node_urls() {
+    xcrun xcresulttool get test-results tests --path "$1" 2>/dev/null | python3 -c '
+import json, sys
+def walk(n):
+    if n.get("nodeIdentifierURL"):
+        print("     node", n.get("nodeType"), n.get("result"), n["nodeIdentifierURL"])
+    for c in n.get("children", []):
+        walk(c)
+for n in json.load(sys.stdin).get("testNodes", []):
+    walk(n)' || echo "     (no test tree)"
+}
+
+swift_testing() {
+    local id n=0 found=no
+    say "runner: Swift Testing ids (probe)"
+    for id in 'SampleTests/AgeSwiftTests/adultAt18()' SampleTests/AgeSwiftTests/adultAt18 SampleTests/AgeSwiftTests; do
+        n=$((n + 1))
+        runner "swift$n" "$id"
+        step "id $id: exit $rc, $(grep -F 'xcodebuild exit' "$ev/swift$n.log"), entries: $(entries "swift$n")"
+        node_urls "$ev/swift$n.xcresult"
+        [ "$(entries "swift$n")" = "True passed" ] && found=yes
+    done
+    check "Swift Testing: at least one id form gives one passed entry" yes "$found"
+}
+
 mutations() {
     say "runner: through mutate.sh"
     cat > "$work/manifest.json" <<'EOF'
@@ -210,5 +235,6 @@ make_device
 skill_commands
 screenshot
 runner_calls
+swift_testing
 mutations
 finish
