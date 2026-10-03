@@ -108,6 +108,8 @@ When a phase ends, write one cost line in the ledger, in exactly this shape:
 
 The phase is `spec` for the spec review and `plan` for the plan review. It is `T1`, `T2` and so on for each task, `final` for the final whole-branch review, and `ship` for the ship task. Here is an example: `cost: <ticket> T2 tokens=448k minutes=37 fix_rounds=1`.
 
+A run in lite mode has no spec, plan, or task phases. Its ledger has a line that reads exactly `mode: lite`. It writes `build` for the work of the session and `final` for the final review and its fix wave, and `ship` as usual. The ready check reads the mode line, and then asks for `build` and `final` in place of `spec`, `plan`, and a task line. The section Lite mode of the `controller` skill gives the conditions for a lite run.
+
 - Tokens cover every agent that worked in the phase: the implementer, each reviewer, and each fix and re-review.
 - Count each agent one time, at its final cumulative figure, in thousands. A resumed agent reports its running total again, so a sum of completion notices counts it many times. (lesson: token-double-count)
 - Minutes run from the first dispatch of the phase to its approval.

@@ -145,6 +145,36 @@ check "no final cost line: fails" yes "$(has 'FAIL  cost lines')"
 check "no final cost line: names final" yes "$(has 'no cost line for: final')"
 cleanup
 
+# ── Lite mode ledgers ─────────────────────────────────────────────────────
+lite_ledger() {
+    {
+        printf 'commit %s add one\n' "$(git_in rev-parse --short HEAD)"
+        printf '%s\n' "$@"
+    } > "$ledger/progress.md"
+}
+build
+lite_ledger 'mode: lite' 'cost: T-1 build tokens=10k minutes=5 fix_rounds=0' 'cost: T-1 final tokens=10k minutes=5 fix_rounds=0'
+run
+check "lite: exit 0" 0 "$rc"
+check "lite: says lite mode" yes "$(has 'NOTE  lite mode')"
+check "lite: cost lines pass" yes "$(has 'PASS  cost lines (2 phases)')"
+lite_ledger 'mode: lite' 'cost: T-1 build tokens=10k minutes=5 fix_rounds=0'
+run
+check "lite, no final line: exit 1" 1 "$rc"
+check "lite, no final line: names final" yes "$(has 'no cost line for: final')"
+lite_ledger 'cost: T-1 build tokens=10k minutes=5 fix_rounds=0' 'cost: T-1 final tokens=10k minutes=5 fix_rounds=0'
+run
+check "build and final with no mode line: exit 1" 1 "$rc"
+check "build and final with no mode line: names the full phases" yes "$(has 'no cost line for: spec plan T<n>')"
+lite_ledger 'We did not use mode: lite here.' 'cost: T-1 build tokens=10k minutes=5 fix_rounds=0' 'cost: T-1 final tokens=10k minutes=5 fix_rounds=0'
+run
+check "mode words inside a sentence: not lite" no "$(has 'NOTE  lite mode')"
+check "mode words inside a sentence: exit 1" 1 "$rc"
+lite_ledger 'mode: lite' 'cost: T-1 build tokens=10k minutes=5 fix_rounds=0' 'cost: T-1 final tokens=10k minutes=5 fix_rounds=0' 'cost: T-1 review tokens=1k minutes=1 fix_rounds=0'
+run
+check "lite with an unknown phase: fails the shape" yes "$(has 'not in the shape')"
+cleanup
+
 # ── A tally with one unrun check ──────────────────────────────────────────
 build
 printf 'tally: 8 checks, 7 run, 1 unrun, 0 waived\n' > "$ledger/qa-session-log.md"

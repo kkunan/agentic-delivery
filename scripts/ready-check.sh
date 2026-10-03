@@ -129,13 +129,21 @@ else
 
         # ── 4. cost lines ─────────────────────────────────────────────────
         cost_lines=$(grep -iE '^[[:space:]]*(- )?cost:' "$progress")
-        shape='^[[:space:]]*(- )?cost: [^ ]+ (spec|plan|T[0-9]+[a-z]?|final|ship) tokens=[0-9]+k minutes=[0-9]+ fix_rounds=[0-9]+[[:space:]]*$'
+        shape='^[[:space:]]*(- )?cost: [^ ]+ (spec|plan|T[0-9]+[a-z]?|build|final|ship) tokens=[0-9]+k minutes=[0-9]+ fix_rounds=[0-9]+[[:space:]]*$'
         bad=$(printf '%s\n' "$cost_lines" | grep -vE "$shape" | grep -v '^$')
         absent=""
-        for phase in spec plan final; do
+        if grep -qiE '^[[:space:]]*(- )?mode: lite[[:space:]]*$' "$progress"; then
+            printf 'NOTE  lite mode\n      progress.md has a line reading mode: lite, so build and final replace spec, plan and T<n>\n'
+            required="build final"
+        else
+            required="spec plan final"
+        fi
+        for phase in $required; do
             printf '%s\n' "$cost_lines" | grep -qE "cost: [^ ]+ $phase " || absent="$absent $phase"
         done
-        printf '%s\n' "$cost_lines" | grep -qE 'cost: [^ ]+ T[0-9]+[a-z]? ' || absent="$absent T<n>"
+        if [ "$required" != "build final" ]; then
+            printf '%s\n' "$cost_lines" | grep -qE 'cost: [^ ]+ T[0-9]+[a-z]? ' || absent="$absent T<n>"
+        fi
         if [ -n "$bad" ]; then
             report fail "cost lines" "not in the shape 'cost: <ticket> <phase> tokens=<n>k minutes=<n> fix_rounds=<n>': $(printf '%s' "$bad" | head -3 | tr '\n' '|')"
         elif [ -n "$absent" ]; then

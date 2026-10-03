@@ -112,6 +112,23 @@ The `plan` cost line in the ledger records what this seat costs. The retro copie
 
 If the project file names a gate delegate, send the plan to the delegate under the rules of the section Delegated gate. Send the plan commit and the plan review result in one message.
 
+## Lite mode
+
+Lite mode is experimental. The source project runs it as a trial on two small tickets, and nobody measured its cost yet. In lite mode, the controller does the work itself from a short brief. It writes no spec and no plan, and it dispatches no implementer.
+
+Before you offer lite mode at the brainstorm, make sure that each of these is true:
+
+- The ticket is XS or S, as the section Estimates defines.
+- The ticket touches no server contract, no request or reply body, and no fixture.
+- The ticket writes no pattern-matching code, for example a lint, a parser, a regex, or a guard. The costly misses of the source project came from this kind of code and from server contracts.
+- If the ticket changes a screen, the gate owner already approved its design.
+
+The brief replaces the spec and the plan. It states the goal, the files, the tests, and the manual checks. Each check gives its value on a correct tree and on the defect. Write the brief under `docs_dir`, with the ticket key and the estimate in its header. The gate owner approves the brief, and that is the one gate. A gate delegate can approve it under the first four conditions of the section Delegated gate. The fifth condition does not apply, because lite mode has no plan review.
+
+After the gate, the controller writes each test before its code, and commits and pushes as usual. At the end, it dispatches the reviewer agent one time over the whole branch, with one fix wave and one re-review. Then it works the ship checklist, the handoff, the retro, and the merge steps as usual. The ledger starts with the line `mode: lite`, and its cost lines follow the `run-rules` skill, The ledger.
+
+If the work finds a server contract or pattern-matching code partway, stop. Record a ruling, and move the ticket to the full pipeline from step 1 of the feature command. The retro of a lite run compares its total cost with recent full runs of the same size. It also lists each defect that turned up after the merge.
+
 ## Estimates
 
 Agree on test data and accounts before execution starts, in the plan header. The Accounts section of the project file is the source. The header states these things:
