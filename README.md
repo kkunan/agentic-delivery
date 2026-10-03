@@ -292,7 +292,7 @@ The tool says that its counts are estimates.
 
 Step 0 of `/feature` loads one platform skill, so each run pays its size on top of the table. By
 `wc -c`, the `platform-flutter` skill is 31,303 characters long, and the `platform-ios` skill is
-24,674 characters long. Nobody measured either one with `claude plugin details`. The name and
+25,228 characters long. Nobody measured either one with `claude plugin details`. The name and
 description of each one also add to the always-on figure.
 
 The tool does not count hook output. The start-up hook adds its pointer to a session in a project
@@ -320,8 +320,10 @@ Flutter layer, and propose it as a pull request.
 ## Status
 
 The Flutter layer is written, and two runs on Flutter 3.38.9 stable measured its commands. The iOS
-layer has its rules and its mutation runner. A CI job runs its commands and the runner on Xcode
-16.4 against a sample app, on each pull request. The rest of the plugin is in place and has tests.
+layer comes from a native iOS project that ran more than 30 tickets through earlier versions of this
+workflow and its scripts. A CI job runs the layer's commands and its mutation runner on Xcode 16.4
+against a sample app, on each pull request. No project has run a feature through the plugin itself
+yet. The rest of the plugin is in place and has tests.
 The team pilot has not run yet, so version 0.1.0 is not tested on a real feature.
 
 ## Contributing

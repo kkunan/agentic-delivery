@@ -192,16 +192,15 @@ for n in json.load(sys.stdin).get("testNodes", []):
 }
 
 swift_testing() {
-    local id n=0 found=no
-    say "runner: Swift Testing ids (probe)"
-    for id in 'SampleTests/AgeSwiftTests/adultAt18()' SampleTests/AgeSwiftTests/adultAt18 SampleTests/AgeSwiftTests; do
-        n=$((n + 1))
-        runner "swift$n" "$id"
-        step "id $id: exit $rc, $(grep -F 'xcodebuild exit' "$ev/swift$n.log"), entries: $(entries "swift$n")"
-        node_urls "$ev/swift$n.xcresult"
-        [ "$(entries "swift$n")" = "True passed" ] && found=yes
-    done
-    check "Swift Testing: at least one id form gives one passed entry" yes "$found"
+    say "runner: Swift Testing ids"
+    runner swift_parens 'SampleTests/AgeSwiftTests/adultAt18()'
+    check "Swift Testing, id with (): passed" "True passed" "$(entries swift_parens)"
+    node_urls "$ev/swift_parens.xcresult"
+    runner swift_bare SampleTests/AgeSwiftTests/adultAt18
+    check "Swift Testing, id without (): xcodebuild exits 0" yes "$(yes_no grep -qF 'xcodebuild exit 0' "$ev/swift_bare.log")"
+    check "Swift Testing, id without (): no entry" "True " "$(entries swift_bare)"
+    runner swift_suite SampleTests/AgeSwiftTests
+    check "Swift Testing, suite id: passed" "True passed" "$(entries swift_suite)"
 }
 
 mutations() {
@@ -210,18 +209,20 @@ mutations() {
 [
  {"label": "survives", "file": "Sources/Age.swift", "find": "age >= 18", "replace": "age > 18", "test": "SampleTests/AgeTests/testAdult"},
  {"label": "killed", "file": "Sources/Age.swift", "find": "age >= 18", "replace": "age > 18", "test": "SampleTests/AgeTests/testAdultAt18"},
- {"label": "nocompile", "file": "Sources/Age.swift", "find": "age >= 18", "replace": "age >= \"18\"", "test": "SampleTests/AgeTests/testAdultAt18"}
+ {"label": "nocompile", "file": "Sources/Age.swift", "find": "age >= 18", "replace": "age >= \"18\"", "test": "SampleTests/AgeTests/testAdultAt18"},
+ {"label": "swift-killed", "file": "Sources/Age.swift", "find": "age >= 18", "replace": "age > 18", "test": "SampleTests/AgeSwiftTests/adultAt18()"}
 ]
 EOF
     rc=0
-    step "mutate.sh, 3 mutations and a baseline"
+    step "mutate.sh, 4 mutations and a baseline"
     (cd "$app" && AGENTIC_TEST_DEVICE="$device" AGENTIC_DERIVED_DATA="$dd" limit 1500 \
         "$top/scripts/mutate.sh" --manifest "$work/manifest.json" --out "$ev/mutate" > "$ev/mutate.out" 2> "$ev/mutate.err") || rc=$?
     cat "$ev/mutate.out"
     check "mutate: exit 1, one survivor" 1 "$rc"
     check "mutate: verdicts" "survived survives
 killed killed
-did-not-compile nocompile" "$(awk 'NR >= 2 && NR <= 4 { print $1, $2 }' "$ev/mutate.out")"
+did-not-compile nocompile
+killed swift-killed" "$(awk 'NR >= 2 && NR <= 5 { print $1, $2 }' "$ev/mutate.out")"
     check "mutate: tree clean" "" "$(cd "$app" && git status --porcelain)"
 }
 
