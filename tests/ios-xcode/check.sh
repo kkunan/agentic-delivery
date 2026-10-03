@@ -1,0 +1,184 @@
+#!/bin/bash
+set -u
+here=$(cd "$(dirname "$0")" && pwd -P)
+. "$here/../lib.sh"
+top=$(cd "$here/../.." && pwd -P)
+[ $# -eq 1 ] || { echo "usage: tests/ios-xcode/check.sh <empty work folder>" >&2; exit 2; }
+command -v xcodegen > /dev/null || { echo "check: xcodegen is not on PATH" >&2; exit 2; }
+mkdir -p "$1" && work=$(cd "$1" && pwd -P) || exit 2
+app="$work/sample"
+ev="$work/evidence"
+dd="$work/DerivedData-Debug"
+device=""
+mkdir -p "$ev"
+
+say() {
+    printf '\n== %s\n' "$*"
+}
+
+yes_no() {
+    "$@" > /dev/null 2>&1 && echo yes || echo no
+}
+
+json() {
+    python3 -c 'import json, sys; d = json.load(open(sys.argv[1])); print(eval(sys.argv[2]))' "$1" "$2" 2>/dev/null || echo "(unreadable: $1)"
+}
+
+show_logs() {
+    local log
+    [ "$failed" -eq 0 ] && return
+    for log in "$ev"/*.log "$ev"/mutate/*.log "$ev"/*.out "$ev"/*.err; do
+        [ -f "$log" ] || continue
+        printf '\n-- last 40 lines of %s\n' "${log#"$ev"/}"
+        tail -n 40 "$log"
+    done
+}
+
+cleanup() {
+    show_logs
+    [ -n "$device" ] || return
+    bash "$top/scripts/claim-device.sh" --device "$device" --worktree "$app" --release > /dev/null 2>&1
+    xcrun simctl shutdown "$device" > /dev/null 2>&1
+    xcrun simctl delete "$device"
+}
+trap cleanup EXIT
+
+# ── The sample project ────────────────────────────────────────────────────
+
+newest_runtime() {
+    xcrun simctl list -j runtimes available | python3 -c '
+import json, sys
+ios = [r for r in json.load(sys.stdin)["runtimes"] if r.get("platform") == "iOS" and r.get("isAvailable")]
+best = max(ios, key=lambda r: [int(p) for p in r["version"].split(".")])
+phones = [t for t in best["supportedDeviceTypes"] if t.get("productFamily") == "iPhone"]
+print(best["identifier"], phones[-1]["identifier"])'
+}
+
+make_project() {
+    say "sample project"
+    cp -R "$here/sample" "$app"
+    mkdir -p "$app/.claude" "$app/scripts"
+    cp "$top/skills/platform-ios/mutation-runner.sh" "$app/scripts/mutation-runner.sh"
+    printf -- '---\nplatform: ios\nios_workspace: Sample.xcodeproj\nios_scheme: Sample\nios_runtime: %s\ntest_processes: xcodebuild,xctest\nmutation_runner: scripts/mutation-runner.sh\n---\n' "$runtime" > "$app/.claude/agentic-delivery.md"
+    (cd "$app" && xcodegen generate --spec project.yml > "$ev/xcodegen.log" 2>&1)
+    check "xcodegen generate" 0 $?
+    (cd "$app" && git init -q . && git add -A && git -c user.name=check -c user.email=check@example.invalid -c commit.gpgsign=false commit -qm sample)
+    check "git commit of the sample" 0 $?
+}
+
+key() {
+    (cd "$app" && bash "$top/scripts/project-config.sh" "$1")
+}
+
+# ── The simulator ─────────────────────────────────────────────────────────
+
+make_device() {
+    say "simulator"
+    device=$(xcrun simctl create agentic-ios-check "$device_type" "$(key ios_runtime)")
+    check "simctl create prints an id" yes "$(yes_no test -n "$device")"
+    printf 'runtime %s, device type %s, device %s\n' "$runtime" "$device_type" "$device"
+    bash "$top/scripts/claim-device.sh" --device "$device" --worktree "$app" > "$ev/claim.log" 2>&1
+    check "claim-device claims the new device" 0 $?
+}
+
+# ── The commands of the skill ─────────────────────────────────────────────
+
+xcb() {
+    local log=$1
+    shift
+    (cd "$app" && xcodebuild "$@" < /dev/null > "$ev/$log" 2>&1)
+}
+
+skill_commands() {
+    local open=(-project "$(key ios_workspace)") scheme dest
+    scheme=$(key ios_scheme)
+    dest="platform=iOS Simulator,id=$device"
+    say "skill: build"
+    xcb build.log "${open[@]}" -scheme "$scheme" -destination "$dest" -derivedDataPath "$dd" build
+    check "build: exit 0" 0 $?
+    say "skill: test"
+    xcb test.log test "${open[@]}" -scheme "$scheme" -destination "$dest" -derivedDataPath "$dd" \
+        -resultBundlePath "$ev/test.xcresult" \
+        -test-timeouts-enabled YES -default-test-execution-time-allowance 30 -collect-test-diagnostics never
+    check "test: exit 0" 0 $?
+    xcrun xcresulttool get test-results summary --path "$ev/test.xcresult" > "$ev/test-summary.json" 2> "$ev/xcresulttool.err"
+    check "test: 2 passed, 1 skipped, 0 failed" "2 1 0" "$(json "$ev/test-summary.json" 'd["passedTests"], d["skippedTests"], d["failedTests"]' | tr -d '(),')"
+    say "skill: release build"
+    xcb release.log "${open[@]}" -scheme "$scheme" -configuration Release -destination "$dest" \
+        -derivedDataPath "$work/DerivedData-Release" build
+    check "release build: exit 0" 0 $?
+}
+
+screenshot() {
+    say "skill: install, launch, screenshot"
+    xcrun simctl bootstatus "$device" -b > "$ev/boot.log" 2>&1
+    check "boot" yes "$(yes_no sh -c "xcrun simctl list devices | grep -F '$device' | grep -qF Booted")"
+    xcrun simctl install "$device" "$dd/Build/Products/Debug-iphonesimulator/Sample.app" > "$ev/install.log" 2>&1
+    check "install from the derived data path" 0 $?
+    xcrun simctl launch "$device" dev.agentic.Sample > "$ev/launch.log" 2>&1
+    check "launch" 0 $?
+    "$top/scripts/settle-screenshot.swift" --capture "xcrun simctl io $device screenshot {out}" --out "$ev/screen.png" > "$ev/settle.log" 2>&1
+    check "settle-screenshot: settled" 0 $?
+    xcrun simctl shutdown "$device" > /dev/null 2>&1
+}
+
+# ── The mutation runner ───────────────────────────────────────────────────
+
+runner() {
+    local name=$1
+    shift
+    rc=0
+    (cd "$app" && AGENTIC_TEST_DEVICE="$device" AGENTIC_DERIVED_DATA="$work/DerivedData-mutate" \
+        scripts/mutation-runner.sh --out "$ev/$name.json" --log "$ev/$name.log" -- "$@" < /dev/null > /dev/null 2>&1) || rc=$?
+}
+
+entries() {
+    json "$ev/$1.json" 'str(d["compiled"]) + " " + " ".join(sorted(t["result"] for t in d["tests"]))'
+}
+
+runner_calls() {
+    say "runner: direct calls"
+    runner pass SampleTests/AgeTests/testAdult
+    check "pass: exit 0" 0 "$rc"
+    check "pass: passed" "True passed" "$(entries pass)"
+    runner class SampleTests/AgeTests
+    check "class id: one entry for each test case" "True passed passed skipped" "$(entries class)"
+    runner skipped SampleTests/AgeTests/testSkipped
+    check "skipped: skipped" "True skipped" "$(entries skipped)"
+    runner absent SampleTests/AgeTests/testDoesNotExist
+    check "misnamed test: xcodebuild exits 0" yes "$(yes_no grep -qF 'xcodebuild exit 0' "$ev/absent.log")"
+    check "misnamed test: no entry" "True " "$(entries absent)"
+}
+
+mutations() {
+    say "runner: through mutate.sh"
+    cat > "$work/manifest.json" <<'EOF'
+[
+ {"label": "survives", "file": "Sources/Age.swift", "find": "age >= 18", "replace": "age > 18", "test": "SampleTests/AgeTests/testAdult"},
+ {"label": "killed", "file": "Sources/Age.swift", "find": "age >= 18", "replace": "age > 18", "test": "SampleTests/AgeTests/testAdultAt18"},
+ {"label": "nocompile", "file": "Sources/Age.swift", "find": "age >= 18", "replace": "age >= \"18\"", "test": "SampleTests/AgeTests/testAdultAt18"}
+]
+EOF
+    rc=0
+    (cd "$app" && AGENTIC_TEST_DEVICE="$device" AGENTIC_DERIVED_DATA="$work/DerivedData-mutate" \
+        "$top/scripts/mutate.sh" --manifest "$work/manifest.json" --out "$ev/mutate" > "$ev/mutate.out" 2> "$ev/mutate.err") || rc=$?
+    cat "$ev/mutate.out"
+    check "mutate: exit 1, one survivor" 1 "$rc"
+    check "mutate: verdicts" "survived survives
+killed killed
+did-not-compile nocompile" "$(awk 'NR >= 2 && NR <= 4 { print $1, $2 }' "$ev/mutate.out")"
+    check "mutate: tree clean" "" "$(cd "$app" && git status --porcelain)"
+}
+
+# ── The run ───────────────────────────────────────────────────────────────
+
+xcodebuild -version
+xcodegen --version
+read -r runtime device_type <<< "$(newest_runtime)"
+make_project
+make_device
+skill_commands
+screenshot
+runner_calls
+mutations
+finish
