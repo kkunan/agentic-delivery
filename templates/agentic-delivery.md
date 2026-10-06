@@ -10,6 +10,7 @@ docs_dir:
 view_globs:
 test_processes: flutter_tester,dartvm,xcodebuild,java
 screenshot_branch:
+forge:
 mutation_runner: scripts/mutation-runner.sh
 implementer_agent: agentic-delivery:implementer
 reviewer_agent: agentic-delivery:reviewer
@@ -33,6 +34,7 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 - `view_globs` lists the file patterns for the screens of the app, for example `lib/views/**,lib/**/views/**,lib/**/widgets/**` for a Flutter app. A change to a file that matches them needs a screenshot. The ready check matches each pattern as a shell `case` pattern, and it ignores spaces around each comma. In a `case` pattern, `**` matches the same text as `*`, so the slashes around it still need a folder between them. Thus `lib/**/views/**` does not match `lib/views/x`. To match both, use `lib/views/**,lib/**/views/**`.
 - `test_processes` lists the names of the processes that the tests start. The stall watch uses them. The value in this file holds the names that `pgrep -x` matched on Flutter 3.38.9 stable. `flutter_tester` runs the unit and widget tests, and `dartvm` runs the `flutter` tool. `xcodebuild` runs an iOS device build, and `java` runs the Gradle build of an Android device run. The processor time of `java` alone does not show a hung Gradle build. Idle Gradle and Kotlin daemons keep adding processor time, so also check that the build log still grows. `pgrep -x java` also matches other Java programs, for example the Gradle daemon of an editor. So read the command of the process before you report a freeze. The section "A stalled test run" of the `platform-flutter` skill gives the detail. Measure the names again on your machine.
 - `screenshot_branch` is the branch that holds the screenshots for the review, for example `screenshots`. The run never deletes it.
+- `forge` is `github` or `gitlab`. It names the host of the pull request. GitLab calls it a merge request. The ready check reads the request through `gh` for GitHub and through `glab` for GitLab, so install the matching tool and sign in. If `forge` is empty, the ready check reads the host of the `origin` remote. A host with `gitlab` in its name gives `gitlab`, and any other host gives `github`. Fill in the key for a GitLab server whose host has no `gitlab` in its name.
 - `mutation_runner` is the path from the top of the repository to an executable that follows the runner contract of `scripts/mutate.sh`. The Flutter adapter of the plugin is `skills/platform-flutter/mutation-runner.sh`, and the iOS adapter is `skills/platform-ios/mutation-runner.sh`. The path of a plugin install differs on each machine. So copy the file for your platform to `scripts/mutation-runner.sh` in your repository, which is the value in this file, and commit it.
 - `implementer_agent`, `reviewer_agent`, and `qa_agent` name the agent for each seat. See the Agents section.
 

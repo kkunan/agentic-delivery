@@ -13,6 +13,24 @@ docs_dir=$(bash "$reader" docs_dir) || exit $?
 view_globs=$(bash "$reader" view_globs) || exit $?
 screenshot_branch=$(bash "$reader" screenshot_branch) || exit $?
 docs=$(bash "$reader" docs repo) || exit $?
+forge=$(bash "$reader" forge auto) || exit $?
+
+# ── forge: github or gitlab ───────────────────────────────────────────────
+if [ "$forge" = auto ]; then
+    origin_url=$(git config --get remote.origin.url 2>/dev/null)
+    host=${origin_url#*://}
+    host=${host#*@}
+    host=${host%%[:/]*}
+    case "$host" in
+        *gitlab*) forge=gitlab ;;
+        *) forge=github ;;
+    esac
+fi
+case "$forge" in
+    github) pr_word=PR; pr_name="pull request"; pr_cli=gh; pr_cmd="gh pr view" ;;
+    gitlab) pr_word=MR; pr_name="merge request"; pr_cli=glab; pr_cmd="glab mr view" ;;
+    *) printf 'FAIL  forge\n      forge must be github or gitlab, not %s\n' "$forge"; exit 1 ;;
+esac
 
 docs_dir=${docs_dir%/}
 case "$docs_dir" in
@@ -47,18 +65,32 @@ esac
 
 fetch_err=$(git fetch -q origin 2>&1); fetch_rc=$?
 
-if [ "${READY_CHECK_SKIP_PR:-}" = 1 ]; then
-    pr=""
-else
-    pr=$(gh pr view --json number,isDraft,body,baseRefName 2>/dev/null)
+# The pull request or merge request, as {base, body}, or empty.
+pr=""
+pr_err=""
+if [ "${READY_CHECK_SKIP_PR:-}" != 1 ]; then
+    if ! command -v "$pr_cli" >/dev/null 2>&1; then
+        pr_err="$pr_cli is not installed or not on PATH"
+    else
+        err_file=$(mktemp)
+        if [ "$forge" = gitlab ]; then
+            raw=$(glab mr view --output json 2>"$err_file") &&
+                pr=$(printf '%s' "$raw" | jq -c '{base: (.target_branch // ""), body: (.description // "")}' 2>/dev/null)
+        else
+            raw=$(gh pr view --json body,baseRefName 2>"$err_file") &&
+                pr=$(printf '%s' "$raw" | jq -c '{base: (.baseRefName // ""), body: (.body // "")}' 2>/dev/null)
+        fi
+        [ -n "$pr" ] || pr_err="$pr_cmd found no $pr_name for $branch: $(head -1 "$err_file" | grep . || echo no output)"
+        rm -f "$err_file"
+    fi
 fi
-pr_base=$(printf '%s' "$pr" | jq -r '.baseRefName // ""' 2>/dev/null)
+pr_base=$(printf '%s' "$pr" | jq -r '.base' 2>/dev/null)
 if [ -n "${READY_CHECK_BASE:-}" ]; then
     base=$READY_CHECK_BASE
     base_from="READY_CHECK_BASE"
 elif [ -n "$pr_base" ]; then
     base="origin/$pr_base"
-    base_from="the pull request"
+    base_from="the $pr_name"
 else
     base="origin/$base_branch"
     base_from="base_branch in the project file"
@@ -187,18 +219,18 @@ else
     fi
 fi
 
-# ── 6. pull request ───────────────────────────────────────────────────────
+# ── 6. pull request or merge request ──────────────────────────────────────
 if [ "${READY_CHECK_SKIP_PR:-}" = 1 ]; then
-    printf 'SKIP  PR description rewritten\n      READY_CHECK_SKIP_PR=1\n'
-    printf 'SKIP  PR links screenshots\n      READY_CHECK_SKIP_PR=1\n'
+    printf 'SKIP  %s description rewritten\n      READY_CHECK_SKIP_PR=1\n' "$pr_word"
+    printf 'SKIP  %s links screenshots\n      READY_CHECK_SKIP_PR=1\n' "$pr_word"
 elif [ -z "$pr" ]; then
-    report fail "pull request open" "gh pr view found no PR for $branch"
+    report fail "$pr_name open" "$pr_err"
 else
-    body=$(printf '%s' "$pr" | jq -r '.body // ""')
+    body=$(printf '%s' "$pr" | jq -r '.body')
     if [ "${#body}" -lt 200 ]; then
-        report fail "PR description rewritten" "body is ${#body} characters"
+        report fail "$pr_word description rewritten" "body is ${#body} characters"
     else
-        report pass "PR description rewritten"
+        report pass "$pr_word description rewritten"
     fi
     IFS=',' read -r -a view_patterns <<< "$view_globs"
     views=0
@@ -214,20 +246,20 @@ else
         done
     done < <(git diff --name-only "$base...HEAD")
     if [ "$views" -eq 0 ]; then
-        printf 'SKIP  PR links screenshots\n      no file that matches view_globs changed on this branch\n'
+        printf 'SKIP  %s links screenshots\n      no file that matches view_globs changed on this branch\n' "$pr_word"
     elif printf '%s' "$body" | tr ' ()<>[]"' '\n' | grep -F "/$screenshot_branch/" | grep -qE '^https?://'; then
-        report pass "PR links screenshots"
+        report pass "$pr_word links screenshots"
     elif printf '%s' "$body" | grep -qiE '^no screen changed\.'; then
-        printf 'PASS  no screenshots, asserted\n      the PR body states no screen changed; that is your claim, not a measurement\n'
+        printf 'PASS  no screenshots, asserted\n      the %s body states no screen changed; that is your claim, not a measurement\n' "$pr_word"
     else
-        report fail "PR links screenshots" "$views view file(s) changed and the PR body has neither a URL on the $screenshot_branch branch (a link that contains /$screenshot_branch/) nor a line reading: No screen changed."
+        report fail "$pr_word links screenshots" "$views view file(s) changed and the $pr_word body has neither a URL on the $screenshot_branch branch (a link that contains /$screenshot_branch/) nor a line reading: No screen changed."
     fi
 fi
 
 printf '\n'
 if [ "$fails" -eq 0 ]; then
-    printf 'ready-check: pass. Mark the PR ready, then move the ticket to review.\n'
+    printf 'ready-check: pass. Mark the %s ready, then move the ticket to review.\n' "$pr_word"
     exit 0
 fi
-printf 'ready-check: %d failed. The PR is not ready. Fix these, or ask me to waive one.\n' "$fails"
+printf 'ready-check: %d failed. The %s is not ready. Fix these, or ask me to waive one.\n' "$fails" "$pr_word"
 exit 1

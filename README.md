@@ -260,6 +260,7 @@ The scripts are in `scripts/`. Each one has a test in `tests/`.
 - `stall-watch.sh` watches the worktrees, the test processes, and the command logs of a run, and
   reports a stall.
 - `ready-check.sh` checks the pull request and the ledger. It says whether the pull request is ready.
+  It works with a GitHub pull request through `gh` and with a GitLab merge request through `glab`.
 - `settle-screenshot.swift` runs a capture command until the screen stops changing, then saves the
   last frame.
 - `mutate.sh` applies each mutation from a manifest, runs the test that must catch it, records the

@@ -228,7 +228,7 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 4. Make sure that the ledger has an entry that names every commit on the branch. Do this after the final push, because at write time the ready check cannot see the commit that you are writing. A commit that changes only files in the ledger folder needs no entry, so a ledger that git tracks can record itself.
 5. Take the screenshots again on the final tree, after all the steps above, and push them to the branch that `screenshot_branch` names. Use `scripts/settle-screenshot.swift --capture "<command>"` so that each capture waits for the screen to settle.
 6. Rewrite the pull request description.
-7. Run `scripts/ready-check.sh`. It must exit 0. Then mark the pull request ready. Do not ask the gate owner.
+7. Run `scripts/ready-check.sh`. It must exit 0. Then mark the pull request ready. Do not ask the gate owner. On GitHub that is `gh pr ready`. On GitLab, where the pull request is a merge request, it is `glab mr update --ready`. The key `forge` in the project file says which one.
 8. Immediately after that, move the ticket to review, and post or update the trail comment, as the section Tracker and pull request says.
 9. If the `brief` skill is installed, hand off in its style. Say that the pull request is ready and what still needs the gate owner.
 
@@ -241,7 +241,7 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 - The pull request body is a real description.
 - If the branch touches a file that matches `view_globs`, the body links screenshots on the screenshot branch.
 
-The screenshot proof is a URL in the body that contains `/<screenshot_branch>/`. If a view file changed but no screen changed, the body has a line that reads `No screen changed.` and the ready check accepts it. It skips the screenshot proof on a branch that changes no view. Run it from the checkout that holds the ledger.
+The screenshot proof is a URL in the body that contains `/<screenshot_branch>/`. If a view file changed but no screen changed, the body has a line that reads `No screen changed.` and the ready check accepts it. It skips the screenshot proof on a branch that changes no view. Run it from the checkout that holds the ledger. It reads the pull request through `gh` on GitHub and the merge request through `glab` on GitLab.
 
 The script cannot prove steps 1 and 3, the review verdict and the spec re-read. State those two yourself, with one line each in the handoff. A green ready check does not mean that the run was good. If it fails, fix what it names, or ask the gate owner to waive it. Do not mark the pull request ready first.
 
