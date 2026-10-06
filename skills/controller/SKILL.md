@@ -7,7 +7,7 @@ description: The rules that only the controller of an agentic-delivery run follo
 
 The controller is the session that dispatches agents and coordinates the run. A dispatched agent does not read this skill. The rules for every agent are in the `run-rules` skill, which also defines the terms that this skill uses.
 
-The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `release_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, `screenshot_branch`, and `mutation_runner`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
+The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `release_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, `screenshot_branch`, `forge`, `tracker`, and `mutation_runner`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
 
 Where a rule here says "the gate owner", it means the person who approves the plan and who says merge.
 
@@ -193,7 +193,9 @@ You never edit plugin files during a run. A fix to a plugin rule or script becom
 
 ## Tracker and pull request
 
-Get the ticket key in the first exchange of the brainstorm, not in the plan header. If the gate owner gave a key in the request, use it. If not, ask. A feature with no ticket is legitimate. In that case, say so and skip every tracker step. Do not guess a key later. After you get the key, put it in the spec header, the plan header, and the pull request body.
+The key `tracker` in the project file names the ticket tracker: `jira`, `linear`, `github`, `gitlab`, or `none`. Never assume Jira. The ticket id is the key on Jira and Linear, for example `ABC-123`, and the issue reference on GitHub and GitLab, for example `#123`, or `group/project#123` for an issue in another repository. With `none`, the team has no tracker, so skip every tracker step and say so once.
+
+Get the ticket id in the first exchange of the brainstorm, not in the plan header. If the gate owner gave an id in the request, use it. If not, ask. A feature with no ticket is legitimate. In that case, say so and skip every tracker step. Do not guess an id later. After you get the id, put it in the spec header, the plan header, and the pull request body.
 
 The tracker steps are in the section Tracker steps of the project file body. Follow them as written. If no tool reaches the tracker, the run writes the comment text into its report, and the developer posts it.
 
@@ -201,9 +203,16 @@ At the moment that you cut the branch and open the draft pull request, move the 
 
 At the moment that you mark the pull request ready, move the ticket to review. Do it in the same step, not as a follow-up.
 
-Resolve every transition from the available transitions of the issue. Do not assume a name. The name of a transition is not its target status. Report the status that the issue is in after the transition.
+Resolve every status change from what the tracker offers for that ticket. Do not assume a name. Report the status that the ticket is in after the change. Each tracker holds the status in its own way:
 
-Stay in this scope and go no further: that one issue, its status only, and the single trail comment. Do not edit the description. Do not change other fields or other issues. Do not move anything to done during the run, because closing a ticket is the decision of the gate owner. If the workflow has no transition to the column that you want, say so. Do not pick a different column.
+- `jira`: the status moves through a transition. Resolve it from the available transitions of the issue. The name of a transition is not its target status.
+- `linear`: the status is a workflow state of the team that owns the issue. Resolve it from the states of that team. Two teams can use the same state name for different stages.
+- `github`: an issue is only open or closed. The status that the team uses is a field of a GitHub project, often named Status, or a label. The section Tracker steps says which one. Without that, the run changes no status, and it says so.
+- `gitlab`: the status is a scoped label, for example `workflow::in progress`, or the Status field of the issue. The section Tracker steps says which one. Setting a scoped label removes the other label of the same scope, and that is the move. Without that section, the run changes no status, and it says so.
+
+Stay in this scope and go no further: that one ticket, its status only, and the single trail comment. Do not edit the description. Do not change other fields or other tickets. Do not move anything to done during the run, because closing a ticket is the decision of the gate owner. If the tracker has no status for the stage that you want, say so. Do not pick a different status.
+
+On GitHub and GitLab, a closing keyword in the pull request body closes the issue at merge. So name the issue with `Refs #123` on GitHub and `Related to #123` on GitLab, never with a closing keyword such as `Closes`, `Fixes`, `Resolves`, or, on GitLab, `Implements`. Use a closing keyword only if the section Tracker steps says that the team closes the issue at merge.
 
 Reply to every pull request review comment, and start the reply with `Claude said:`. Write one reply for each comment, on the thread of that comment. Never write a summary somewhere else, and never stay silent. A reply says what changed and names the commit that changed it. Otherwise, it says clearly that nothing changed and why. You can disagree without permission. You cannot say nothing.
 

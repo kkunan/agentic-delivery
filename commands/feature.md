@@ -11,11 +11,11 @@ in your context, so do not open it again.
 0. Read `.claude/agentic-delivery.md`. If it is missing, stop. Offer to copy the file
    `templates/agentic-delivery.md` of the plugin into the project, and wait for the answer. If the file
    exists, check these keys first: `platform`, `base_branch`, `release_branch`, `branch_prefix`,
-   `protected_branches`, `docs`, `docs_dir`, `view_globs`, and `screenshot_branch`. If one is empty
-   or missing, stop. The one exception is `screenshot_branch` on GitLab, which may stay empty,
-   because a merge request takes uploaded images. Ask the developer for each empty key, and write the answers into the project file
-   only after the developer agrees. Never guess a value from the branches or the folders that you
-   see. Next, make sure that the skills `superpowers:brainstorming`, `superpowers:writing-plans`,
+   `protected_branches`, `docs`, `docs_dir`, `view_globs`, `screenshot_branch`, and `tracker`. If one
+   is empty or missing, stop. The one exception is `screenshot_branch` on GitLab, which may stay empty,
+   because a merge request takes uploaded images. Ask the developer for each empty key, and write the
+   answers into the project file only after the developer agrees. Never guess a value from the branches
+   or the folders that you see. Next, make sure that the skills `superpowers:brainstorming`, `superpowers:writing-plans`,
    `superpowers:subagent-driven-development`, and `superpowers:requesting-code-review` are
    available. If one is missing, stop and tell the developer to install the superpowers plugin,
    because steps 1, 3, 5, and 6 need these skills. Do not do those steps without them.
@@ -40,11 +40,12 @@ If a plan for this feature already exists under `docs_dir`, skip to step 5 and r
 ledger.
 
 1. Brainstorm with the developer, using `superpowers:brainstorming`. This is the one conversational
-   stage. Ask real questions and push back on vague answers. Establish the tracker ticket key in the
-   first exchange. If the developer gives none, ask. If there is no ticket, say so and skip every
-   tracker step. Never guess a key. Write the result to a spec file under `docs_dir`, with the key
-   in its header. Add the estimate: size, wall-clock range, token budget, and the number of times
-   you expect to need the developer. `controller`, Estimates defines all four. Refine them in step 3.
+   stage. Ask real questions and push back on vague answers. Establish the ticket id in the
+   first exchange, in the form of the tracker that `tracker` names. If the developer gives none, ask.
+   If there is no ticket, or `tracker` is `none`, say so and skip every tracker step. Never guess an
+   id. Write the result to a spec file under `docs_dir`, with the id in its header. Add the
+   estimate: size, wall-clock range, token budget, and the number of times you expect to need the
+   developer. `controller`, Estimates defines all four. Refine them in step 3.
    If the run passes them, tell the developer at that time.
 1b. If the ticket meets the conditions in `controller`, Lite mode, offer lite mode to the developer.
    If the developer accepts, write the brief in place of the spec, and do step 2. Skip steps 2b and
