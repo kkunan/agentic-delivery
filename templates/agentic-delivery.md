@@ -1,6 +1,6 @@
 ---
 platform:
-min_plugin_version: 0.1.0
+min_plugin_version: 0.1.1
 base_branch:
 release_branch:
 branch_prefix:
