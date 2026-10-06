@@ -130,7 +130,7 @@ The pull request has a screenshot of each screen that the branch adds or changes
 
 - Take the screenshots after manual QA, on the final state of the branch. Never use screenshots from a task report taken during the run.
 - Take one image for each screen. Take a second image for each state that the spec requires, for example loading, empty, or error.
-- Put them on the branch that `screenshot_branch` names, and link them from the pull request body by URL. They never go in the source tree.
+- Put them on the branch that `screenshot_branch` names, and link them from the pull request body by URL. On GitLab, you can instead upload each image to the merge request description, and GitLab links it by a URL that contains `/uploads/<hash>/`. If `screenshot_branch` is empty, upload them. They never go in the source tree.
 - Do this last, before you offer the branch for review. A screenshot taken before the final fixes shows a screen that no longer exists.
 
 Task-report screenshots are internal and do not satisfy this rule.

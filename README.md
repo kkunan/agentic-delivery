@@ -185,19 +185,21 @@ that project, and the plugin never guesses these values. Its front matter names:
 - where the specs, plans, ledgers, and retros go: in the repository, or in a private folder that
   the run never commits, such as `~/agentic-notes/<project>`
 - the file patterns of the screens, the names of the test processes, and the branch for screenshots
+- the forge of the pull request, GitHub or GitLab, and the ticket tracker
 - the mutation runner for the platform
 - optionally, your own agent for any of the three seats
 
 Its body has sections for the tracker steps, the devices, the accounts, and the actions that need a
-person's word, such as signing and secrets. The tracker steps are in plain words, so any tracker
-works.
+person's word, such as signing and secrets. The key `tracker` names the ticket tracker: Jira, Linear,
+GitHub issues, GitLab issues, or none. The tracker steps are in plain words.
 
 To start, copy `templates/agentic-delivery.md` from the plugin to `.claude/agentic-delivery.md` in
-your repository. The template explains each key. The keys for the platform, the branches, the
-docs folder, the screen patterns, and the screenshot branch are empty, so fill them in. If one is
-empty, `/feature` asks you for it before it starts. Fill in the sections for your team. Write the
-place to find a sign-in, never the sign-in itself. Put a device id that belongs to one person in
-local settings, not in the project file.
+your repository. The template explains each key. The keys for the platform, the branches, the docs
+folder, the screen patterns, the screenshot branch, and the tracker are empty, so fill them in. If
+one is empty, `/feature` asks you for it before it starts. On GitLab, the screenshot branch may stay
+empty, because the run can upload the images to the merge request. Fill in the sections for your
+team. Write the place to find a sign-in, never the sign-in itself. Put a device id that belongs to
+one person in local settings, not in the project file.
 
 The plugin reads the front matter with `scripts/project-config.sh`. If the file is missing,
 `/feature` stops and offers to copy the template.
@@ -260,6 +262,7 @@ The scripts are in `scripts/`. Each one has a test in `tests/`.
 - `stall-watch.sh` watches the worktrees, the test processes, and the command logs of a run, and
   reports a stall.
 - `ready-check.sh` checks the pull request and the ledger. It says whether the pull request is ready.
+  It works with a GitHub pull request through `gh` and with a GitLab merge request through `glab`.
 - `settle-screenshot.swift` runs a capture command until the screen stops changing, then saves the
   last frame.
 - `mutate.sh` applies each mutation from a manifest, runs the test that must catch it, records the

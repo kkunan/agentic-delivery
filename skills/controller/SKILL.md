@@ -7,7 +7,7 @@ description: The rules that only the controller of an agentic-delivery run follo
 
 The controller is the session that dispatches agents and coordinates the run. A dispatched agent does not read this skill. The rules for every agent are in the `run-rules` skill, which also defines the terms that this skill uses.
 
-The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `release_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, `screenshot_branch`, and `mutation_runner`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
+The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `release_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, `screenshot_branch`, `forge`, `tracker`, and `mutation_runner`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
 
 Where a rule here says "the gate owner", it means the person who approves the plan and who says merge.
 
@@ -193,7 +193,9 @@ You never edit plugin files during a run. A fix to a plugin rule or script becom
 
 ## Tracker and pull request
 
-Get the ticket key in the first exchange of the brainstorm, not in the plan header. If the gate owner gave a key in the request, use it. If not, ask. A feature with no ticket is legitimate. In that case, say so and skip every tracker step. Do not guess a key later. After you get the key, put it in the spec header, the plan header, and the pull request body.
+The key `tracker` in the project file names the ticket tracker: `jira`, `linear`, `github`, `gitlab`, or `none`. Never assume Jira. The ticket id is the key on Jira and Linear, for example `ABC-123`, and the issue reference on GitHub and GitLab, for example `#123`, or `group/project#123` for an issue in another repository. With `none`, the team has no tracker, so skip every tracker step and say so once.
+
+Get the ticket id in the first exchange of the brainstorm, not in the plan header. If the gate owner gave an id in the request, use it. If not, ask. A feature with no ticket is legitimate. In that case, say so and skip every tracker step. Do not guess an id later. After you get the id, put it in the spec header, the plan header, and the pull request body.
 
 The tracker steps are in the section Tracker steps of the project file body. Follow them as written. If no tool reaches the tracker, the run writes the comment text into its report, and the developer posts it.
 
@@ -201,9 +203,16 @@ At the moment that you cut the branch and open the draft pull request, move the 
 
 At the moment that you mark the pull request ready, move the ticket to review. Do it in the same step, not as a follow-up.
 
-Resolve every transition from the available transitions of the issue. Do not assume a name. The name of a transition is not its target status. Report the status that the issue is in after the transition.
+Resolve every status change from what the tracker offers for that ticket. Do not assume a name. Report the status that the ticket is in after the change. Each tracker holds the status in its own way:
 
-Stay in this scope and go no further: that one issue, its status only, and the single trail comment. Do not edit the description. Do not change other fields or other issues. Do not move anything to done during the run, because closing a ticket is the decision of the gate owner. If the workflow has no transition to the column that you want, say so. Do not pick a different column.
+- `jira`: the status moves through a transition. Resolve it from the available transitions of the issue. The name of a transition is not its target status.
+- `linear`: the status is a workflow state of the team that owns the issue. Resolve it from the states of that team. Two teams can use the same state name for different stages.
+- `github`: an issue is only open or closed. The status that the team uses is a field of a GitHub project, often named Status, or a label. The section Tracker steps says which one. Without that, the run changes no status, and it says so.
+- `gitlab`: the status is a scoped label, for example `workflow::in progress`, or the Status field of the issue. The section Tracker steps says which one. Setting a scoped label removes the other label of the same scope, and that is the move. Without that section, the run changes no status, and it says so.
+
+Stay in this scope and go no further: that one ticket, its status only, and the single trail comment. Do not edit the description. Do not change other fields or other tickets. Do not move anything to done during the run, because closing a ticket is the decision of the gate owner. If the tracker has no status for the stage that you want, say so. Do not pick a different status.
+
+On GitHub and GitLab, a closing keyword in the pull request body closes the issue at merge. So name the issue with `Refs #123` on GitHub and `Related to #123` on GitLab, never with a closing keyword such as `Closes`, `Fixes`, `Resolves`, or, on GitLab, `Implements`. Use a closing keyword only if the section Tracker steps says that the team closes the issue at merge.
 
 Reply to every pull request review comment, and start the reply with `Claude said:`. Write one reply for each comment, on the thread of that comment. Never write a summary somewhere else, and never stay silent. A reply says what changed and names the commit that changed it. Otherwise, it says clearly that nothing changed and why. You can disagree without permission. You cannot say nothing.
 
@@ -226,9 +235,9 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 
 3. Read the spec again against what shipped, and fix any drift.
 4. Make sure that the ledger has an entry that names every commit on the branch. Do this after the final push, because at write time the ready check cannot see the commit that you are writing. A commit that changes only files in the ledger folder needs no entry, so a ledger that git tracks can record itself.
-5. Take the screenshots again on the final tree, after all the steps above, and push them to the branch that `screenshot_branch` names. Use `scripts/settle-screenshot.swift --capture "<command>"` so that each capture waits for the screen to settle.
+5. Take the screenshots again on the final tree, after all the steps above, and push them to the branch that `screenshot_branch` names. On GitLab, you can instead upload them to the merge request description, and you must if `screenshot_branch` is empty. Use `scripts/settle-screenshot.swift --capture "<command>"` so that each capture waits for the screen to settle.
 6. Rewrite the pull request description.
-7. Run `scripts/ready-check.sh`. It must exit 0. Then mark the pull request ready. Do not ask the gate owner.
+7. Run `scripts/ready-check.sh`. It must exit 0. Then mark the pull request ready. Do not ask the gate owner. On GitHub that is `gh pr ready`. On GitLab, where the pull request is a merge request, it is `glab mr update --ready`. The key `forge` in the project file says which one.
 8. Immediately after that, move the ticket to review, and post or update the trail comment, as the section Tracker and pull request says.
 9. If the `brief` skill is installed, hand off in its style. Say that the pull request is ready and what still needs the gate owner.
 
@@ -239,9 +248,9 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 - The ledger has cost lines for the spec review, the plan review, the final review, and at least one task.
 - The QA tally line reads all run, or each waived check has a waiver line from the gate owner.
 - The pull request body is a real description.
-- If the branch touches a file that matches `view_globs`, the body links screenshots on the screenshot branch.
+- If the branch touches a file that matches `view_globs`, the body links screenshots on the screenshot branch, or, on GitLab, images uploaded to the merge request.
 
-The screenshot proof is a URL in the body that contains `/<screenshot_branch>/`. If a view file changed but no screen changed, the body has a line that reads `No screen changed.` and the ready check accepts it. It skips the screenshot proof on a branch that changes no view. Run it from the checkout that holds the ledger.
+The screenshot proof is a URL in the body that contains `/<screenshot_branch>/`. On GitLab, a link that contains `/uploads/<hash>/`, the form that GitLab gives an uploaded image, is also proof. If a view file changed but no screen changed, the body has a line that reads `No screen changed.` and the ready check accepts it. It skips the screenshot proof on a branch that changes no view. Run it from the checkout that holds the ledger. It reads the pull request through `gh` on GitHub and the merge request through `glab` on GitLab.
 
 The script cannot prove steps 1 and 3, the review verdict and the spec re-read. State those two yourself, with one line each in the handoff. A green ready check does not mean that the run was good. If it fails, fix what it names, or ask the gate owner to waive it. Do not mark the pull request ready first.
 
@@ -266,7 +275,7 @@ The run ends here, after the gate owner says so. Marking the pull request ready 
    Immediately before the merge, make sure that the base is still an ancestor of the branch. Run `git fetch origin` and then `git merge-base --is-ancestor origin/<base_branch> HEAD`. The ready check asks the same question, but it asks at ready. The base can move between ready and the word of the gate owner. If the base moved, merge it into the branch, run the suite again, and say so before you merge the pull request. A clean text merge is not a working tree.
 2. Clean up. Delete the remote feature branch. Then check out `base_branch`, pull, prune, and delete each local branch whose own pull request is merged. A branch that git lists as merged but that has no merged pull request stays. A new branch with no commits is an ancestor of its base.
 
-   Never delete a branch in `protected_branches`. Never delete the branch that `screenshot_branch` names, or any branch whose name starts with it. It is usually an orphan branch with no pull request, and it holds the screenshots that pull request bodies link to.
+   Never delete a branch in `protected_branches`. Never delete the branch that `screenshot_branch` names, or any branch whose name starts with it. If `screenshot_branch` is empty, this rule names no branch. Do not read the empty name as a prefix that every branch starts with. It is usually an orphan branch with no pull request, and it holds the screenshots that pull request bodies link to.
 
    Remove the worktrees of this run and every build folder of this run, including build folders that sit beside the worktrees. List them with `ls -d .worktrees/<slug>-*` and remove only the paths that the list prints. Stop each stall watch whose roots name a worktree of this run. Do not touch devices that hold a signed-in session, and never remove a worktree that such a device builds from. The Devices section of the project file names them, or says where their ids are kept.
 3. Move the ticket to done. Resolve the transition from the available transitions of the issue. Then post or update the trail comment.
@@ -301,7 +310,7 @@ The feature report is for the gate owner, who reads it in about one minute, as a
 3. One line under each strip that says what the gate owner looks at.
 4. A short status: what the run does not cover, what was waived, and anything that is still the gate owner's.
 
-Use the screenshots that step 5 of the ship checklist already took again and pushed. Do not take them again.
+Use the screenshots that step 5 of the ship checklist already took again and pushed or uploaded. Do not take them again.
 
 Do not include before-and-after tables, test counts beyond one line, process detail, a chronology, or a findings list. Each of those belongs in the retro or on the pull request. Deliver the report as a document that the gate owner can open, with the strips inline. Do not deliver it as a wall of chat text.
 

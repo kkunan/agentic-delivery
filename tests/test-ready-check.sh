@@ -31,6 +31,10 @@ build() {
     [ "$docs" = private ] || ledger="$repo/$docs_dir/2026-10-02-demo"
     printf -- '---\nplatform: flutter\nbase_branch: %s\nbranch_prefix: %s\ndocs: %s\ndocs_dir: %s\nview_globs: %s\nscreenshot_branch: screenshots\n---\n' \
         "$base" "$prefix" "$docs" "${T_DOCS_DIR_VALUE:-$docs_dir}" "${T_GLOBS:-lib/**/views/**,lib/**/widgets/**}" > "$repo/.claude/agentic-delivery.md"
+    if [ -n "${T_FORGE:-}" ]; then
+        awk -v f="$T_FORGE" 'NR == 2 { print "forge: " f } { print }' "$repo/.claude/agentic-delivery.md" > "$repo/.claude/tmp.md"
+        mv "$repo/.claude/tmp.md" "$repo/.claude/agentic-delivery.md"
+    fi
     printf 'start\n' > "$repo/README.txt"
     git_in add -A
     git_in commit -q -m "start"
@@ -49,7 +53,15 @@ body=$(printf 'x%.0s' $(seq 1 250))
 [ -f "$(dirname "$0")/body-extra" ] && body=$(printf '%s\n%s' "$body" "$(cat "$(dirname "$0")/body-extra")")
 jq -n --arg b "$body" '{number:1,isDraft:true,baseRefName:"develop",body:$b}'
 STUB
-    chmod +x "$root/bin/gh"
+    cat > "$root/bin/glab" <<'STUB'
+#!/bin/bash
+printf '%s\n' "$*" >> "$(dirname "$0")/glab-calls"
+[ -f "$(dirname "$0")/no-mr" ] && { echo 'no open merge request available for "feature/demo"' >&2; exit 1; }
+body=$(printf 'x%.0s' $(seq 1 250))
+[ -f "$(dirname "$0")/body-extra" ] && body=$(printf '%s\n%s' "$body" "$(cat "$(dirname "$0")/body-extra")")
+jq -n --arg b "$body" '{iid:1,draft:true,target_branch:"develop",source_branch:"feature/demo",description:$b}'
+STUB
+    chmod +x "$root/bin/gh" "$root/bin/glab"
 }
 
 write_ledger() {
@@ -310,6 +322,136 @@ build
 run_with_pr
 check "no view change: exit 0" 0 "$rc"
 check "no view change: screenshot check skips" yes "$(has 'SKIP  PR links screenshots')"
+cleanup
+
+# ── GitLab, through a stub for glab ───────────────────────────────────────
+add_view() {
+    mkdir -p "$repo/lib/a/views"
+    printf 'view\n' > "$repo/lib/a/views/page.dart"
+    git_in add -A
+    git_in commit -q -m "add a view"
+    git_in push -q origin feature/demo
+    write_ledger "$(git_in log --first-parent develop..HEAD --format=%h | tr '\n' ' ')"
+}
+
+T_FORGE=gitlab build
+add_view
+run_with_pr
+check "gitlab: glab is called" yes "$([ -e "$root/bin/glab-calls" ] && echo yes || echo no)"
+check "gitlab: glab asks for json" yes "$(grep -qF 'mr view --output json' "$root/bin/glab-calls" && echo yes || echo no)"
+check "gitlab: gh is not called" no "$([ -e "$root/bin/gh-calls" ] && echo yes || echo no)"
+check "gitlab: description passes" yes "$(has 'PASS  MR description rewritten')"
+check "gitlab: no screenshot link fails" yes "$(has 'FAIL  MR links screenshots')"
+check "gitlab: final line says MR" yes "$(has 'The MR is not ready')"
+printf 'https://gitlab.example.test/o/r/-/raw/screenshots/x/a.png\n' > "$root/bin/body-extra"
+run_with_pr
+check "gitlab screenshot link: exit 0" 0 "$rc"
+check "gitlab screenshot link: passes" yes "$(has 'PASS  MR links screenshots')"
+check "gitlab screenshot link: says mark the MR ready" yes "$(has 'Mark the MR ready')"
+touch "$root/bin/no-mr"
+run_with_pr
+check "gitlab, no merge request: exit 1" 1 "$rc"
+check "gitlab, no merge request: fails" yes "$(has 'FAIL  merge request open')"
+check "gitlab, no merge request: passes on the glab message" yes "$(has 'no open merge request available')"
+cleanup
+
+# ── GitLab: an image uploaded to the merge request ────────────────────────
+upload='/uploads/0123456789abcdef0123456789abcdef/home.png'
+T_FORGE=gitlab build
+add_view
+printf '![home](%s)\n' "$upload" > "$root/bin/body-extra"
+run_with_pr
+check "gitlab relative upload: exit 0" 0 "$rc"
+check "gitlab relative upload: passes" yes "$(has 'PASS  MR links screenshots')"
+printf '![home](https://gitlab.example.test/-/project/7%s)\n' "$upload" > "$root/bin/body-extra"
+run_with_pr
+check "gitlab full upload URL: passes" yes "$(has 'PASS  MR links screenshots')"
+printf '![home](/uploads/not-a-hash/home.png)\n' > "$root/bin/body-extra"
+run_with_pr
+check "gitlab upload without a hash: fails" yes "$(has 'FAIL  MR links screenshots')"
+check "gitlab failure: names the upload form" yes "$(has 'an image uploaded to the merge request')"
+check "gitlab failure: names the screenshot branch too" yes "$(has 'a URL on the screenshots branch')"
+cleanup
+
+T_FORGE=gitlab build
+grep -v '^screenshot_branch:' "$repo/.claude/agentic-delivery.md" > "$repo/.claude/tmp.md"
+mv "$repo/.claude/tmp.md" "$repo/.claude/agentic-delivery.md"
+add_view
+run_with_pr
+check "gitlab, no screenshot_branch: the check runs" yes "$(has 'FAIL  MR links screenshots')"
+check "gitlab, no screenshot_branch: no branch in the message" no "$(has 'a URL on the')"
+printf '![home](%s)\n' "$upload" > "$root/bin/body-extra"
+run_with_pr
+check "gitlab, no screenshot_branch, upload: exit 0" 0 "$rc"
+cleanup
+
+build
+add_view
+printf '![home](%s)\n' "$upload" > "$root/bin/body-extra"
+run_with_pr
+check "github, gitlab upload link: does not count" yes "$(has 'FAIL  PR links screenshots')"
+check "github failure: no upload form in the message" no "$(has 'uploaded')"
+grep -v '^screenshot_branch:' "$repo/.claude/agentic-delivery.md" > "$repo/.claude/tmp.md"
+mv "$repo/.claude/tmp.md" "$repo/.claude/agentic-delivery.md"
+run_with_pr
+check "github, no screenshot_branch: reader stops" 3 "$rc"
+cleanup
+
+T_FORGE=gitlab build
+out=$(cd "$repo" && env -u READY_CHECK_BASE PATH="$root/bin:$PATH" bash "$script" 2>&1); rc=$?
+check "gitlab base from the MR: names the target branch" yes "$(has 'base  origin/develop (from the merge request)')"
+cleanup
+
+T_FORGE=gitlab build
+run
+check "gitlab, skip: exit 0" 0 "$rc"
+check "gitlab, skip: both MR checks skip" 2 "$(printf '%s\n' "$out" | grep -c '^SKIP  MR ')"
+check "gitlab, skip: glab is not called" no "$([ -e "$root/bin/glab-calls" ] && echo yes || echo no)"
+cleanup
+
+# ── The forge, from the origin URL ────────────────────────────────────────
+for url in git@gitlab.com:o/r.git https://gitlab.example.test/o/r.git ssh://git@gitlab.example.test:2222/o/r.git; do
+    build
+    git_in config "url.$root/origin.git.insteadOf" "$url"
+    git_in remote set-url origin "$url"
+    run_with_pr
+    check "origin $url: glab is called" yes "$([ -e "$root/bin/glab-calls" ] && echo yes || echo no)"
+    check "origin $url: exit 0" 0 "$rc"
+    cleanup
+done
+
+build
+git_in config "url.$root/origin.git.insteadOf" "git@github.com:o/gitlab-tools.git"
+git_in remote set-url origin "git@github.com:o/gitlab-tools.git"
+run_with_pr
+check "github origin with gitlab in the path: gh is called" yes "$([ -e "$root/bin/gh-calls" ] && echo yes || echo no)"
+check "github origin with gitlab in the path: glab is not called" no "$([ -e "$root/bin/glab-calls" ] && echo yes || echo no)"
+cleanup
+
+T_FORGE=github build
+git_in config "url.$root/origin.git.insteadOf" "git@gitlab.com:o/r.git"
+git_in remote set-url origin "git@gitlab.com:o/r.git"
+run_with_pr
+check "forge key wins over the origin URL: gh is called" yes "$([ -e "$root/bin/gh-calls" ] && echo yes || echo no)"
+cleanup
+
+T_FORGE=bitbucket build
+run
+check "unknown forge: exit 1" 1 "$rc"
+check "unknown forge: names the value" yes "$(has 'forge must be github or gitlab, not bitbucket')"
+check "unknown forge: no check ran" no "$(has 'PASS')"
+cleanup
+
+# ── A forge CLI that is not installed ─────────────────────────────────────
+T_FORGE=gitlab build
+rm "$root/bin/glab"
+out=$(cd "$repo" && READY_CHECK_BASE=origin/develop PATH="$root/bin:/usr/bin:/bin" bash "$script" 2>&1); rc=$?
+if PATH=/usr/bin:/bin command -v glab >/dev/null 2>&1; then
+    printf 'note: glab is in /usr/bin or /bin, so the missing glab case cannot run here\n'
+else
+    check "no glab: exit 1" 1 "$rc"
+    check "no glab: says glab is not installed" yes "$(has 'glab is not installed or not on PATH')"
+fi
 cleanup
 
 finish
