@@ -355,6 +355,48 @@ check "gitlab, no merge request: fails" yes "$(has 'FAIL  merge request open')"
 check "gitlab, no merge request: passes on the glab message" yes "$(has 'no open merge request available')"
 cleanup
 
+# ── GitLab: an image uploaded to the merge request ────────────────────────
+upload='/uploads/0123456789abcdef0123456789abcdef/home.png'
+T_FORGE=gitlab build
+add_view
+printf '![home](%s)\n' "$upload" > "$root/bin/body-extra"
+run_with_pr
+check "gitlab relative upload: exit 0" 0 "$rc"
+check "gitlab relative upload: passes" yes "$(has 'PASS  MR links screenshots')"
+printf '![home](https://gitlab.example.test/-/project/7%s)\n' "$upload" > "$root/bin/body-extra"
+run_with_pr
+check "gitlab full upload URL: passes" yes "$(has 'PASS  MR links screenshots')"
+printf '![home](/uploads/not-a-hash/home.png)\n' > "$root/bin/body-extra"
+run_with_pr
+check "gitlab upload without a hash: fails" yes "$(has 'FAIL  MR links screenshots')"
+check "gitlab failure: names the upload form" yes "$(has 'an image uploaded to the merge request')"
+check "gitlab failure: names the screenshot branch too" yes "$(has 'a URL on the screenshots branch')"
+cleanup
+
+T_FORGE=gitlab build
+grep -v '^screenshot_branch:' "$repo/.claude/agentic-delivery.md" > "$repo/.claude/tmp.md"
+mv "$repo/.claude/tmp.md" "$repo/.claude/agentic-delivery.md"
+add_view
+run_with_pr
+check "gitlab, no screenshot_branch: the check runs" yes "$(has 'FAIL  MR links screenshots')"
+check "gitlab, no screenshot_branch: no branch in the message" no "$(has 'a URL on the')"
+printf '![home](%s)\n' "$upload" > "$root/bin/body-extra"
+run_with_pr
+check "gitlab, no screenshot_branch, upload: exit 0" 0 "$rc"
+cleanup
+
+build
+add_view
+printf '![home](%s)\n' "$upload" > "$root/bin/body-extra"
+run_with_pr
+check "github, gitlab upload link: does not count" yes "$(has 'FAIL  PR links screenshots')"
+check "github failure: no upload form in the message" no "$(has 'uploaded')"
+grep -v '^screenshot_branch:' "$repo/.claude/agentic-delivery.md" > "$repo/.claude/tmp.md"
+mv "$repo/.claude/tmp.md" "$repo/.claude/agentic-delivery.md"
+run_with_pr
+check "github, no screenshot_branch: reader stops" 3 "$rc"
+cleanup
+
 T_FORGE=gitlab build
 out=$(cd "$repo" && env -u READY_CHECK_BASE PATH="$root/bin:$PATH" bash "$script" 2>&1); rc=$?
 check "gitlab base from the MR: names the target branch" yes "$(has 'base  origin/develop (from the merge request)')"

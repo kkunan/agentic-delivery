@@ -195,7 +195,8 @@ works.
 To start, copy `templates/agentic-delivery.md` from the plugin to `.claude/agentic-delivery.md` in
 your repository. The template explains each key. The keys for the platform, the branches, the
 docs folder, the screen patterns, and the screenshot branch are empty, so fill them in. If one is
-empty, `/feature` asks you for it before it starts. Fill in the sections for your team. Write the
+empty, `/feature` asks you for it before it starts. On GitLab, the screenshot branch may stay empty,
+because the run can upload the images to the merge request. Fill in the sections for your team. Write the
 place to find a sign-in, never the sign-in itself. Put a device id that belongs to one person in
 local settings, not in the project file.
 

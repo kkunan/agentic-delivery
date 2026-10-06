@@ -226,7 +226,7 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 
 3. Read the spec again against what shipped, and fix any drift.
 4. Make sure that the ledger has an entry that names every commit on the branch. Do this after the final push, because at write time the ready check cannot see the commit that you are writing. A commit that changes only files in the ledger folder needs no entry, so a ledger that git tracks can record itself.
-5. Take the screenshots again on the final tree, after all the steps above, and push them to the branch that `screenshot_branch` names. Use `scripts/settle-screenshot.swift --capture "<command>"` so that each capture waits for the screen to settle.
+5. Take the screenshots again on the final tree, after all the steps above, and push them to the branch that `screenshot_branch` names. On GitLab, you can instead upload them to the merge request description, and you must if `screenshot_branch` is empty. Use `scripts/settle-screenshot.swift --capture "<command>"` so that each capture waits for the screen to settle.
 6. Rewrite the pull request description.
 7. Run `scripts/ready-check.sh`. It must exit 0. Then mark the pull request ready. Do not ask the gate owner. On GitHub that is `gh pr ready`. On GitLab, where the pull request is a merge request, it is `glab mr update --ready`. The key `forge` in the project file says which one.
 8. Immediately after that, move the ticket to review, and post or update the trail comment, as the section Tracker and pull request says.
@@ -239,9 +239,9 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 - The ledger has cost lines for the spec review, the plan review, the final review, and at least one task.
 - The QA tally line reads all run, or each waived check has a waiver line from the gate owner.
 - The pull request body is a real description.
-- If the branch touches a file that matches `view_globs`, the body links screenshots on the screenshot branch.
+- If the branch touches a file that matches `view_globs`, the body links screenshots on the screenshot branch, or, on GitLab, images uploaded to the merge request.
 
-The screenshot proof is a URL in the body that contains `/<screenshot_branch>/`. If a view file changed but no screen changed, the body has a line that reads `No screen changed.` and the ready check accepts it. It skips the screenshot proof on a branch that changes no view. Run it from the checkout that holds the ledger. It reads the pull request through `gh` on GitHub and the merge request through `glab` on GitLab.
+The screenshot proof is a URL in the body that contains `/<screenshot_branch>/`. On GitLab, a link that contains `/uploads/<hash>/`, the form that GitLab gives an uploaded image, is also proof. If a view file changed but no screen changed, the body has a line that reads `No screen changed.` and the ready check accepts it. It skips the screenshot proof on a branch that changes no view. Run it from the checkout that holds the ledger. It reads the pull request through `gh` on GitHub and the merge request through `glab` on GitLab.
 
 The script cannot prove steps 1 and 3, the review verdict and the spec re-read. State those two yourself, with one line each in the handoff. A green ready check does not mean that the run was good. If it fails, fix what it names, or ask the gate owner to waive it. Do not mark the pull request ready first.
 
@@ -266,7 +266,7 @@ The run ends here, after the gate owner says so. Marking the pull request ready 
    Immediately before the merge, make sure that the base is still an ancestor of the branch. Run `git fetch origin` and then `git merge-base --is-ancestor origin/<base_branch> HEAD`. The ready check asks the same question, but it asks at ready. The base can move between ready and the word of the gate owner. If the base moved, merge it into the branch, run the suite again, and say so before you merge the pull request. A clean text merge is not a working tree.
 2. Clean up. Delete the remote feature branch. Then check out `base_branch`, pull, prune, and delete each local branch whose own pull request is merged. A branch that git lists as merged but that has no merged pull request stays. A new branch with no commits is an ancestor of its base.
 
-   Never delete a branch in `protected_branches`. Never delete the branch that `screenshot_branch` names, or any branch whose name starts with it. It is usually an orphan branch with no pull request, and it holds the screenshots that pull request bodies link to.
+   Never delete a branch in `protected_branches`. Never delete the branch that `screenshot_branch` names, or any branch whose name starts with it. If `screenshot_branch` is empty, this rule names no branch. Do not read the empty name as a prefix that every branch starts with. It is usually an orphan branch with no pull request, and it holds the screenshots that pull request bodies link to.
 
    Remove the worktrees of this run and every build folder of this run, including build folders that sit beside the worktrees. List them with `ls -d .worktrees/<slug>-*` and remove only the paths that the list prints. Stop each stall watch whose roots name a worktree of this run. Do not touch devices that hold a signed-in session, and never remove a worktree that such a device builds from. The Devices section of the project file names them, or says where their ids are kept.
 3. Move the ticket to done. Resolve the transition from the available transitions of the issue. Then post or update the trail comment.
@@ -301,7 +301,7 @@ The feature report is for the gate owner, who reads it in about one minute, as a
 3. One line under each strip that says what the gate owner looks at.
 4. A short status: what the run does not cover, what was waived, and anything that is still the gate owner's.
 
-Use the screenshots that step 5 of the ship checklist already took again and pushed. Do not take them again.
+Use the screenshots that step 5 of the ship checklist already took again and pushed or uploaded. Do not take them again.
 
 Do not include before-and-after tables, test counts beyond one line, process detail, a chronology, or a findings list. Each of those belongs in the retro or on the pull request. Deliver the report as a document that the gate owner can open, with the strips inline. Do not deliver it as a wall of chat text.
 

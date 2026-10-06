@@ -12,7 +12,8 @@ in your context, so do not open it again.
    `templates/agentic-delivery.md` of the plugin into the project, and wait for the answer. If the file
    exists, check these keys first: `platform`, `base_branch`, `release_branch`, `branch_prefix`,
    `protected_branches`, `docs`, `docs_dir`, `view_globs`, and `screenshot_branch`. If one is empty
-   or missing, stop. Ask the developer for each empty key, and write the answers into the project file
+   or missing, stop. The one exception is `screenshot_branch` on GitLab, which may stay empty,
+   because a merge request takes uploaded images. Ask the developer for each empty key, and write the answers into the project file
    only after the developer agrees. Never guess a value from the branches or the folders that you
    see. Next, make sure that the skills `superpowers:brainstorming`, `superpowers:writing-plans`,
    `superpowers:subagent-driven-development`, and `superpowers:requesting-code-review` are

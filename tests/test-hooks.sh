@@ -64,7 +64,7 @@ bash "$start" >/dev/null 2>&1; check "start: normal file exits 0" 0 $?
 
 printf -- '---\nplatform: flutter\nmin_plugin_version: 9.0.0\n---\n' > "$proj"
 text=$(bash "$start" | text_of)
-want="agentic-delivery 0.1.0 is older than this project needs (9.0.0). Update the plugin."
+want="agentic-delivery $(jq -r .version "$root/.claude-plugin/plugin.json") is older than this project needs (9.0.0). Update the plugin."
 check "start: older plugin warns first" "$want" "${text:0:${#want}}"
 check "start: warning plus pointer is at most 600 characters" yes "$([ "${#text}" -le 600 ] && echo yes || echo no)"
 check "start: warning text still names the skills" yes "$(has "$text" "platform-flutter")"
