@@ -97,8 +97,9 @@ ledger.
    re-review for each wave. If the fix of a Minor finding is one line and needs no new device
    run, no new proof run, and no re-review, make it. Put everything else under Follow-ups in the pull
    request description and in the ledger. The final review gets one fix wave and one re-review,
-   and then the ticket ships. Answer every review comment on its own thread, with the prefix
-   `Claude said:` and the commit that addressed it. `run-rules`, Review findings gives the rules.
+   and then the ticket ships. Answer every review comment on its own thread, with the comment
+   prefix that `controller`, Tracker and pull request gives, and the commit that addressed it. If
+   `comment_prefix` is empty, the prefix is `Claude said:`. `run-rules`, Review findings gives the rules.
 6b. Work the ship checklist in `controller`, Ship checklist, in order, as the last task of the
    plan. Do not work from memory. If a ship step mutates code, cite the review that ran the same
    mutation and its result. If the file changed after that review, run the mutation again.

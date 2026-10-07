@@ -17,6 +17,15 @@ printf -- '---\nplatform: flutter\npush_policy: mr-and-ship\n---\n' > "$work/.cl
 check "push_policy is read when the key is present" "mr-and-ship" "$(bash "$cfg" push_policy each-task)"
 cp "$here/../templates/agentic-delivery.md" "$work/.claude/agentic-delivery.md"
 check "the template sets push_policy to each-task" "each-task" "$(bash "$cfg" push_policy 2>&1)"
+printf -- '---\nplatform: flutter\ncomment_prefix:\n---\n' > "$work/.claude/agentic-delivery.md"
+out=$(bash "$cfg" comment_prefix ""); check "an empty comment_prefix with an empty default exits 0" 0 $?
+check "an empty comment_prefix gives no prefix" "" "$out"
+bash "$cfg" comment_prefix >/dev/null 2>&1; check "an empty key with no default fails closed" 3 $?
+printf -- '---\nplatform: flutter\n---\n' > "$work/.claude/agentic-delivery.md"
+out=$(bash "$cfg" comment_prefix ""); check "a missing comment_prefix with an empty default exits 0" 0 $?
+check "a missing comment_prefix gives no prefix" "" "$out"
+printf -- '---\nplatform: flutter\ncomment_prefix: Claude said:\n---\n' > "$work/.claude/agentic-delivery.md"
+check "a prefix that holds a colon reads whole" "Claude said:" "$(bash "$cfg" comment_prefix "")"
 rm "$work/.claude/agentic-delivery.md"
 bash "$cfg" platform >/dev/null 2>&1; check "a missing file fails closed" 4 $?
 cd /

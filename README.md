@@ -188,6 +188,7 @@ that project, and the plugin never guesses these values. Its front matter names:
 - the forge of the pull request, GitHub or GitLab, and the ticket tracker
 - the push times of the feature branch: after each commit, or only at the start of the pull
   request and at ship
+- optionally, a prefix such as `Claude said:` for each comment that the run posts with your account
 - the mutation runner for the platform
 - optionally, your own agent for any of the three seats
 
