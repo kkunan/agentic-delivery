@@ -186,6 +186,8 @@ that project, and the plugin never guesses these values. Its front matter names:
   the run never commits, such as `~/agentic-notes/<project>`
 - the file patterns of the screens, the names of the test processes, and the branch for screenshots
 - the forge of the pull request, GitHub or GitLab, and the ticket tracker
+- the push times of the feature branch: after each commit, or only at the start of the pull
+  request and at ship
 - the mutation runner for the platform
 - optionally, your own agent for any of the three seats
 

@@ -12,6 +12,7 @@ test_processes: flutter_tester,dartvm,xcodebuild,java
 screenshot_branch:
 forge:
 tracker:
+push_policy: each-task
 mutation_runner: scripts/mutation-runner.sh
 implementer_agent: agentic-delivery:implementer
 reviewer_agent: agentic-delivery:reviewer
@@ -37,6 +38,7 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 - `screenshot_branch` is the branch that holds the screenshots for the review, for example `screenshots`. The run never deletes it. On GitLab, the run can instead upload each image to the merge request description, and GitLab stores it as a link that contains `/uploads/<hash>/`. The ready check accepts either form on GitLab. So on GitLab you may leave `screenshot_branch` empty, and then the run uploads every screenshot.
 - `forge` is `github` or `gitlab`. It names the host of the pull request. GitLab calls it a merge request. The ready check reads the request through `gh` for GitHub and through `glab` for GitLab, so install the matching tool and sign in. If `forge` is empty, the ready check reads the host of the `origin` remote. A host with `gitlab` in its name gives `gitlab`, and any other host gives `github`. Fill in the key for a GitLab server whose host has no `gitlab` in its name.
 - `tracker` names the ticket tracker: `jira`, `linear`, `github`, `gitlab`, or `none`. With `github` or `gitlab`, the tickets are the issues of the forge. The run never assumes Jira. With `none`, the run skips every tracker step. The skill `controller`, section Tracker and pull request, says how the run moves a ticket in each tracker.
+- `push_policy` sets the push times of the feature branch. Its value is `each-task` or `mr-and-ship`. With `each-task`, the run pushes after each commit. With `mr-and-ship`, the run commits after each task. Before the pull request is ready, it pushes the feature branch at two times only: at the start of the pull request, and at ship. After the pull request is ready, it pushes one time for each fix wave. It asks before any other push. If your CI starts a build on each push and bills by the build or by the minute, choose `mr-and-ship`. A project file without this key gets `each-task`. The key covers the feature branch only. The push of the screenshots to `screenshot_branch` at ship happens with both values. The skill `controller`, section Pushes, gives the full rule.
 - `mutation_runner` is the path from the top of the repository to an executable that follows the runner contract of `scripts/mutate.sh`. The Flutter adapter of the plugin is `skills/platform-flutter/mutation-runner.sh`, and the iOS adapter is `skills/platform-ios/mutation-runner.sh`. The path of a plugin install differs on each machine. So copy the file for your platform to `scripts/mutation-runner.sh` in your repository, which is the value in this file, and commit it.
 - `implementer_agent`, `reviewer_agent`, and `qa_agent` name the agent for each seat. See the Agents section.
 

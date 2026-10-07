@@ -32,7 +32,8 @@ Each item in the first list is pre-approved. None of them is a reason to stop an
 
 You can do these things without asking:
 
-- Commit after each completed task, and push to the current feature branch. Its name starts with `branch_prefix`.
+- Commit after each completed task.
+- Push to the current feature branch at the times that `push_policy` in the project file names. The name of the branch starts with `branch_prefix`. With `each-task`, which is the default, push after each commit. With `mr-and-ship`, push at the start of the pull request and at ship. After the pull request is ready, push one time for each fix wave. The section Pushes of the `controller` skill gives the full rule. (lesson: build-per-push)
 - Open a draft pull request against `base_branch`. Rewrite its description as the plan progresses.
 - Build and test with the commands that the platform skill names, create and boot test devices, and take screenshots.
 - Dispatch implementer and reviewer subagents.
@@ -44,6 +45,7 @@ You can do these things without asking:
 Stop and ask before you do these things:
 
 - Merge into a branch in `protected_branches`, or push to one.
+- Push the feature branch at a time that `push_policy` does not name. Never push only to make sure that a commit is safe. A local commit is enough until the next planned push.
 - Force-push, or rewrite published history.
 - Delete a branch whose own pull request is not merged.
 - Touch an area that the Ask-first areas section of the project file lists.

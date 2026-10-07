@@ -15,7 +15,9 @@ in your context, so do not open it again.
    is empty or missing, stop. The one exception is `screenshot_branch` on GitLab, which may stay empty,
    because a merge request takes uploaded images. Ask the developer for each empty key, and write the
    answers into the project file only after the developer agrees. Never guess a value from the branches
-   or the folders that you see. Next, make sure that the skills `superpowers:brainstorming`, `superpowers:writing-plans`,
+   or the folders that you see. The key `push_policy` can be missing, and then it is `each-task`. If
+   it holds a value other than `each-task` or `mr-and-ship`, stop and name the key. Next, make sure
+   that the skills `superpowers:brainstorming`, `superpowers:writing-plans`,
    `superpowers:subagent-driven-development`, and `superpowers:requesting-code-review` are
    available. If one is missing, stop and tell the developer to install the superpowers plugin,
    because steps 1, 3, 5, and 6 need these skills. Do not do those steps without them.
@@ -75,8 +77,9 @@ ledger.
 5. After approval, execute the plan with `superpowers:subagent-driven-development`. Keep the ledger
    in `docs_dir`, as `run-rules`, The ledger describes. Begin it with a conflict scan, and let the
    scan decide which tasks run in parallel waves. Dispatch the implementer for each coding task and
-   the reviewer for each review. Commit and push after each task. Each implementer reports the
-   mutation of its own acceptance branch, red and green, with the branch named. If a report lacks
+   the reviewer for each review. Commit after each task, and push at the times that `push_policy`
+   names. `controller`, Pushes gives the rule. Each implementer reports the mutation of its own
+   acceptance branch, red and green, with the branch named. If a report lacks
    it, send the task back before review. Every fix brief and ruling that you write after the gate
    carries the failing input for each check, figure, or premise in it. The scoped re-review runs
    that input before it marks the item addressed. When a phase ends, write its cost line in the

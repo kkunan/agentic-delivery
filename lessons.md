@@ -175,3 +175,9 @@ Rule: When you remove the production code that a test covers, make sure that the
 One run proposed eighteen retro items, and fourteen of them were additions to one rule file. Two authors editing one untracked file leave git unable to restore the change. In another case, a rule changed while a plan that quoted the old wording waited for review. An hour later, three briefs were about to carry a rule that no longer existed. A reviewer who applied the new rule was set to fail work that matched its brief.
 
 Rule: A retro proposes a rule change as an action item and never edits plugin files. A rule change goes as a pull request to the plugin repository.
+
+## build-per-push
+
+A team ran the plugin on a CI that starts a build on each push to a merge request branch. The team has a limited number of build minutes. The rule "push after each task" started one build for each task. The team wrote an override in the body of its project file. The override allows two pushes: at the start of the merge request, and at ship. Any other push needs a word from the engineer. An override in prose is easy to miss, because no script reads the body.
+
+Rule: The key `push_policy` sets the push times of the feature branch. With `mr-and-ship`, push at the start of the pull request and at ship. Ask before any other push.

@@ -126,6 +126,26 @@ check "unnamed commit: fails" yes "$(has 'FAIL  ledger names every commit')"
 check "unnamed commit: names the sha" yes "$(has "$(git_in rev-parse --short HEAD)")"
 cleanup
 
+# ── push_policy mr-and-ship: task commits stay local until the ship push ──
+build
+printf 'two\n' > "$repo/lib/a/data/two.dart"
+git_in add -A
+git_in commit -q -m "add two"
+two=$(git_in rev-parse --short HEAD)
+printf 'three\n' > "$repo/lib/a/data/three.dart"
+git_in add -A
+git_in commit -q -m "add three"
+printf 'commit %s add two\ncommit %s add three\n' "$two" "$(git_in rev-parse --short HEAD)" >> "$ledger/progress.md"
+run
+check "local task commits: exit 1" 1 "$rc"
+check "local task commits: branch pushed fails" yes "$(has 'FAIL  branch pushed')"
+check "local task commits: the ledger check reads the local commits" yes "$(has 'PASS  ledger names every commit')"
+git_in push -q origin feature/demo
+run
+check "one ship push: exit 0" 0 "$rc"
+check "one ship push: branch pushed" yes "$(has 'PASS  branch pushed')"
+cleanup
+
 # ── A ledger that git tracks ──────────────────────────────────────────────
 T_TRACK=1 build
 git_in add -A
