@@ -52,7 +52,7 @@ Say how the ticket tracker that `tracker` names works for your team. Fill in the
 
 Say which device kinds the tests use, and the base image of each kind: the simulator runtime, the emulator system image, and Chrome. Each ticket creates its own simulator and emulator from these images, and deletes them at the end. The ids of the devices that one ticket creates go in the ledger of that ticket, not in this file. Say how a run claims a device, so that two runs never use the same one.
 
-Name each protected device. A protected device holds a signed-in session, and tests must never touch it. If the id of a protected device belongs to one person, put it in local settings and not in this file, which git tracks. Examples of local settings are `.claude/settings.local.json` and a file that git ignores. Then say here where the controller finds that id.
+Name each protected device. A protected device holds a signed-in session, and tests must never touch it. If the id of a protected device belongs to one person, do not put it in this file, which git tracks. Put it in the local file `.claude/agentic-delivery.local.md` of that person. Add the line `.claude/agentic-delivery.local.md` to the `.gitignore` file of the repository, so that git ignores the local file. The local file holds one protected device id or device name on each line, and nothing else. The controller reads it before the first device step. If it is missing, the controller asks the developer. Name here only the protected devices that the whole team shares.
 
 ## Accounts
 

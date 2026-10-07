@@ -203,7 +203,8 @@ folder, the screen patterns, the screenshot branch, and the tracker are empty, s
 one is empty, `/feature` asks you for it before it starts. On GitLab, the screenshot branch may stay
 empty, because the run can upload the images to the merge request. Fill in the sections for your
 team. Write the place to find a sign-in, never the sign-in itself. Put a device id that belongs to
-one person in local settings, not in the project file.
+one person in `.claude/agentic-delivery.local.md`, one id or name on each line, not in the project
+file. Add that path to `.gitignore`, so that git ignores it.
 
 The plugin reads the front matter with `scripts/project-config.sh`. If the file is missing,
 `/feature` stops and offers to copy the template.

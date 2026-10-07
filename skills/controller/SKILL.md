@@ -39,6 +39,8 @@ Between notifications, examine `git status` and `git diff` in each worktree. Do 
 
 Every brief and every resume message that builds or tests names the device by its id. The ledger holds the id of each device that the ticket creates. The words "the same device" never stand alone, because a resumed agent cannot tell which device you mean.
 
+Before the first step of the run that uses a device, read the local file `.claude/agentic-delivery.local.md` in the project root. Git ignores this file, so it is not in a worktree. Each line holds the id or the name of one protected device of this developer. These devices are protected in the same way as the protected devices that the Devices section of the project file names. If the file is missing, ask the developer which devices hold a signed-in session. Write the answer into the file only after the developer agrees. An empty file means that this developer has no protected device. Never copy the ids from the local file into a file that git tracks.
+
 A check that compares the base against the head takes its base half in Task 0. Take it from the worktree of the run, before the first task commit. Never take it from a second worktree, because the device claim refuses a second worktree on the device that the run holds.
 
 When a plan injects a seam that has a production default, the task names one test that uses the default. The tests of the fake do not cover the default.
@@ -311,7 +313,7 @@ The run ends here, after the gate owner says so. Marking the pull request ready 
 
    Never delete a branch in `protected_branches`. Never delete the branch that `screenshot_branch` names, or any branch whose name starts with it. If `screenshot_branch` is empty, this rule names no branch. Do not read the empty name as a prefix that every branch starts with. It is usually an orphan branch with no pull request, and it holds the screenshots that pull request bodies link to.
 
-   Remove the worktrees of this run and every build folder of this run, including build folders that sit beside the worktrees. List them with `ls -d .worktrees/<slug>-*` and remove only the paths that the list prints. Stop each stall watch whose roots name a worktree of this run. Do not touch devices that hold a signed-in session, and never remove a worktree that such a device builds from. The Devices section of the project file names them, or says where their ids are kept.
+   Remove the worktrees of this run and every build folder of this run, including build folders that sit beside the worktrees. List them with `ls -d .worktrees/<slug>-*` and remove only the paths that the list prints. Stop each stall watch whose roots name a worktree of this run. Do not touch devices that hold a signed-in session, and never remove a worktree that such a device builds from. The Devices section of the project file names them, and the local file `.claude/agentic-delivery.local.md` names the devices of this developer.
 3. Move the ticket to done. Resolve the transition from the available transitions of the issue. Then post or update the trail comment.
 4. Write the feature report in the format of the next section. It is last because it shows work that shipped.
 
