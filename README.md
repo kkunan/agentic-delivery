@@ -195,7 +195,9 @@ that project, and the plugin never guesses these values. Its front matter names:
 Its body has sections for the tracker steps, the devices, the accounts, and the actions that need a
 person's word, such as signing and secrets. The key `tracker` names the ticket tracker: Jira, Linear,
 GitHub issues, GitLab issues, another tracker that the tracker steps describe, or none. The tracker
-steps are in plain words.
+steps are in plain words. An optional section, Docs publishing, is for a team with private docs.
+It lets the run publish a copy of each spec, plan, and retro to the team wiki, and link the page
+from the ticket.
 
 To start, copy `templates/agentic-delivery.md` from the plugin to `.claude/agentic-delivery.md` in
 your repository. The template explains each key. The keys for the platform, the branches, the docs

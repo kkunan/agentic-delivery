@@ -48,6 +48,18 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 
 Say how the ticket tracker that `tracker` names works for your team. Fill in the status that a ticket gets at each stage. The stages are work start, plan wait for the gate owner, review start, and done. Say who owns the gate and where the controller posts the plan and the result. On GitHub, say whether the status is a field of a GitHub project, and name the project and the field, or whether it is a label. On GitLab, say whether the status is a scoped label, such as `workflow::in progress`, or the Status field of the issue. On GitHub and GitLab, also say whether the team closes the issue when the pull request merges. By default, the run links the issue without a closing keyword. With `other`, name the connector that reaches the tracker, and give the form of a ticket id, the statuses, and the rules for comments.
 
+## Docs publishing
+
+This section is optional, and it applies only with `docs: private`. With private docs, the specs, the plans, and the retros never go into git, so a person who reads the ticket cannot open them. If you fill in this section, the run publishes a copy of each document to the wiki of the team, and links the page from the trail comment of the ticket. If you delete this section, the run publishes nothing. Fill in these items:
+
+- The wiki, for example Docmost, Confluence, or Notion.
+- How the run reaches the wiki: the name of the MCP server or the connector, or the API. If the API needs a token, write the place to find the token, never the token itself.
+- The parent page. The run creates each page under it.
+- The publish points. The default points are three: the spec is approved, the plan is approved, and the ship task. Remove a point that your team does not want.
+- Who allows a publish. By default, the developer who runs the feature allows it, one time for each run.
+
+The local file of each document stays the source of truth. The skill `controller`, section Docs publishing, gives the rules for each publish.
+
 ## Devices
 
 Say which device kinds the tests use, and the base image of each kind: the simulator runtime, the emulator system image, and Chrome. Each ticket creates its own simulator and emulator from these images, and deletes them at the end. The ids of the devices that one ticket creates go in the ledger of that ticket, not in this file. Say how a run claims a device, so that two runs never use the same one.

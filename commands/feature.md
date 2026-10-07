@@ -30,7 +30,9 @@ in your context, so do not open it again.
 Documents. Every spec, plan, ledger, and retro goes under `docs_dir`. It never goes under the
 default folder of a superpowers skill, such as `docs/superpowers/specs/`. If `docs` is
 `private`, never commit or push one of these documents, even where a superpowers skill says to
-commit it. A `docs_dir` that starts with `~/` is under the home folder of the developer.
+commit it. A `docs_dir` that starts with `~/` is under the home folder of the developer. If `docs` is
+`private` and the project file has a section Docs publishing, `controller`, Docs publishing says
+when the run publishes a copy of a document to the wiki.
 
 Agents. Take each agent from the project file: `implementer_agent`, `reviewer_agent`, and `qa_agent`.
 The defaults are the plugin agents `implementer`, `reviewer`, and `qa-reviewer`. If a key names an

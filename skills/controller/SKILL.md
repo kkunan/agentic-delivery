@@ -7,7 +7,7 @@ description: The rules that only the controller of an agentic-delivery run follo
 
 The controller is the session that dispatches agents and coordinates the run. A dispatched agent does not read this skill. The rules for every agent are in the `run-rules` skill, which also defines the terms that this skill uses.
 
-The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `release_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, `screenshot_branch`, `forge`, `tracker`, `push_policy`, `comment_prefix`, and `mutation_runner`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
+The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `release_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, `screenshot_branch`, `forge`, `tracker`, `push_policy`, `comment_prefix`, and `mutation_runner`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. It can also hold the optional section Docs publishing. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
 
 Where a rule here says "the gate owner", it means the person who approves the plan and who says merge.
 
@@ -254,6 +254,34 @@ The key `comment_prefix` gives the comment prefix. Read it with `scripts/project
 
 Leave one trail comment on the ticket, and continue to edit it. Post it as soon as the pull request goes up, and edit it as things change. Never add new comments on top of it. It has the pull request link, four or five lines about the approach, and links to the spec and the plan. Never write into the description of the ticket, which holds the request in the words of the gate owner. Never paste the documents. Link them pinned to a commit SHA, never to a branch, so that the links still resolve after the branch is deleted.
 
+## Docs publishing
+
+This section applies only if `docs` is `private` and the body of the project file has a section Docs publishing that names a wiki. Otherwise, the run publishes nothing, and this section does not apply.
+
+With private docs, the specs, the plans, and the retros never go into git, so a person who reads the ticket cannot open them. The run publishes a copy of each document to the wiki that the section names. The local file stays the source of truth. A wiki page is a copy of the file at one publish point. Never edit a document on the wiki in place of the local file.
+
+The run publishes at these points, unless the section names other points:
+
+1. The gate owner approves the spec at the end of the brainstorm. Publish the spec.
+2. The gate owner approves the plan at the gate. Publish the plan, and update the spec page.
+3. Ship, at step 8 of the ship checklist. Update the spec page and the plan page, so that they match what shipped. The run writes the retro after the handoff. Publish the retro then, as part of this point.
+
+In lite mode, the brief replaces the spec and the plan. Publish the brief at the gate, and update it at ship.
+
+Ask before the first publish of the run, at the first publish point and not before. Ask the developer who runs the feature, or the person that the section names. The answer covers this run only. Record the answer in the ledger. If the ledger does not exist yet, start it at this point. Never carry it to a later run, and never take it from the ledger of another run. If the answer is no, publish nothing in this run.
+
+At each publish point, follow these rules:
+
+- Create each page under the parent page that the section names. Use the connector or the API that the section names.
+- A wiki page can have more readers than the local file. Before each publish, make sure that the document holds no sign-in detail and no raw capture.
+- Link the page from the trail comment of the ticket. Never paste the document into the ticket. With private docs, no commit holds the document, so this link replaces the link pinned to a commit SHA that the section Tracker and pull request asks for.
+- Record the id of each page that the run creates in the ledger, on its own line, in this shape: `wiki-page: <page id> <document file name>`.
+- Update a page only if its id is in the ledger of this run.
+
+The run can delete a page only if its id is in the ledger of this run. Read the id from the ledger, not from a search of the wiki. Never delete a page that a person or another run created, even if its title matches.
+
+If no tool reaches the wiki, say so one time and publish nothing. Do not paste the documents into the ticket in place of the page.
+
 ## Ship checklist
 
 The last plan task is always "ship", and these are its steps. They are a dispatched task, not remembered rules. Do the steps in this order. Do not skip a step, and do not defer a step to a line in the pull request description.
@@ -274,7 +302,7 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 5. Take the screenshots again on the final tree, after all the steps above, and push them to the branch that `screenshot_branch` names. On GitLab, you can instead upload them to the merge request description, and you must if `screenshot_branch` is empty. Use `scripts/settle-screenshot.swift --capture "<command>"` so that each capture waits for the screen to settle.
 6. Rewrite the pull request description in the template of the forge, as the section Tracker and pull request says.
 7. Run `scripts/ready-check.sh`. It must exit 0. With `mr-and-ship`, a failure can need a new commit on the feature branch. In that case, fix all the failures, and ask the gate owner before you push again. When the check exits 0, mark the pull request ready. Do not ask the gate owner. On GitHub that is `gh pr ready`. On GitLab, where the pull request is a merge request, it is `glab mr update --ready`. The key `forge` in the project file says which one.
-8. Immediately after that, move the ticket to review, and post or update the trail comment, as the section Tracker and pull request says.
+8. Immediately after that, move the ticket to review, and post or update the trail comment, as the section Tracker and pull request says. If the section Docs publishing applies, publish at this step too.
 9. If the `brief` skill is installed, hand off in its style. Say that the pull request is ready and what still needs the gate owner.
 
 `scripts/ready-check.sh` covers the things that a machine can prove:
