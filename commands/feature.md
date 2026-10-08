@@ -50,7 +50,10 @@ resume from its ledger.
    stage. Ask real questions and push back on vague answers. Establish the ticket id in the
    first exchange, in the form of the tracker that `tracker` names. If the developer gives none, ask.
    If there is no ticket, or `tracker` is `none`, say so and skip every tracker step. Never guess an
-   id. Size the ticket, and add the estimate: size, wall-clock range, token budget, and the number
+   id. If the key `po` names a Product Owner, read the goal, user value, metric, acceptance,
+   out of scope, and open questions from the ticket. Ask the developer only for a field that is
+   missing. List each ship default that the ticket marks as proposed in the brief or the M document,
+   as a decision for the gate owner. Size the ticket, and add the estimate: size, wall-clock range, token budget, and the number
    of times you expect to need the developer. `controller`, Estimates defines all four. If the run
    passes them, tell the developer at that time.
 1b. Pick the path by size, as `controller`, Size decides the process says. The developer can name a

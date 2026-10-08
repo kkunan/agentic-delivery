@@ -7,7 +7,7 @@
 A Claude Code plugin that takes a feature from an idea to a merged pull request.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-0.2.0-informational)
+![Version](https://img.shields.io/badge/version-0.3.0-informational)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A63D2)
 ![Status](https://img.shields.io/badge/status-pilot%20not%20run-orange)
 ![Platforms](https://img.shields.io/badge/platforms-Flutter%20%7C%20iOS%20(in%20progress)-lightgrey)
@@ -26,7 +26,7 @@ something went wrong without it, and [`lessons.md`](lessons.md) tells the story 
 > [!NOTE]
 > The core is in place and has tests: the rules, the agents, the feature command, the project file,
 > the scripts, and the hooks. The Flutter layer is written, and two runs on Flutter 3.38.9 stable
-> measured its commands. The team pilot has not run yet, so version 0.2.0 is not tested on a real
+> measured its commands. The team pilot has not run yet, so version 0.3.0 is not tested on a real
 > feature. See [Status](#status) and [Platforms](#platforms) before you install.
 
 ## Quick start
@@ -39,7 +39,7 @@ For a team, pin the plugin to a release tag. Run these two commands at the root 
 repository:
 
 ```bash
-claude plugin marketplace add 'kkunan/agentic-delivery#v0.2.0' --scope project
+claude plugin marketplace add 'kkunan/agentic-delivery#v0.3.0' --scope project
 ```
 
 ```bash
@@ -53,7 +53,7 @@ team gets the same version:
 {
   "extraKnownMarketplaces": {
     "agentic-delivery": {
-      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.2.0" }
+      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.3.0" }
     }
   },
   "enabledPlugins": { "agentic-delivery@agentic-delivery": true }
@@ -94,7 +94,18 @@ and run `/feature` in Claude Code.
 
 ## How a feature runs
 
-### 1. Shape the work
+### 1. Pick the work
+
+This step is optional. It runs only if the project file names a Product Owner.
+
+```mermaid
+flowchart LR
+    B[Backlog] --> O[Product Owner grooms] --> Y[Ready tickets]
+    Y -->|flow| N[Next ticket to the lead]
+    Y -->|sprint| Z[Lead sizes] --> C[Cut-off at the token budget] --> V{{You approve the sprint}}
+```
+
+### 2. Shape the work
 
 ```mermaid
 flowchart LR
@@ -103,21 +114,23 @@ flowchart LR
     S -->|larger| X[Split first]
 ```
 
-### 2. Build
+### 3. Build
 
 ```mermaid
 flowchart LR
     T[Tasks: build, then review] --> F[Final review] --> Q[QA and ship checklist] --> P{{You say merge}}
 ```
 
-### 3. Land
+### 4. Land
 
 ```mermaid
 flowchart LR
-    M[Merge] --> R[Retro]
+    M[Merge] --> R[Retro] --> O[Product Owner grooms again]
 ```
 
-Two steps need you: the plan, and the merge. Everything between them runs on its own.
+Two steps need you: the plan, and the merge. Everything between them runs on its own. In sprint
+mode, you also approve each sprint. A team with no Product Owner starts at the brainstorm, and its
+run ends at the retro.
 
 The size of the ticket picks the path. An XS or S ticket runs in lite mode by default: a short brief
 replaces the spec and the plan, and one session does the work, with one review at the end. An M
@@ -133,6 +146,7 @@ split first. The controller skill gives the conditions.
 | A check passes because it cannot fail. | Each check states the value on a correct tree and on the defect, and the run measures both. |
 | Sessions spend tokens on rules they do not need yet. | Rules are skills that load at the step that needs them. |
 | Rules drift as each run edits them. | A retro only proposes changes, as a pull request that the team reviews. |
+| Tickets arrive without a goal or acceptance, and the backlog order drifts. | An optional Product Owner session grooms and orders the backlog, plans sprints from t-shirt sizes, and replans when a run goes wrong. |
 
 ## How each role uses it
 
@@ -140,7 +154,7 @@ split first. The controller skill gives the conditions.
 |---|---|---|
 | Engineer | Run `/feature`, approve the plan, say merge | A reviewed, tested pull request |
 | Tech lead | Own the project file and the rule reviews | Real costs for the next estimate |
-| Product owner | Set the acceptance rules, read the report | A one-minute report with screenshots |
+| Product owner | Order the backlog, or name a Product Owner session that does it | Ready tickets, a sprint plan, and a one-minute report |
 | QA | Make sure that each check can fail | A QA log with a tally of every check |
 | Designer | Give the visual source of truth | Design reviews and final screenshots |
 
@@ -178,7 +192,8 @@ You own how the team works with the plugin.
 <details>
 <summary><b>Product owner</b></summary>
 
-You decide what a feature must do and how it must look.
+You decide what a feature must do and how it must look. You can also name a Product Owner session
+in the project file, which grooms and orders the backlog for you.
 
 - Take part in the brainstorm, or give the engineer a ticket with clear acceptance rules.
 - Each manual check in the plan states a value that can fail, so you can read the plan and know
@@ -186,6 +201,14 @@ You decide what a feature must do and how it must look.
 - A plan that changes what a user sees comes to a person, even under a delegate.
 - After the merge, read the feature report. It takes about one minute: screenshots of each screen,
   side by side with the screen before the change.
+- With a Product Owner session, the run starts from a ready ticket: goal, user value, metric,
+  acceptance, out of scope, open questions, and size. The run asks the engineer only for a field
+  that is missing.
+- In flow mode, the Product Owner sends the next ready ticket when a team is free. In sprint mode,
+  it plans a batch with the lead. The lead gives each ticket a t-shirt size, and the sprint takes
+  tickets until the token budget is full.
+- When a run passes its estimate, stalls, or finds a blocker, the Product Owner replans with the
+  lead.
 
 </details>
 
@@ -257,6 +280,7 @@ commands/feature.md      the pipeline, started with /feature
 agents/                  implementer, reviewer, qa-reviewer
 skills/run-rules/        the rules that every agent follows
 skills/controller/       the rules for the session that runs the pipeline
+skills/product-owner/    the rules for an optional Product Owner session
 skills/platform-*/       one platform layer in each folder: flutter, ios
 templates/               the project file template
 hooks/                   the start-up pointer and the retro reminder
@@ -275,6 +299,7 @@ tests/                   a test file for each script
 | `/feature` (listed as `agentic-delivery:feature`) | The command that runs the pipeline | You run it |
 | `agentic-delivery:controller` | The rules that only the controller follows: dispatch, review seats, estimates, stall watch, tracker steps, ship, merge, report, and retro | Step 0 of `/feature`, and again after a compaction |
 | `agentic-delivery:run-rules` | The rules that every agent follows | Step 0 of `/feature`, and at the start of every dispatched task and review |
+| `agentic-delivery:product-owner` | The rules for an optional Product Owner session: ready ticket, grooming, sprint planning, and replan | The Product Owner session loads it at start, and again after a compaction |
 | `platform-flutter` | The Flutter layer, with the commands for build and test | For a project with `platform: flutter`, step 0 of `/feature` loads it after the two above. Its commands were measured on Flutter 3.38.9 stable |
 | `platform-ios` | The iOS layer, SwiftUI first with UIKit notes | For a project with `platform: ios`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on Xcode 16.4 |
 
@@ -377,9 +402,9 @@ layer comes from a native iOS project that ran more than 30 tickets through earl
 workflow and its scripts. A CI job runs the layer's commands and its mutation runner on Xcode 16.4
 against a sample app, on each pull request. No project has run a feature through the plugin itself
 yet. The rest of the plugin is in place and has tests.
-The team pilot has not run yet, so version 0.2.0 is not tested on a real feature.
+The team pilot has not run yet, so version 0.3.0 is not tested on a real feature.
 
-Each version gets a tag, such as `v0.2.0`, for a team to pin. On each push to `main`, the workflow
+Each version gets a tag, such as `v0.3.0`, for a team to pin. On each push to `main`, the workflow
 `tag-release.yml` reads the version in `.claude-plugin/plugin.json`. If the tag does not exist, the
 workflow creates it. It never moves a tag that exists.
 
