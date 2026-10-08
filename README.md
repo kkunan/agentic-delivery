@@ -35,17 +35,47 @@ The plugin needs the superpowers plugin from the `claude-plugins-official` marke
 command uses four of its skills. If one is missing, the command stops. The manifest names superpowers as a
 dependency, so Claude Code can install it with this plugin. If it does not, install it first.
 
-Add the repository as a marketplace, then install the plugin from it:
+For a team, pin the plugin to a release tag. Run these two commands at the root of your
+repository:
+
+```bash
+claude plugin marketplace add 'kkunan/agentic-delivery#v0.1.1' --scope project
+```
+
+```bash
+claude plugin install agentic-delivery@agentic-delivery --scope project
+```
+
+The commands write these settings to `.claude/settings.json`. Commit that file, so that the whole
+team gets the same version:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "agentic-delivery": {
+      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.1.1" }
+    }
+  },
+  "enabledPlugins": { "agentic-delivery@agentic-delivery": true }
+}
+```
+
+Without a pin, each change to this repository reaches the whole team at the next update. With a
+pin, an update is a change that the team reviews. To update, move `ref` to the new tag in a pull
+request or merge request. After the merge, each person runs the `marketplace add` command again
+with the new tag.
+
+The owner of this repository can move a tag, so a tag pin is a review step, not a hard lock. A team
+that needs a hard lock can copy the plugin into a marketplace of its own.
+
+To try the plugin on your own, you can leave out the pin. Then each update gets the newest commit
+of the default branch:
 
 ```bash
 claude plugin marketplace add kkunan/agentic-delivery
 ```
 
-```bash
-claude plugin install agentic-delivery@agentic-delivery
-```
-
-To install from a local clone instead, give the path of the clone to the first command.
+To install from a local clone instead, give the path of the clone to the `marketplace add` command.
 The option `--scope local`, `--scope project`, or `--scope user` on each command picks where Claude
 Code stores the setting: your own local settings for this project, the settings file that the team
 shares in the repository, or your settings for every project.
@@ -55,8 +85,12 @@ to `.claude/agentic-delivery.md` in your repository, as [Set up a project](#set-
 and run `/feature` in Claude Code.
 
 > [!IMPORTANT]
-> An install test ran both commands with a local clone and `--scope local`. Each one gave exit 0,
-> and `claude plugin list` showed the plugin as enabled. Nobody tested the GitHub form yet.
+> Install tests ran three forms, and each one installed the plugin: a local clone with
+> `--scope local`, the GitHub form with `--scope project`, and the pinned GitHub form with
+> `--scope project`. With the pin, the clone was at the commit of the tag. On Claude Code 2.1.236,
+> `ref` takes a branch or a tag, but not a commit SHA. One machine already had the marketplace.
+> There, `claude plugin marketplace update` kept the old source, without `ref`. The
+> `marketplace add` command with the tag then added the `ref`.
 
 ## How a feature runs
 
@@ -64,7 +98,9 @@ and run `/feature` in Claude Code.
 
 ```mermaid
 flowchart LR
-    A[Brainstorm] --> B[Spec] --> C[Spec review] --> D[Plan] --> E[Plan review] --> G{{You approve}}
+    A[Brainstorm] --> S{Size} -->|XS or S| L[Lite brief] --> G{{You approve}}
+    S -->|M| D[Spec and plan, one document] --> E[One review] --> G
+    S -->|larger| X[Split first]
 ```
 
 ### 2. Build
@@ -83,9 +119,10 @@ flowchart LR
 
 Two steps need you: the plan, and the merge. Everything between them runs on its own.
 
-A small ticket can run in lite mode, which is experimental. A short brief replaces the spec and the
-plan, and one session does the work, with one review at the end. The controller skill says when a
-ticket qualifies.
+The size of the ticket picks the path. An XS or S ticket runs in lite mode by default: a short brief
+replaces the spec and the plan, and one session does the work, with one review at the end. An M
+ticket gets one document that holds the spec and the plan, and one review of it. A larger ticket is
+split first. The controller skill gives the conditions.
 
 ## Why it works
 
@@ -113,7 +150,8 @@ ticket qualifies.
 You run the pipeline for your own features.
 
 1. Start a session at the root of the repository, and run `/feature` with the ticket or the idea.
-2. Answer the brainstorm questions. The run writes the spec and the plan.
+2. Answer the brainstorm questions. The run writes a brief, or one document with the spec and the
+   plan.
 3. Read the plan and approve it. After that, the run works through the tasks without asking you.
 4. When the pull request is ready, read the handoff, and say "merge" when you agree.
 
@@ -129,7 +167,7 @@ You own how the team works with the plugin.
 - Write the project file once for each repository: branches, devices, test accounts, the tracker
   steps, and the actions that need a person's word.
 - Review the pull requests that retros propose against the rules. A rule changes only through that
-  review.
+  review. Optionally, name a process owner in the project file who decides each process change.
 - Read the cost lines in each ledger. They give real numbers for the next estimate.
 - If the default agent does not know your stack, replace it with your team's own. Name it in the
   project file, and the run uses it for that seat.
@@ -156,7 +194,8 @@ You decide what a feature must do and how it must look.
 
 You make sure that each check can fail.
 
-- The QA reviewer agent reviews the spec and the plan for testability before any code exists.
+- Before any code exists, the review of the document asks whether each check can fail. A ticket
+  that touches a server contract can add the QA reviewer agent as a second seat.
 - Manual checks go into the plan in a form that someone can disagree with, never "looks right".
 - The run keeps a QA log that ends with a tally. The ready check refuses a branch with a check that
   did not run, unless a person waived it in writing.
@@ -199,7 +238,7 @@ steps are in plain words.
 To start, copy `templates/agentic-delivery.md` from the plugin to `.claude/agentic-delivery.md` in
 your repository. The template explains each key. The keys for the platform, the branches, the docs
 folder, the screen patterns, the screenshot branch, and the tracker are empty, so fill them in. If
-one is empty, `/feature` asks you for it before it starts. On GitLab, the screenshot branch may stay
+one is empty, `/feature` asks you for it before it starts. On GitLab, the screenshot branch can stay
 empty, because the run can upload the images to the merge request. Fill in the sections for your
 team. Write the place to find a sign-in, never the sign-in itself. Put a device id that belongs to
 one person in local settings, not in the project file.
@@ -319,7 +358,7 @@ screenshots. Without a layer, the agents have the rules but no platform commands
 | Platform | Targets | Status |
 |---|---|---|
 | Flutter | iOS, Android, web | Written. Two runs on Flutter 3.38.9 stable measured its commands. It has the mutation runner. |
-| Native iOS | iOS, SwiftUI first, with UIKit notes | Rules written. It has the mutation runner. A CI job runs its commands and the runner against a sample app on Xcode 16.4. No real feature has used it yet. |
+| Native iOS | iOS, SwiftUI first, with UIKit notes | Rules written. It has the mutation runner. A CI job runs its commands and the runner against a sample app on Xcode 16.4. No real feature used it yet. |
 | Native Android | Android | Not started |
 | Backend services | APIs and workers | Not started |
 | Web front ends | Browsers | Not started |
@@ -335,6 +374,10 @@ workflow and its scripts. A CI job runs the layer's commands and its mutation ru
 against a sample app, on each pull request. No project has run a feature through the plugin itself
 yet. The rest of the plugin is in place and has tests.
 The team pilot has not run yet, so version 0.1.1 is not tested on a real feature.
+
+Each version gets a tag, such as `v0.1.1`, for a team to pin. On each push to `main`, the workflow
+`tag-release.yml` reads the version in `.claude-plugin/plugin.json`. If the tag does not exist, the
+workflow creates it. It never moves a tag that exists.
 
 ## Contributing
 
