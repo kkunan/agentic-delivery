@@ -30,7 +30,9 @@ in your context, so do not open it again.
 Documents. Every spec, plan, ledger, and retro goes under `docs_dir`. It never goes under the
 default folder of a superpowers skill, such as `docs/superpowers/specs/`. If `docs` is
 `private`, never commit or push one of these documents, even where a superpowers skill says to
-commit it. A `docs_dir` that starts with `~/` is under the home folder of the developer.
+commit it. A `docs_dir` that starts with `~/` is under the home folder of the developer. If `docs` is
+`private` and the project file has a section Docs publishing, `controller`, Docs publishing says
+when the run publishes a copy of a document to the wiki.
 
 Agents. Take each agent from the project file: `implementer_agent`, `reviewer_agent`, and `qa_agent`.
 The defaults are the plugin agents `implementer`, `reviewer`, and `qa-reviewer`. If a key names an
@@ -95,8 +97,9 @@ resume from its ledger.
    a Minor finding is one line and needs no new device run, no new proof run, and no re-review,
    make it. Put everything else under Follow-ups in the pull request description and in the ledger.
    The final review gets one fix wave and one re-review, and then the ticket ships. Answer every
-   review comment on its own thread, with the prefix `Claude said:` and the commit that addressed
-   it. `run-rules`, Review findings gives the rules.
+   review comment on its own thread. Use the comment prefix that `controller`, Tracker and pull
+   request gives, and name the commit that addressed it. If `comment_prefix` is empty, the prefix is
+   `Claude said:`. `run-rules`, Review findings gives the rules.
 6b. Work the ship checklist in `controller`, Ship checklist, in order, as the last task of the
    plan. Do not work from memory. If a ship step mutates code, cite the review that ran the same
    mutation and its result. If the file changed after that review, run the mutation again.

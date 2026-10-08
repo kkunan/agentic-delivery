@@ -74,7 +74,7 @@ The device kinds are the iOS simulator, the Android emulator, and Chrome for the
 
 - Put the slug in the name of each device that you create, for example `<slug>-ios`. Then a list of devices shows which ticket owns each one.
 - Pass the full id to `-d`. The flag also accepts a name or a prefix of an id. In the measured run, a prefix of the name and a prefix of the id each found the new simulator. A device type name that two simulators share found a simulator of another owner.
-- Never pass `all` to a `simctl` command. It reaches the devices with a signed-in session that the project file lists, and the devices of other tickets.
+- Never pass `all` to a `simctl` command. It reaches the devices with a signed-in session that the project file or the local file `.claude/agentic-delivery.local.md` lists, and the devices of other tickets.
 
 ### iOS simulator
 

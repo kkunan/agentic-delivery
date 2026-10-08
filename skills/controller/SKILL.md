@@ -7,7 +7,7 @@ description: The rules that only the controller of an agentic-delivery run follo
 
 The controller is the session that dispatches agents and coordinates the run. A dispatched agent does not read this skill. The rules for every agent are in the `run-rules` skill, which also defines the terms that this skill uses.
 
-The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `release_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, `screenshot_branch`, `forge`, `tracker`, `push_policy`, and `mutation_runner`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
+The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `release_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, `screenshot_branch`, `forge`, `tracker`, `push_policy`, `comment_prefix`, and `mutation_runner`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. It can also hold the optional section Docs publishing. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
 
 Where a rule here says "the gate owner", it means the person who approves the plan and who says merge.
 
@@ -49,6 +49,8 @@ Name each helper's report after its task, for example `task-3-report.md`, and ne
 Between notifications, examine `git status` and `git diff` in each worktree. Do not trust the reports alone.
 
 Every brief and every resume message that builds or tests names the device by its id. The ledger holds the id of each device that the ticket creates. The words "the same device" never stand alone, because a resumed agent cannot tell which device you mean.
+
+Before the first step of the run that uses a device, read the local file `.claude/agentic-delivery.local.md` in the project root. Git ignores this file, so it is not in a worktree. Each line holds the id or the name of one protected device of this developer. These devices are protected in the same way as the protected devices that the Devices section of the project file names. If the file is missing, ask the developer which devices hold a signed-in session. Write the answer into the file only after the developer agrees. An empty file means that this developer has no protected device. Never copy the ids from the local file into a file that git tracks.
 
 A check that compares the base against the head takes its base half in Task 0. Take it from the worktree of the run, before the first task commit. Never take it from a second worktree, because the device claim refuses a second worktree on the device that the run holds.
 
@@ -258,9 +260,39 @@ Before you open the pull request, read the description template of the forge, an
 
 A GitLab template can hold quick actions, for example `/assign_reviewer`. GitLab runs them when it saves the description, and they notify people. They are the choice of the team, so keep them as the template has them. In the handoff, say who the quick actions assigned.
 
-Reply to every pull request review comment, and start the reply with `Claude said:`. Write one reply for each comment, on the thread of that comment. Never write a summary somewhere else, and never stay silent. A reply says what changed and names the commit that changed it. Reply after the push that carries that commit, so that the reader can open it. Otherwise, it says clearly that nothing changed and why. You can disagree without permission. You cannot say nothing.
+Reply to every pull request review comment, and start the reply with the comment prefix that follows. If `comment_prefix` is empty, start the reply with `Claude said:`. Write one reply for each comment, on the thread of that comment. Never write a summary somewhere else, and never stay silent. A reply says what changed and names the commit that changed it. Reply after the push that carries that commit, so that the reader can open it. Otherwise, it says clearly that nothing changed and why. You can disagree without permission. You cannot say nothing.
+
+The key `comment_prefix` gives the comment prefix. Read it with `scripts/project-config.sh comment_prefix ""`, which prints an empty line and exits 0 when the key is empty or missing. If it has a value, start every comment that the run posts with the account of a person with that value on its own line, then a blank line. That covers the trail comment on the ticket, each reply and note on the pull request, and each comment on a wiki page. When you edit a comment, keep the prefix at its start. The prefix does not go in the description of the pull request, in a commit message, or in a wiki page itself. If the key is empty, add no prefix, except on a reply to a review comment, as the paragraph above says.
 
 Leave one trail comment on the ticket, and continue to edit it. Post it as soon as the pull request goes up, and edit it as things change. Never add new comments on top of it. It has the pull request link, four or five lines about the approach, and links to the spec and the plan. Never write into the description of the ticket, which holds the request in the words of the gate owner. Never paste the documents. Link them pinned to a commit SHA, never to a branch, so that the links still resolve after the branch is deleted.
+
+## Docs publishing
+
+This section applies only if `docs` is `private` and the body of the project file has a section Docs publishing that names a wiki. Otherwise, the run publishes nothing, and this section does not apply.
+
+With private docs, the specs, the plans, and the retros never go into git, so a person who reads the ticket cannot open them. The run publishes a copy of each document to the wiki that the section names. The local file stays the source of truth. A wiki page is a copy of the file at one publish point. Never edit a document on the wiki in place of the local file.
+
+The run publishes at these points, unless the section names other points:
+
+1. The gate owner approves the spec at the end of the brainstorm. Publish the spec.
+2. The gate owner approves the plan at the gate. Publish the plan, and update the spec page.
+3. Ship, at step 8 of the ship checklist. Update the spec page and the plan page, so that they match what shipped. The run writes the retro after the handoff. Publish the retro then, as part of this point.
+
+In lite mode, the brief replaces the spec and the plan. Publish the brief at the gate, and update it at ship.
+
+Ask before the first publish of the run, at the first publish point and not before. Ask the developer who runs the feature, or the person that the section names. The answer covers this run only. Record the answer in the ledger. If the ledger does not exist yet, start it at this point. Never carry it to a later run, and never take it from the ledger of another run. If the answer is no, publish nothing in this run.
+
+At each publish point, follow these rules:
+
+- Create each page under the parent page that the section names. Use the connector or the API that the section names.
+- A wiki page can have more readers than the local file. Before each publish, make sure that the document holds no sign-in detail and no raw capture.
+- Link the page from the trail comment of the ticket. Never paste the document into the ticket. With private docs, no commit holds the document, so this link replaces the link pinned to a commit SHA that the section Tracker and pull request asks for.
+- Record the id of each page that the run creates in the ledger, on its own line, in this shape: `wiki-page: <page id> <document file name>`.
+- Update a page only if its id is in the ledger of this run.
+
+The run can delete a page only if its id is in the ledger of this run. Read the id from the ledger, not from a search of the wiki. Never delete a page that a person or another run created, even if its title matches.
+
+If no tool reaches the wiki, say so one time and publish nothing. Do not paste the documents into the ticket in place of the page.
 
 ## Ship checklist
 
@@ -282,7 +314,7 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 5. Take the screenshots again on the final tree, after all the steps above, and push them to the branch that `screenshot_branch` names. On GitLab, you can instead upload them to the merge request description. If `screenshot_branch` is empty, you must upload them. Use `scripts/settle-screenshot.swift --capture "<command>"` so that each capture waits for the screen to settle.
 6. Rewrite the pull request description in the template of the forge, as the section Tracker and pull request says.
 7. Run `scripts/ready-check.sh`. It must exit 0. With `mr-and-ship`, a failure can need a new commit on the feature branch. In that case, fix all the failures, and ask the gate owner before you push again. When the check exits 0, mark the pull request ready. Do not ask the gate owner. On GitHub that is `gh pr ready`. On GitLab, where the pull request is a merge request, it is `glab mr update --ready`. The key `forge` in the project file says which one.
-8. Immediately after that, move the ticket to review, and post or update the trail comment, as the section Tracker and pull request says.
+8. Immediately after that, move the ticket to review, and post or update the trail comment, as the section Tracker and pull request says. If the section Docs publishing applies, publish at this step too.
 9. If the `brief` skill is installed, hand off in its style. Say that the pull request is ready and what still needs the gate owner.
 
 `scripts/ready-check.sh` covers the things that a machine can prove:
@@ -321,7 +353,7 @@ The run ends here, after the gate owner says so. Marking the pull request ready 
 
    Never delete a branch in `protected_branches`. Never delete the branch that `screenshot_branch` names, or any branch whose name starts with it. If `screenshot_branch` is empty, this rule names no branch. Do not read the empty name as a prefix that every branch starts with. It is usually an orphan branch with no pull request, and it holds the screenshots that pull request bodies link to.
 
-   Remove the worktrees of this run and every build folder of this run, including build folders that sit beside the worktrees. List them with `ls -d .worktrees/<slug>-*` and remove only the paths that the list prints. Stop each stall watch whose roots name a worktree of this run. Do not touch devices that hold a signed-in session, and never remove a worktree that such a device builds from. The Devices section of the project file names them, or says where their ids are kept.
+   Remove the worktrees of this run and every build folder of this run, including build folders that sit beside the worktrees. List them with `ls -d .worktrees/<slug>-*` and remove only the paths that the list prints. Stop each stall watch whose roots name a worktree of this run. Do not touch devices that hold a signed-in session, and never remove a worktree that such a device builds from. The Devices section of the project file names them, and the local file `.claude/agentic-delivery.local.md` names the devices of this developer.
 3. Move the ticket to done. Resolve the transition from the available transitions of the issue. Then post or update the trail comment.
 4. Write the feature report in the format of the next section. It is last because it shows work that shipped.
 
