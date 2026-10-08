@@ -8,8 +8,8 @@ This file adds an optional Product Owner seat to the plugin design in
 ## Goal
 
 A team can name a Product Owner session in the project file. That session grooms and orders the
-backlog by itself, plans a sprint with the engineering lead when the team works in sprints, and
-replans when a run goes wrong. A run then starts from a ready ticket, so the feature command asks
+backlog by itself. In sprint mode, it plans each sprint with the engineering lead. It replans when a
+run goes wrong. A run then starts from a ready ticket, so the feature command asks
 the developer only for what the ticket lacks.
 
 The seat is smaller than a product manager. It does not decide what to build from research. Product
@@ -38,7 +38,7 @@ discovery is out of scope.
    default is `next-up`.
 6. Sprint planning uses t-shirt sizes, not token estimates. The lead sizes each candidate ticket with
    a size-only read. The token estimate stays at the start of the run, in the brief or the M
-   document, so a run spends planning tokens only on tickets that a sprint or the flow takes.
+   document. So a run spends planning tokens only on tickets that a sprint or the flow takes.
 7. Each size maps to a token range in the key `size_tokens`. The retros record the estimate against
    the actual for each run, and the lead proposes new ranges from them.
 8. The controller tells the PO about a ship and about the first overrun, stall, or blocker of a run.
