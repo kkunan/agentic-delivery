@@ -35,17 +35,47 @@ The plugin needs the superpowers plugin from the `claude-plugins-official` marke
 command uses four of its skills. If one is missing, the command stops. The manifest names superpowers as a
 dependency, so Claude Code can install it with this plugin. If it does not, install it first.
 
-Add the repository as a marketplace, then install the plugin from it:
+For a team, pin the plugin to a release tag. Run these two commands at the root of your
+repository:
+
+```bash
+claude plugin marketplace add 'kkunan/agentic-delivery#v0.1.1' --scope project
+```
+
+```bash
+claude plugin install agentic-delivery@agentic-delivery --scope project
+```
+
+The commands write these settings to `.claude/settings.json`. Commit that file, so that the whole
+team gets the same version:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "agentic-delivery": {
+      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.1.1" }
+    }
+  },
+  "enabledPlugins": { "agentic-delivery@agentic-delivery": true }
+}
+```
+
+Without a pin, each change to this repository reaches the whole team at the next update. With a
+pin, an update is a change that the team reviews. To update, move `ref` to the new tag in a pull
+request or merge request. After the merge, each person runs the `marketplace add` command again
+with the new tag.
+
+The owner of this repository can move a tag, so a tag pin is a review step, not a hard lock. A team
+that needs a hard lock can copy the plugin into a marketplace of its own.
+
+To try the plugin on your own, you can leave out the pin. Then each update gets the newest commit
+of the default branch:
 
 ```bash
 claude plugin marketplace add kkunan/agentic-delivery
 ```
 
-```bash
-claude plugin install agentic-delivery@agentic-delivery
-```
-
-To install from a local clone instead, give the path of the clone to the first command.
+To install from a local clone instead, give the path of the clone to the `marketplace add` command.
 The option `--scope local`, `--scope project`, or `--scope user` on each command picks where Claude
 Code stores the setting: your own local settings for this project, the settings file that the team
 shares in the repository, or your settings for every project.
@@ -55,8 +85,12 @@ to `.claude/agentic-delivery.md` in your repository, as [Set up a project](#set-
 and run `/feature` in Claude Code.
 
 > [!IMPORTANT]
-> An install test ran both commands with a local clone and `--scope local`. Each one gave exit 0,
-> and `claude plugin list` showed the plugin as enabled. Nobody tested the GitHub form yet.
+> Install tests ran three forms, and each one installed the plugin: a local clone with
+> `--scope local`, the GitHub form with `--scope project`, and the pinned GitHub form with
+> `--scope project`. With the pin, the clone was at the commit of the tag. On Claude Code 2.1.236,
+> `ref` takes a branch or a tag, but not a commit SHA. One machine already had the marketplace.
+> There, `claude plugin marketplace update` kept the old source, without `ref`. The
+> `marketplace add` command with the tag then added the `ref`.
 
 ## How a feature runs
 
@@ -337,6 +371,10 @@ workflow and its scripts. A CI job runs the layer's commands and its mutation ru
 against a sample app, on each pull request. No project has run a feature through the plugin itself
 yet. The rest of the plugin is in place and has tests.
 The team pilot has not run yet, so version 0.1.1 is not tested on a real feature.
+
+Each version gets a tag, such as `v0.1.1`, for a team to pin. On each push to `main`, the workflow
+`tag-release.yml` reads the version in `.claude-plugin/plugin.json`. If the tag does not exist, the
+workflow creates it. It never moves a tag that exists.
 
 ## Contributing
 
