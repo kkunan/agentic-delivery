@@ -114,8 +114,9 @@ Sprint mode only.
 3. The lead sizes each ticket with a size-only read. It reads the ticket and the files that the
    ticket touches, writes the size and its token range from `size_tokens`, and writes no brief and no
    plan. If a ticket is larger than M, the lead says so, and the PO splits it by what a user sees.
-4. The PO takes tickets from the top. It stops before the ticket that takes the total past
-   `sprint_tokens`, or the work past `sprint_days`. That is the cut-off.
+4. The PO takes tickets from the top and adds the upper bound of each size range. It stops before
+   the ticket that takes the total past `sprint_tokens`, or the work past `sprint_days`. That is the
+   cut-off.
 5. The PO writes the sprint goals from the tickets above the cut-off, one line each.
 6. The gate owner approves the sprint. Then the PO starts the sprint in the tracker. With
    `all-but-done`, the PO starts the sprint without the approval.
