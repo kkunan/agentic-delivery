@@ -94,7 +94,18 @@ and run `/feature` in Claude Code.
 
 ## How a feature runs
 
-### 1. Shape the work
+### 1. Pick the work
+
+This step is optional. It runs only if the project file names a Product Owner.
+
+```mermaid
+flowchart LR
+    B[Backlog] --> O[Product Owner grooms] --> Y[Ready tickets]
+    Y -->|flow| N[Next ticket to the lead]
+    Y -->|sprint| Z[Lead sizes] --> C[Cut-off at the token budget] --> V{{You approve the sprint}}
+```
+
+### 2. Shape the work
 
 ```mermaid
 flowchart LR
@@ -103,21 +114,23 @@ flowchart LR
     S -->|larger| X[Split first]
 ```
 
-### 2. Build
+### 3. Build
 
 ```mermaid
 flowchart LR
     T[Tasks: build, then review] --> F[Final review] --> Q[QA and ship checklist] --> P{{You say merge}}
 ```
 
-### 3. Land
+### 4. Land
 
 ```mermaid
 flowchart LR
-    M[Merge] --> R[Retro]
+    M[Merge] --> R[Retro] --> O[Product Owner grooms again]
 ```
 
-Two steps need you: the plan, and the merge. Everything between them runs on its own.
+Two steps need you: the plan, and the merge. Everything between them runs on its own. In sprint
+mode, you also approve each sprint. A team with no Product Owner starts at the brainstorm, and its
+run ends at the retro.
 
 The size of the ticket picks the path. An XS or S ticket runs in lite mode by default: a short brief
 replaces the spec and the plan, and one session does the work, with one review at the end. An M
@@ -133,6 +146,7 @@ split first. The controller skill gives the conditions.
 | A check passes because it cannot fail. | Each check states the value on a correct tree and on the defect, and the run measures both. |
 | Sessions spend tokens on rules they do not need yet. | Rules are skills that load at the step that needs them. |
 | Rules drift as each run edits them. | A retro only proposes changes, as a pull request that the team reviews. |
+| Tickets arrive without a goal or acceptance, and the backlog order drifts. | An optional Product Owner session grooms and orders the backlog, plans sprints from t-shirt sizes, and replans when a run goes wrong. |
 
 ## How each role uses it
 
