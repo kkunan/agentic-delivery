@@ -57,8 +57,8 @@ The template gains these optional front matter keys. Each value is plain text, a
 - `size_tokens`: a token range for each size, for example `XS=100k-250k,S=250k-600k,M=600k-2M`.
   Sprint mode needs it. The template leaves it empty, because each team measures its own.
 
-The template body gains a section Product Owner. The team writes there what the PO weighs when it
-orders the backlog, for example the next release date, and the place where the PO keeps the open
+The template body gains a section Product Owner. In it, the team names what the PO weighs to
+order the backlog, for example the next release date. It also names where the PO keeps the open
 questions.
 
 The values of `po_authority`:
