@@ -15,9 +15,12 @@ in your context, so do not open it again.
    is empty or missing, stop. The one exception is `screenshot_branch` on GitLab, which can stay empty,
    because a merge request takes uploaded images. Ask the developer for each empty key, and write the
    answers into the project file only after the developer agrees. Never guess a value from the branches
-   or the folders that you see. The key `push_policy` can be missing, and then it is `each-task`. If
-   it holds a value other than `each-task` or `mr-and-ship`, stop and name the key. Next, make sure
-   that the skills `superpowers:brainstorming`, `superpowers:writing-plans`,
+   or the folders that you see. When you ask for `base_branch` or `release_branch`, show each
+   candidate branch on `origin` with the date of its last commit, from
+   `git log -1 --format=%cs origin/<branch>`. Never take `origin/HEAD` as the answer by itself. It can
+   point to a branch that the team no longer uses. The key `push_policy` can be missing, and then it
+   is `each-task`. If it holds a value other than `each-task` or `mr-and-ship`, stop and name the key.
+   Next, make sure that the skills `superpowers:brainstorming`, `superpowers:writing-plans`,
    `superpowers:subagent-driven-development`, and `superpowers:requesting-code-review` are
    available. If one is missing, stop and tell the developer to install the superpowers plugin,
    because steps 1, 3, 5, and 6 need these skills. Do not do those steps without them.
@@ -60,7 +63,8 @@ resume from its ledger.
 2. Create the branch with `branch_prefix` and a slug, from `base_branch`. If `docs` is `repo`,
    commit the brief or the document, push it, and open a draft pull request against `base_branch`.
    If `docs` is `private`, wait for the first task commit. Then push the branch and open the draft
-   pull request, because the branch has no commit of its own before then. In the same step, work
+   pull request, because the branch has no commit of its own before then. Fill in the description
+   template of the forge, as `controller`, Tracker and pull request says. In the same step, work
    the tracker steps in the project file: move the ticket to in progress and post the trail comment.
    `controller`, Tracker and pull request describes both.
 3. Write the M document with `superpowers:writing-plans`, under `docs_dir`. It holds the spec and the

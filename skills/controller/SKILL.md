@@ -223,26 +223,40 @@ Before any other push of the feature branch, ask the gate owner. Never push only
 
 ## Tracker and pull request
 
-The key `tracker` in the project file names the ticket tracker: `jira`, `linear`, `github`, `gitlab`, or `none`. Never assume Jira. On Jira and Linear, the ticket id is the key, for example `ABC-123`. On GitHub and GitLab, it is the issue reference, for example `#123`, or `group/project#123` for an issue in another repository. With `none`, the team has no tracker, so skip every tracker step and say so once.
+The key `tracker` in the project file names the ticket tracker: `jira`, `linear`, `github`, `gitlab`, `other`, or `none`. Never assume Jira. On Jira and Linear, the ticket id is the key, for example `ABC-123`. On GitHub and GitLab, it is the issue reference, for example `#123`, or `group/project#123` for an issue in another repository. With `other`, the team uses a tracker that is not in this list, for example an internal tool with its own connector. The section Tracker steps names the connector, the form of the ticket id, the statuses, and the comment rules. Use only what that section says. With `none`, the team has no tracker, so skip every tracker step and say so once.
 
 Get the ticket id in the first exchange of the brainstorm, not in the plan header. If the gate owner gave an id in the request, use it. If not, ask. A feature with no ticket is legitimate. In that case, say so and skip every tracker step. Do not guess an id later. After you get the id, put it in the spec header, the plan header, and the pull request body.
 
 The tracker steps are in the section Tracker steps of the project file body. Follow them as written. If no tool reaches the tracker, the run writes the comment text into its report, and the developer posts it.
 
+Do not decide from a role whether you can move a ticket. A global role, such as `viewer` in the answer of a whoami call, does not show the permissions of the user on one project or board. Try the first status change. If it fails, tell the developer what failed, put the move in the report for the developer to do, and continue the run. A failed tracker step does not stop the run.
+
 At the moment that you cut the branch and open the draft pull request, move the ticket to in progress. Do it in the same step as the trail comment. That is the moment that the work becomes visible.
 
 At the moment that you mark the pull request ready, move the ticket to review. Do it in the same step, not as a follow-up.
 
-Resolve every status change from what the tracker offers for that ticket. Do not assume a name. Report the status that the ticket is in after the change. Each tracker holds the status in its own way:
+Resolve every status change from what the tracker offers for that ticket. Do not assume a name. Report the status that the ticket is in after the change.
+
+One tracker can hold many projects, and each project can have its own statuses. Take the project from the ticket id of this run, for example `ABC` from `ABC-123`, and not from a project that the project file names. Read the statuses of that project before the first move. If a status that the section Tracker steps names does not exist in that project, ask the developer which status to use.
+
+Each tracker holds the status in its own way:
 
 - `jira`: the status moves through a transition. Resolve it from the available transitions of the issue. The name of a transition is not its target status.
 - `linear`: the status is a workflow state of the team that owns the issue. Resolve it from the states of that team. Two teams can use the same state name for different stages.
 - `github`: an issue is only open or closed. The status that the team uses is a field of a GitHub project, often named Status, or a label. The section Tracker steps says which one. Without that, the run changes no status, and it says so.
 - `gitlab`: the status is a scoped label, for example `workflow::in progress`, or the Status field of the issue. The section Tracker steps says which one. Setting a scoped label removes the other label of the same scope, and that is the move. Without that section, the run changes no status, and it says so.
+- `other`: the section Tracker steps says where the status is and which tool moves it. Without that section, the run changes no status, and it says so.
 
 Stay in this scope and go no further: that one ticket, its status only, and the single trail comment. Do not edit the description. Do not change other fields or other tickets. Do not move anything to done during the run, because closing a ticket is the decision of the gate owner. If the tracker has no status for the stage that you want, say so. Do not pick a different status.
 
 On GitHub and GitLab, a closing keyword in the pull request body closes the issue at merge. So name the issue with `Refs #123` on GitHub and `Related to #123` on GitLab. Never use a closing keyword such as `Closes`, `Fixes`, `Resolves`, or, on GitLab, `Implements`. If the section Tracker steps says that the team closes the issue at merge, use a closing keyword.
+
+Before you open the pull request, read the description template of the forge, and fill it in. Keep its headings and its checklist. Tick a box only for a step that the run really did. Leave a box empty for a step that the run did not do, for example a manual test on a device. If the forge has no template, write a plain description.
+
+- GitHub: the template is `pull_request_template.md`, or a file in a `PULL_REQUEST_TEMPLATE` folder. Each one can be at the top of the repository, in `.github/`, or in `docs/`.
+- GitLab: the default template can be in the project settings, and not in the repository. Read it with `glab api projects/<path>`, where `<path>` is the URL-encoded path of the project, and take the field `merge_requests_template`. If that field is empty, use `.gitlab/merge_request_templates/Default.md`. If that folder holds other templates and no default, ask the developer which one to use.
+
+A GitLab template can hold quick actions, for example `/assign_reviewer`. GitLab runs them when it saves the description, and they notify people. They are the choice of the team, so keep them as the template has them. In the handoff, say who the quick actions assigned.
 
 Reply to every pull request review comment, and start the reply with `Claude said:`. Write one reply for each comment, on the thread of that comment. Never write a summary somewhere else, and never stay silent. A reply says what changed and names the commit that changed it. Reply after the push that carries that commit, so that the reader can open it. Otherwise, it says clearly that nothing changed and why. You can disagree without permission. You cannot say nothing.
 
@@ -266,7 +280,7 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 3. Read the spec again against what shipped, and fix any drift.
 4. Make sure that the ledger has an entry that names every commit on the branch. Do this after the final push, because at write time the ready check cannot see the commit that you are writing. A commit that changes only files in the ledger folder needs no entry, so a ledger that git tracks can record itself. With `push_policy: mr-and-ship`, the final push comes after this step, not before it. Write the entry after the last commit outside the ledger folder. If `docs` is `repo`, commit the ledger. Then push the feature branch. This push is the ship push.
 5. Take the screenshots again on the final tree, after all the steps above, and push them to the branch that `screenshot_branch` names. On GitLab, you can instead upload them to the merge request description. If `screenshot_branch` is empty, you must upload them. Use `scripts/settle-screenshot.swift --capture "<command>"` so that each capture waits for the screen to settle.
-6. Rewrite the pull request description.
+6. Rewrite the pull request description in the template of the forge, as the section Tracker and pull request says.
 7. Run `scripts/ready-check.sh`. It must exit 0. With `mr-and-ship`, a failure can need a new commit on the feature branch. In that case, fix all the failures, and ask the gate owner before you push again. When the check exits 0, mark the pull request ready. Do not ask the gate owner. On GitHub that is `gh pr ready`. On GitLab, where the pull request is a merge request, it is `glab mr update --ready`. The key `forge` in the project file says which one.
 8. Immediately after that, move the ticket to review, and post or update the trail comment, as the section Tracker and pull request says.
 9. If the `brief` skill is installed, hand off in its style. Say that the pull request is ready and what still needs the gate owner.
