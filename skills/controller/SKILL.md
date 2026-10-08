@@ -154,7 +154,7 @@ Agree on test data and accounts before execution starts, in the plan header. The
 
 Every spec has an estimate, and the retro reports it against the actual result. Put all four parts in the spec header. When the task list exists, refine them in the plan. Change them only after you say so openly:
 
-- A t-shirt size. XS is one task, S is two or three, M is four to six, L is seven to ten, and XL is more than ten. If you can, split an XL ticket. Give the size at spec time, before the breakdown. If a ticket builds its own proof, count that proof as one task. That applies to a test rig, a lint, or a self-test, because every later change runs it again.
+- A t-shirt size. XS is one task, S is two or three, M is four to six, L is seven to ten, and XL is more than ten. If you can, split an XL ticket. Give the size at spec time, before the breakdown. If a ticket builds its own proof, count that proof as one task. That applies to a test rig, a lint, or a self-test, because every later change runs it again. If the ticket got a size at sprint planning, that size is the starting size. If the run gives another size, the spec header names both.
 - The wall-clock time to done, as a range, from the approval gate to the moment that the pull request is ready.
 - A token budget for the whole run, for the controller and the agents together. Build it from seats: one implementer seat for each task, one reviewer seat for each review pass, and the controller. Count every pass: the review of the M document, each focused task review, the whole-branch review, and each re-review. Planning is about 10% of the budget. State how many fix rounds the figure assumes. Count two fix rounds for each proof task, because proof tasks restart on every edit.
 - The number of human touches that you expect. Normally that is one, the approval gate. If a feature needs more, say which touches and why at the start.
@@ -192,6 +192,10 @@ Send a maximum of two messages to any one other session for each task. A reply c
 Put everything else in the retro or the ledger.
 
 Batch what is left. Three findings in one message cost one interruption, and three messages cost three. If the question of a peer needs a measurement, run it and send the result one time. A correction to something that you already sent does not count against the limit, because a wrong claim that stays is worse than the interruption. To go over the limit, stop and ask the gate owner first.
+
+## Product Owner messages
+
+This section applies only if the key `po` in the project file names a Product Owner. Send the Product Owner one line after step 9 of the ship checklist: the ticket id, the pull request, and the actual tokens against the estimate. Send it one line at the first overrun, stall, or blocker of the run, when you tell the gate owner: the ticket id, what happened, and the revised estimate. Send the Product Owner no other message. A later overrun goes only to the gate owner. These two lines stay within the limit of the section Messages to other sessions.
 
 ## Process fixes
 
@@ -397,7 +401,7 @@ Every run ends with a retro at `<docs_dir>/retros/<yyyy-mm-dd>-<slug>-retro.md`,
 1. Goal. Write two or three sentences on what the run set out to do and whether it landed. Then give the one-line facts: branch, commit range, task count, test count, and what the reviews said.
 
    Report the spec review by seat. Name the seats that sat, and for each seat, what it found that no other seat found. Write one line for each seat. This is the only evidence that can show whether two seats was the right guess. If a seat contributes nothing unique across three runs, cut it. If a finding continues to arrive late, that is an argument for a seat that does not exist yet.
-2. Estimate against actual. Give a table with four rows: t-shirt size, wall-clock time, tokens, and human touches. Give the estimate, the actual, and the difference for each row. The actual tokens are the sum of the cost lines in the ledger, plus the controller where you measured it. Do not count again from the completion notices. Then write one or two sentences on where the difference went. Name the specific cause, not "unexpected issues".
+2. Estimate against actual. Give a table with four rows: t-shirt size, wall-clock time, tokens, and human touches. Give the estimate, the actual, and the difference for each row. The actual tokens are the sum of the cost lines in the ledger, plus the controller where you measured it. Do not count again from the completion notices. If the ticket got a size at sprint planning, the size row also names that size. Then write one or two sentences on where the difference went. Name the specific cause, not "unexpected issues".
 
    Split the actual human touches into three counts, and name each touch in a few words:
 
