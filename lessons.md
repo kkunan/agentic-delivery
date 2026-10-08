@@ -176,6 +176,12 @@ One run proposed eighteen retro items, and fourteen of them were additions to on
 
 Rule: A retro proposes a rule change as an action item and never edits plugin files. A rule change goes as a pull request to the plugin repository.
 
+## build-per-push
+
+A team ran the plugin on a CI that starts a build on each push to a merge request branch. The team has a limited number of build minutes. The rule "push after each task" started one build for each task. The team wrote an override in the body of its project file. The override allows two pushes: at the start of the merge request, and at ship. Any other push needs a word from the engineer. An override in prose is easy to miss, because no script reads the body.
+
+Rule: The key `push_policy` sets the push times of the feature branch. With `mr-and-ship`, push at the start of the pull request and at ship. Ask before any other push.
+
 ## planning-share
 
 On one day, a ticket sized S spent 544k tokens on its plan phase, against a measure of 250k. Three hours of spec and planning passed before any work started. On the same day, a dark mode change with no plan shipped in 55 minutes. The spec, the plan, and their reviews cost more than the work that they guarded.

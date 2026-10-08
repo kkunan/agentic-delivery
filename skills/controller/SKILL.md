@@ -7,7 +7,7 @@ description: The rules that only the controller of an agentic-delivery run follo
 
 The controller is the session that dispatches agents and coordinates the run. A dispatched agent does not read this skill. The rules for every agent are in the `run-rules` skill, which also defines the terms that this skill uses.
 
-The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `release_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, `screenshot_branch`, `forge`, `tracker`, and `mutation_runner`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
+The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `release_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, `screenshot_branch`, `forge`, `tracker`, `push_policy`, and `mutation_runner`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
 
 Where a rule here says "the gate owner", it means the person who approves the plan and who says merge.
 
@@ -134,7 +134,7 @@ If one condition is false, the ticket takes the M path. Write which condition fa
 
 The brief replaces the spec and the plan. It states the goal, the files, the tests, the manual checks, and each build output folder that the run builds into. Each check gives its value on a correct tree and on the defect. Write the brief under `docs_dir`, with the ticket key and the estimate in its header. The gate owner approves the brief, and that is the one gate. A gate delegate can approve it under the first four conditions of the section Delegated gate. The fifth condition does not apply, because lite mode has no review before the gate.
 
-After the gate, the controller writes each test before its code, and commits and pushes as usual. At the end, it dispatches the reviewer agent one time over the whole branch, with one fix wave and one re-review. Then it works the ship checklist, the handoff, the retro, and the merge steps as usual. The ledger starts with the line `mode: lite`, and its cost lines follow the `run-rules` skill, The ledger.
+After the gate, the controller writes each test before its code. It commits after each step, and it pushes at the times that the section Pushes names. At the end, it dispatches the reviewer agent one time over the whole branch, with one fix wave and one re-review. Then it works the ship checklist, the handoff, the retro, and the merge steps as usual. The ledger starts with the line `mode: lite`, and its cost lines follow the `run-rules` skill, The ledger.
 
 If the work finds a server contract or pattern-matching code partway, stop. Record a ruling, and move the ticket to the M path from step 1 of the feature command. The retro of a lite run compares its total cost with recent full runs of the same size. It also lists each defect that turned up after the merge.
 
@@ -203,6 +203,24 @@ You never edit plugin files during a run. A fix to a plugin rule or script becom
 
 The Agents section of the project file can name a process owner, as a session or a person. The process owner decides each process change and triages the action items of each retro. Another session or person can make the edits after that decision. A decision arrives as a message from the named process owner. If the project file names no process owner, the gate owner decides.
 
+## Pushes
+
+The key `push_policy` in the project file sets the push times of the feature branch. Read it with `scripts/project-config.sh push_policy each-task`, so that a project file without the key gets `each-task`. If the value is not `each-task` or `mr-and-ship`, stop the run and name the key. Each push of the feature branch can start a CI build, and some teams pay for each build. (lesson: build-per-push)
+
+With `each-task`, push the feature branch after each commit.
+
+With `mr-and-ship`, commit after each completed task, and do not push it. Push the feature branch at these times only:
+
+- One time at step 2 of the feature command, where you open the draft pull request.
+- One time at ship, after the final fixes and the final ledger entry. Step 4 of the ship checklist gives the place.
+- After the pull request is ready, one time for each fix wave that a review needs. Collect all the fixes of the wave first, and push them together.
+
+Before any other push of the feature branch, ask the gate owner. Never push only to make sure that a commit is safe. A local commit is enough until the next planned push. The fix waves of the task reviews and of the final whole-branch review come before ship, so the ship push carries them.
+
+`push_policy` covers the feature branch only. The push of the screenshots to `screenshot_branch`, at step 5 of the ship checklist, happens with both values. It is a different branch, with no pull request of its own.
+
+`scripts/ready-check.sh` compares the local branch with the remote branch. It runs at step 7 of the ship checklist, after the ship push. So the local commits between the pushes do not make it fail.
+
 ## Tracker and pull request
 
 The key `tracker` in the project file names the ticket tracker: `jira`, `linear`, `github`, `gitlab`, or `none`. Never assume Jira. On Jira and Linear, the ticket id is the key, for example `ABC-123`. On GitHub and GitLab, it is the issue reference, for example `#123`, or `group/project#123` for an issue in another repository. With `none`, the team has no tracker, so skip every tracker step and say so once.
@@ -226,7 +244,7 @@ Stay in this scope and go no further: that one ticket, its status only, and the 
 
 On GitHub and GitLab, a closing keyword in the pull request body closes the issue at merge. So name the issue with `Refs #123` on GitHub and `Related to #123` on GitLab. Never use a closing keyword such as `Closes`, `Fixes`, `Resolves`, or, on GitLab, `Implements`. If the section Tracker steps says that the team closes the issue at merge, use a closing keyword.
 
-Reply to every pull request review comment, and start the reply with `Claude said:`. Write one reply for each comment, on the thread of that comment. Never write a summary somewhere else, and never stay silent. A reply says what changed and names the commit that changed it. Otherwise, it says clearly that nothing changed and why. You can disagree without permission. You cannot say nothing.
+Reply to every pull request review comment, and start the reply with `Claude said:`. Write one reply for each comment, on the thread of that comment. Never write a summary somewhere else, and never stay silent. A reply says what changed and names the commit that changed it. Reply after the push that carries that commit, so that the reader can open it. Otherwise, it says clearly that nothing changed and why. You can disagree without permission. You cannot say nothing.
 
 Leave one trail comment on the ticket, and continue to edit it. Post it as soon as the pull request goes up, and edit it as things change. Never add new comments on top of it. It has the pull request link, four or five lines about the approach, and links to the spec and the plan. Never write into the description of the ticket, which holds the request in the words of the gate owner. Never paste the documents. Link them pinned to a commit SHA, never to a branch, so that the links still resolve after the branch is deleted.
 
@@ -246,10 +264,10 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
        waiver: M1 by gate owner on <yyyy-mm-dd>: <reason>
 
 3. Read the spec again against what shipped, and fix any drift.
-4. Make sure that the ledger has an entry that names every commit on the branch. Do this after the final push, because at write time the ready check cannot see the commit that you are writing. A commit that changes only files in the ledger folder needs no entry, so a ledger that git tracks can record itself.
+4. Make sure that the ledger has an entry that names every commit on the branch. Do this after the final push, because at write time the ready check cannot see the commit that you are writing. A commit that changes only files in the ledger folder needs no entry, so a ledger that git tracks can record itself. With `push_policy: mr-and-ship`, the final push comes after this step, not before it. Write the entry after the last commit outside the ledger folder. If `docs` is `repo`, commit the ledger. Then push the feature branch. This push is the ship push.
 5. Take the screenshots again on the final tree, after all the steps above, and push them to the branch that `screenshot_branch` names. On GitLab, you can instead upload them to the merge request description. If `screenshot_branch` is empty, you must upload them. Use `scripts/settle-screenshot.swift --capture "<command>"` so that each capture waits for the screen to settle.
 6. Rewrite the pull request description.
-7. Run `scripts/ready-check.sh`. It must exit 0. Then mark the pull request ready. Do not ask the gate owner. On GitHub that is `gh pr ready`. On GitLab, where the pull request is a merge request, it is `glab mr update --ready`. The key `forge` in the project file says which one.
+7. Run `scripts/ready-check.sh`. It must exit 0. With `mr-and-ship`, a failure can need a new commit on the feature branch. In that case, fix all the failures, and ask the gate owner before you push again. When the check exits 0, mark the pull request ready. Do not ask the gate owner. On GitHub that is `gh pr ready`. On GitLab, where the pull request is a merge request, it is `glab mr update --ready`. The key `forge` in the project file says which one.
 8. Immediately after that, move the ticket to review, and post or update the trail comment, as the section Tracker and pull request says.
 9. If the `brief` skill is installed, hand off in its style. Say that the pull request is ready and what still needs the gate owner.
 
@@ -284,7 +302,7 @@ The run ends here, after the gate owner says so. Marking the pull request ready 
 
 1. Merge the pull request for the branch of this run, and nothing else. The branch starts with `branch_prefix`, and the pull request targets `base_branch`. Merge through the pull request, as a merge commit. Do not squash, do not push a local merge directly to the base, and do not rebase. Before you merge, make sure that the pull request number matches the branch named in the ledger, because you cannot undo a wrong merge quietly. If the pull request does not merge because of a conflict, a failing check, or a requested review, stop and say which one.
 
-   Immediately before the merge, make sure that the base is still an ancestor of the branch. Run `git fetch origin` and then `git merge-base --is-ancestor origin/<base_branch> HEAD`. The ready check asks the same question, but it asks at ready. The base can move between ready and the word of the gate owner. If the base moved, merge it into the branch, run the suite again, and say so before you merge the pull request. A clean text merge is not a working tree.
+   Immediately before the merge, make sure that the base is still an ancestor of the branch. Run `git fetch origin` and then `git merge-base --is-ancestor origin/<base_branch> HEAD`. The ready check asks the same question, but it asks at ready. The base can move between ready and the word of the gate owner. If the base moved, merge it into the branch, run the suite again, push, and say so before you merge the pull request. The word merge covers that push with both values of `push_policy`. A clean text merge is not a working tree.
 2. Clean up. Delete the remote feature branch. Then check out `base_branch`, pull, prune, and delete each local branch whose own pull request is merged. A branch that git lists as merged but that has no merged pull request stays. A new branch with no commits is an ancestor of its base.
 
    Never delete a branch in `protected_branches`. Never delete the branch that `screenshot_branch` names, or any branch whose name starts with it. If `screenshot_branch` is empty, this rule names no branch. Do not read the empty name as a prefix that every branch starts with. It is usually an orphan branch with no pull request, and it holds the screenshots that pull request bodies link to.

@@ -12,6 +12,11 @@ check "reads a key" "flutter" "$(bash "$cfg" platform)"
 check "ignores the body" "develop" "$(bash "$cfg" base_branch)"
 check "a default fills a missing key" "feature/" "$(bash "$cfg" branch_prefix feature/)"
 bash "$cfg" docs_dir >/dev/null 2>&1; check "a missing key fails closed" 3 $?
+check "push_policy is each-task when the key is missing" "each-task" "$(bash "$cfg" push_policy each-task)"
+printf -- '---\nplatform: flutter\npush_policy: mr-and-ship\n---\n' > "$work/.claude/agentic-delivery.md"
+check "push_policy is read when the key is present" "mr-and-ship" "$(bash "$cfg" push_policy each-task)"
+cp "$here/../templates/agentic-delivery.md" "$work/.claude/agentic-delivery.md"
+check "the template sets push_policy to each-task" "each-task" "$(bash "$cfg" push_policy 2>&1)"
 rm "$work/.claude/agentic-delivery.md"
 bash "$cfg" platform >/dev/null 2>&1; check "a missing file fails closed" 4 $?
 cd /
