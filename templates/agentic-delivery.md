@@ -18,6 +18,13 @@ mutation_runner: scripts/mutation-runner.sh
 implementer_agent: agentic-delivery:implementer
 reviewer_agent: agentic-delivery:reviewer
 qa_agent: agentic-delivery:qa-reviewer
+po:
+delivery_mode: flow
+po_grooming: events
+po_authority: next-up
+sprint_days:
+sprint_tokens:
+size_tokens:
 ---
 # Agentic delivery project file
 
@@ -43,6 +50,13 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 - `comment_prefix` is optional, and it is empty by default. The run posts some comments with the account of a person: the trail comment on the ticket, the replies and notes on the pull request, and the comments on a wiki page. A reader sees the name of that person on each comment and thinks that the person wrote it. If `comment_prefix` has a value, the run starts each of these comments with the value on its own line, then a blank line. For example, `comment_prefix: Claude said:` shows that the run wrote the comment. The prefix does not go in the description of the pull request or in a commit message. If the key is empty or missing, the run adds no prefix. The one exception is a reply to a review comment on the pull request, which starts with `Claude said:`, as the skill `controller` says in the section Tracker and pull request.
 - `mutation_runner` is the path from the top of the repository to an executable that follows the runner contract of `scripts/mutate.sh`. The Flutter adapter of the plugin is `skills/platform-flutter/mutation-runner.sh`, and the iOS adapter is `skills/platform-ios/mutation-runner.sh`. The path of a plugin install differs on each machine. So copy the file for your platform to `scripts/mutation-runner.sh` in your repository, which is the value in this file, and commit it.
 - `implementer_agent`, `reviewer_agent`, and `qa_agent` name the agent for each seat. See the Agents section.
+- `po` names the Product Owner, as a session id or a person's name. It is optional. If it is empty, the team has no Product Owner, and the run works as it does without one. The Product Owner session loads the skill `product-owner`.
+- `delivery_mode` is `flow` or `sprint`. In flow mode, the Product Owner sends the next ready ticket to the lead when a team is free. In sprint mode, the team plans a batch of tickets at a fixed time.
+- `po_grooming` sets when the Product Owner grooms the backlog by itself: `events`, `daily`, or `events,daily`. The events are a new ticket and a ship. The Product Owner also grooms whenever the gate owner asks.
+- `po_authority` sets what the Product Owner changes in the tracker without the gate owner's yes. Its value is `backlog`, `next-up`, or `all-but-done`. The skill `product-owner` defines each value.
+- `sprint_days` is the length of a sprint in working days. Sprint mode needs it.
+- `sprint_tokens` is the token budget of one sprint, for example `6M`. Sprint mode needs it.
+- `size_tokens` gives a token range for each t-shirt size, for example `XS=100k-250k,S=250k-600k,M=600k-2M`. Sprint mode needs it. It is empty in this file, because each team measures its own ranges from its retros.
 
 ## Tracker steps
 
@@ -79,3 +93,7 @@ List the parts of the code and the actions that need a word from the gate owner 
 By default each seat uses the agent of this plugin. Claude Code lists a plugin agent as `<plugin>:<agent>`, so the defaults are `agentic-delivery:implementer`, `agentic-delivery:reviewer`, and `agentic-delivery:qa-reviewer`. To use an agent of your team for a seat, put its name in `implementer_agent`, `reviewer_agent`, or `qa_agent`. For example, name an agent from a file in the `.claude/agents/` folder of the project by its `name` line. A key that names a missing agent stops the run at its first dispatch and names the key. There is no fallback to another agent. The brief still makes that agent load the run rules and the platform skill. So an agent of your team gets the same rules as the default one. Write here what each custom agent is for and why the team chose it.
 
 Optionally, name a process owner here, as a session or a person. The process owner decides each process change and triages the action items of each retro. If you name none, the gate owner decides. The `controller` skill, section Process fixes, gives the rule.
+
+## Product Owner
+
+Fill in this section only if `po` names a Product Owner. Name what the Product Owner weighs to order the backlog, for example the next release date or a customer promise. Name where the Product Owner keeps the open questions for the gate owner, for example a page in the tracker.
