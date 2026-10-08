@@ -51,7 +51,11 @@ Stop and ask before you do these things:
 - Do anything that needs a live access token, or any account other than the test account that the project file names.
 - Do anything that the plan itself marks as a decision.
 
-Each feature has one human gate. The gate owner reads and approves the plan before execution starts. A status line that needs no answer is not a gate, and it does not use up the gate. If the run passes its estimate, stalls, or finds a blocker, say so at that time. After the gate, the run continues to the end of the plan.
+Each feature has one human gate. The gate owner reads and approves the M document or the lite brief before execution starts. A status line that needs no answer is not a gate, and it does not use up the gate. If the run passes its estimate, stalls, or finds a blocker, say so at that time. After the gate, the run continues to the end of the plan.
+
+## Quantify
+
+Measure how often a case happens and what each check catches, and weigh that against its cost. A rare case does not block common work. It goes under Follow-ups. Each ticket names the metric that it moves and its estimated cost before it starts, and records both after. Do not quote a frequency without a source. (lesson: planning-share)
 
 ## Keeping the spec true
 
@@ -106,7 +110,7 @@ When a phase ends, write one cost line in the ledger, in exactly this shape:
 
     cost: <ticket> <phase> tokens=<n>k minutes=<n> fix_rounds=<n>
 
-The phase is `spec` for the spec review and `plan` for the plan review. It is `T1`, `T2` and so on for each task, `final` for the final whole-branch review, and `ship` for the ship task. Here is an example: `cost: <ticket> T2 tokens=448k minutes=37 fix_rounds=1`.
+An M run writes `spec` as `tokens=0k minutes=0 fix_rounds=0`, because its spec and plan are one document. Its `plan` phase holds the writing and the review of that document. The phase is `T1`, `T2` and so on for each task, `final` for the final whole-branch review, and `ship` for the ship task. Here is an example: `cost: <ticket> T2 tokens=448k minutes=37 fix_rounds=1`.
 
 A run in lite mode has no spec, plan, or task phases. Its ledger has a line that reads exactly `mode: lite`. It writes `build` for the work of the session and `final` for the final review and its fix wave, and `ship` as usual. The ready check reads the mode line, and then asks for `build` and `final` in place of `spec`, `plan`, and a task line. The section Lite mode of the `controller` skill gives the conditions for a lite run.
 
@@ -122,7 +126,11 @@ These lines are the only record that lets a later forecast use real numbers. A l
 
 Critical and Important findings block. Nothing below Important starts a fix round. Each fix wave gets one re-review. Fix a finding below Important only in one case: the fix is one line and needs no new device run, no new proof run, and no re-review. Put everything else in the pull request description under Follow-ups, and in the ledger. Findings left after a re-review do not start another round unless they are Critical or Important. The final review gets one fix wave and one re-review, and then the ticket ships. (lesson: fix-round-cost)
 
-A ticket with several view tasks has one exception. An Important visual finding goes to one visual fix task after the last view task. It does not start a fix round in its own task. A visual finding is about how a screen looks: spacing, sizes, contrast, or clipping at large text. A finding about behavior, accessibility labels, routing, or data still blocks in its own task. The visual fix task fixes all the visual findings, records the snapshots one time, and gets one re-review. Each fix round records every required snapshot again, so a round for each visual finding multiplies the cost. The plan review can mark a screen "fix in its own task" because later tasks build on the code that its visual fixes change. The findings on that screen then block as before. (lesson: visual-fix-batching)
+A ticket with several view tasks has one exception. An Important visual finding goes to one visual fix task after the last view task. It does not start a fix round in its own task. A visual finding is about how a screen looks: spacing, sizes, contrast, or clipping at large text. A finding about behavior, accessibility labels, routing, or data still blocks in its own task. The visual fix task fixes all the visual findings, records the snapshots one time, and gets one re-review. Each fix round records every required snapshot again, so a round for each visual finding multiplies the cost. Later tasks can build on the code that the visual fixes of a screen change. In that case, the review of the M document marks the screen "fix in its own task". The findings on that screen then block as before. (lesson: visual-fix-batching)
+
+A fix wave that changes only documents gets no re-review, whatever the rating of its findings. Documents here are the spec, the plan, the ledger, and other prose files. The wave must change no code, no test, no script, and no check. It must also change no number, command, or check that a plan or a spec states. Those still need the re-review that runs their failing input. When a wave skips the re-review, the controller writes three things in the ledger for each finding: the finding, the commit that fixed it, and the subject search with its hit count. The next review in the run reads that entry. (lesson: doc-fix-re-review)
+
+A finding that shows only at the accessibility text sizes is Minor, and it goes under Follow-ups. These are the sizes above the standard range, for example AX1 to AX5 on iOS. If the same finding also shows at any standard size, it keeps its rating and blocks as before. The reviewer names the smallest size where the finding shows, so the controller can tell the two cases apart. (lesson: large-text-loop)
 
 The reviewer still reports a Minor finding, as a follow-up. The reviewer already read the diff, so the note costs nothing and is useful later. You write a follow-up down, and you do not act on it.
 
@@ -183,6 +191,7 @@ Commands and files:
 - Run tests detached into a log file, and let the stall watch read that log. The stall watch sees only the worktrees that the controller dispatched, so for a run that you drive yourself, watch the log yourself.
 - Write test result files into the ledger folder of the run, never into a temporary path. The console says whether tests failed. The result file says why, and a reviewer needs it after the run.
 - Delete only a path that your own command printed. Never run a wildcard delete in a directory that you share with other runs. That includes the session scratchpad and the system temporary directory. A folder that looks like leftovers can be the live workspace of another run. The implementer and reviewer agents carry the same rule. (lesson: guessed-deletion)
+- Stop only a process whose process id your own command started. Never stop a process by name, for example with `pkill` or `killall`, because another ticket can build on the same machine. (lesson: kill-by-name)
 - Stop a probe as soon as its measurement ends. Name the paths that a probe watches. A watcher that resolves its paths from the working directory silently adopts every live worktree on the machine.
 
 A merge with no text conflict can still produce a tree that does not compile. A check that reads the merge tree is not a build. Build the merge result before you call it clean. (lesson: clean-merge-broken-build)
@@ -190,6 +199,13 @@ A merge with no text conflict can still produce a tree that does not compile. A 
 The stall watch, messages to other sessions, and the timing of process fixes belong to the controller skill, because only the controller does them.
 
 ## How output reads
+
+Every session writes the minimum that still carries enough detail to act on. This covers replies to the developer, documents such as specs, briefs, ledgers, retros, and pull request bodies, and messages between sessions.
+
+- Lead with the result. Then write only what the reader must act on.
+- Do not restate context, give reasons that nobody asked for, offer more, acknowledge, or recap.
+- A status or dispatch reply is one line.
+- Detail that someone can need later goes in the document or the ledger, not in the message.
 
 An attribution line names Claude, never a model version. A commit trailer reads `Co-Authored-By: Claude <noreply@anthropic.com>`. A pull request body keeps whatever generated-with line the tool supplies. A version number in a trailer is stale at the next release.
 
