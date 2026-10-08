@@ -45,7 +45,7 @@ For a change outside your authority, send the proposed change to the gate owner 
 
 ## Ready ticket
 
-A ticket is ready when it holds these seven fields:
+A ticket is ready when it holds the first six of these fields. Sprint planning also needs the seventh.
 
 1. Goal: what the user can do after the ticket ships, in one or two sentences.
 2. User value: who gains and why, in one sentence.
@@ -53,7 +53,7 @@ A ticket is ready when it holds these seven fields:
 4. Acceptance: criteria that a reviewer can pass or fail without a guess. Each criterion can fail.
 5. Out of scope: what the ticket does not do.
 6. Open questions: each question that can block the ship, with who answers it and the ship default for the case with no answer. If there are none, the field says so.
-7. Size: the t-shirt size from the lead.
+7. Size: the t-shirt size from the lead, when the lead sized it.
 
 A ticket that lacks a field is not ready. Keep it below every ready ticket. In the ticket, list the missing fields.
 
@@ -61,7 +61,7 @@ A ticket that lacks a field is not ready. Keep it below every ready ticket. In t
 
 1. Read the backlog from the tracker that the key `tracker` names. If `tracker` is `none`, read the backlog file that the section Product Owner names.
 2. Groom from the top down. Stop when the ready tickets cover the next sprint, or the next three tickets in flow mode.
-3. For each ticket, fill each field that you can fill from the ticket, the code, the documents, and the data that the team gave you. You can propose a ship default for an open question. Mark it as proposed, and put it in the message to the gate owner. The gate owner can change it until the gate.
+3. For each ticket, fill each field that you can fill from the ticket, the code, the documents, and the data that the team gave you. You can propose a ship default for an open question. Mark it as proposed, and put it in the message to the gate owner. A proposed default completes the field. The run lists it as a decision for the gate owner at the gate.
 4. Collect each question that only the gate owner can answer. Keep it where the section Product Owner says.
 5. Order the backlog by user value against size, and against the dates in the section Product Owner. A ticket that blocks other tickets ranks above them.
 6. Write the changes that your authority covers to the tracker.
