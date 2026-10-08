@@ -91,7 +91,8 @@ gate owner can answer, and keeps the ticket below every ready ticket.
 
 1. Read the backlog from the tracker that `tracker` names.
 2. For each ticket near the top, fill each field that the PO can fill from the ticket, the code, the
-   docs, and data that the team gave it.
+   docs, and data that the team gave it. The PO can propose a ship default for an open question. It
+   marks the default as proposed, and the gate owner can change it until the gate.
 3. Collect the questions that only the gate owner can answer. Send them in one message, not one
    message for each question.
 4. Order the backlog by user value against size, and against the dates in the section Product Owner.
@@ -115,8 +116,8 @@ Sprint mode only.
    ticket touches, writes the size and its token range from `size_tokens`, and writes no brief and no
    plan. If a ticket is larger than M, the lead says so, and the PO splits it by what a user sees.
 4. The PO takes tickets from the top and adds the upper bound of each size range. It stops before
-   the ticket that takes the total past `sprint_tokens`, or the work past `sprint_days`. That is the
-   cut-off.
+   the ticket that takes the total past `sprint_tokens`. That is the cut-off. The lead says whether
+   the tickets above the cut-off fit in `sprint_days`, and moves the cut-off up if they do not.
 5. The PO writes the sprint goals from the tickets above the cut-off, one line each.
 6. The gate owner approves the sprint. Then the PO starts the sprint in the tracker. With
    `all-but-done`, the PO starts the sprint without the approval.

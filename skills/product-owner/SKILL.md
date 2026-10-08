@@ -59,9 +59,9 @@ A ticket that lacks a field is not ready. Keep it below every ready ticket. In t
 
 ## Grooming
 
-1. Read the backlog from the tracker that the key `tracker` names.
+1. Read the backlog from the tracker that the key `tracker` names. If `tracker` is `none`, read the backlog file that the section Product Owner names.
 2. Groom from the top down. Stop when the ready tickets cover the next sprint, or the next three tickets in flow mode.
-3. For each ticket, fill each field that you can fill from the ticket, the code, the documents, and the data that the team gave you.
+3. For each ticket, fill each field that you can fill from the ticket, the code, the documents, and the data that the team gave you. You can propose a ship default for an open question. Mark it as proposed, and put it in the message to the gate owner. The gate owner can change it until the gate.
 4. Collect each question that only the gate owner can answer. Keep it where the section Product Owner says.
 5. Order the backlog by user value against size, and against the dates in the section Product Owner. A ticket that blocks other tickets ranks above them.
 6. Write the changes that your authority covers to the tracker.
@@ -77,7 +77,7 @@ Sprint mode only.
 1. Run a grooming pass.
 2. Send the top ready tickets to the lead, in order, until the upper bounds of their sizes pass `sprint_tokens` by about half. Send a ticket that has no size yet in the same list.
 3. The lead sizes each ticket with a size-only read. It reads the ticket and the files that the ticket touches. It writes the size in the ticket and writes no brief and no plan. If a ticket is larger than M, the lead says so. Then split the ticket by what a user sees, and keep the parts out of this sprint until the lead sizes them.
-4. Take tickets from the top, and add the upper bound of each size. Stop before the ticket that takes the total past `sprint_tokens`, or the work past `sprint_days`. That is the cut-off.
+4. Take tickets from the top, and add the upper bound of each size. Stop before the ticket that takes the total past `sprint_tokens`. That is the cut-off. Ask the lead whether the tickets above the cut-off fit in `sprint_days`. If they do not, the lead moves the cut-off up.
 5. Write the sprint goals from the tickets above the cut-off, one line each.
 6. Send the sprint to the gate owner for approval. After the yes, start the sprint in the tracker. With `all-but-done`, start it without the approval.
 
