@@ -12,7 +12,7 @@ in your context, so do not open it again.
    `templates/agentic-delivery.md` of the plugin into the project, and wait for the answer. If the file
    exists, check these keys first: `platform`, `base_branch`, `release_branch`, `branch_prefix`,
    `protected_branches`, `docs`, `docs_dir`, `view_globs`, `screenshot_branch`, and `tracker`. If one
-   is empty or missing, stop. The one exception is `screenshot_branch` on GitLab, which may stay empty,
+   is empty or missing, stop. The one exception is `screenshot_branch` on GitLab, which can stay empty,
    because a merge request takes uploaded images. Ask the developer for each empty key, and write the
    answers into the project file only after the developer agrees. Never guess a value from the branches
    or the folders that you see. The key `push_policy` can be missing, and then it is `each-task`. If
@@ -38,63 +38,61 @@ agent that does not exist, stop and name the key. Never fall back to the default
 The gate is the developer who runs the feature. If `controller`, Delegated gate applies, the
 delegate holds the gate instead.
 
-If a plan for this feature already exists under `docs_dir`, skip to step 5 and resume from its
-ledger.
+If a brief or an M document for this feature already exists under `docs_dir`, skip to step 5 and
+resume from its ledger.
 
 1. Brainstorm with the developer, using `superpowers:brainstorming`. This is the one conversational
    stage. Ask real questions and push back on vague answers. Establish the ticket id in the
    first exchange, in the form of the tracker that `tracker` names. If the developer gives none, ask.
    If there is no ticket, or `tracker` is `none`, say so and skip every tracker step. Never guess an
-   id. Write the result to a spec file under `docs_dir`, with the id in its header. Add the
-   estimate: size, wall-clock range, token budget, and the number of times you expect to need the
-   developer. `controller`, Estimates defines all four. Refine them in step 3.
-   If the run passes them, tell the developer at that time.
-1b. If the ticket meets the conditions in `controller`, Lite mode, offer lite mode to the developer.
-   If the developer accepts, write the brief in place of the spec, and do step 2. Skip steps 2b and
-   3, and at step 4 show the brief in place of the plan. At step 5, do the work yourself from the
-   brief, tests first, with no implementer. At step 6, run one final review. Steps 6b to 9 do not
-   change.
+   id. Size the ticket, and add the estimate: size, wall-clock range, token budget, and the number
+   of times you expect to need the developer. `controller`, Estimates defines all four. If the run
+   passes them, tell the developer at that time.
+1b. Pick the path by size, as `controller`, Size decides the process says. The developer can name a
+   different path for this ticket.
+   - XS or S that meets the conditions in `controller`, Lite mode: lite mode. Write the
+     brief under `docs_dir`, with the id and the estimate in its header, and do step 2. Skip step 3,
+     and at step 4 show the brief. At step 5, do the work yourself from the brief, tests first, with
+     no implementer. At step 6, run one final review. Steps 6b to 9 do not change.
+   - M, or an XS or S ticket that fails a lite condition: the M path, from step 2.
+   - Larger than M: stop. Propose a split into tickets of size M or smaller, sliced by what a user
+     sees, and wait for the answer.
 2. Create the branch with `branch_prefix` and a slug, from `base_branch`. If `docs` is `repo`,
-   commit the spec, push it, and open a draft pull request against `base_branch`. If `docs` is
-   `private`, wait for the first task commit. Then push the branch and open the draft pull request,
-   because the branch has no commit of its own before then. In the same step, work the tracker steps in
-   the project file: move the ticket to in progress and post the trail comment.
+   commit the brief or the document, push it, and open a draft pull request against `base_branch`.
+   If `docs` is `private`, wait for the first task commit. Then push the branch and open the draft
+   pull request, because the branch has no commit of its own before then. In the same step, work
+   the tracker steps in the project file: move the ticket to in progress and post the trail comment.
    `controller`, Tracker and pull request describes both.
-2b. Groom the spec before you write the plan. Dispatch two seats in parallel. The reviewer judges
-   whether the design is right and the codebase can carry it. The QA agent judges whether anyone
-   will be able to tell that it worked. If the spec changes a screen, brief the reviewer to apply the
-   design skills that the platform skill names, as a third lens. Write the seat list in the spec
-   header and count it in the token budget. Merge the findings into one list. Name each place where
-   the seats disagree. Fix what you can, and amend the spec for each fix, as `run-rules`, Keeping the
-   spec true requires. `controller`, Review seats gives the seat rules.
-3. Write the plan with `superpowers:writing-plans`, under `docs_dir`. Then dispatch the reviewer
-   against the plan, and fix its findings before the developer sees the plan. Do not review the plan
-   yourself. `controller`, Plan review gives the method.
+3. Write the M document with `superpowers:writing-plans`, under `docs_dir`. It holds the spec and the
+   plan in one file, in the shape that `controller`, The M document and its review gives. Then
+   dispatch one reviewer against it, with the QA questions in the brief, and fix its findings before
+   the developer sees it. Do not review it yourself. For the rule on a second seat, read `controller`,
+   Review seats.
 4. Stop. Show the developer the task list and the risks. Also show every step that the permission
-   system will deny, as the plan header lists them, so that the developer allows them all in one
-   answer. Wait for approval. This is the only gate. If a delegate approves the plan, still send
-   that one permission request to the developer, because a delegate cannot grant a permission.
-5. After approval, execute the plan with `superpowers:subagent-driven-development`. Keep the ledger
-   in `docs_dir`, as `run-rules`, The ledger describes. Begin it with a conflict scan, and let the
-   scan decide which tasks run in parallel waves. Dispatch the implementer for each coding task and
-   the reviewer for each review. Commit after each task, and push at the times that `push_policy`
-   names. `controller`, Pushes gives the rule. Each implementer reports the mutation of its own
-   acceptance branch, red and green, with the branch named. If a report lacks
-   it, send the task back before review. Every fix brief and ruling that you write after the gate
-   carries the failing input for each check, figure, or premise in it. The scoped re-review runs
-   that input before it marks the item addressed. When a phase ends, write its cost line in the
-   ledger: one each for the spec review, the plan review, every task, the final review, and ship.
-   `scripts/ready-check.sh` refuses a ledger without them. In this command, `scripts/...` means
-   the `scripts` folder of the plugin, not a folder of the project. The start-up pointer gives its
-   full path. Do not stop for approval between tasks.
+   system will deny, as the document header lists them, so that the developer allows them all in
+   one answer. Wait for approval. This is the only gate. If a delegate approves the document, still
+   send that one permission request to the developer, because a delegate cannot grant a permission.
+5. After approval, execute the document with `superpowers:subagent-driven-development`. Keep the
+   ledger in `docs_dir`, as `run-rules`, The ledger describes. Begin it with a conflict scan, and let
+   the scan decide which tasks run in parallel waves. Dispatch the implementer for each coding task.
+   If a task touches a server contract or pattern-matching code, dispatch a reviewer after it.
+   Commit after each task, and push at the times that `push_policy` names. `controller`, Pushes
+   gives the rule. For each new test, the implementer reports one red run and one green run on its own acceptance branch, with the branch named. If a report lacks them, send the
+   task back. Every fix brief and ruling that you write after the gate carries the failing input for
+   each check, figure, or premise in it. The scoped re-review runs that input before it marks the
+   item addressed. When a phase ends, write its cost line in the ledger. `run-rules`, The ledger
+   names the phases, and `scripts/ready-check.sh` refuses a ledger without them. In this command,
+   `scripts/...` means the `scripts` folder of the plugin, not a folder of the project. The start-up
+   pointer gives its full path. Do not stop for approval between tasks.
    If the run passes the estimate or hits a stall, say so at that time.
-6. Run `superpowers:requesting-code-review` at the checkpoints that the plan defines, and again when
-   the final task lands. Critical and Important findings block, with one fix wave and one
-   re-review for each wave. If the fix of a Minor finding is one line and needs no new device
-   run, no new proof run, and no re-review, make it. Put everything else under Follow-ups in the pull
-   request description and in the ledger. The final review gets one fix wave and one re-review,
-   and then the ticket ships. Answer every review comment on its own thread, with the prefix
-   `Claude said:` and the commit that addressed it. `run-rules`, Review findings gives the rules.
+6. Run `superpowers:requesting-code-review` for each focused task review, and over the whole branch
+   when the final task lands. Critical and Important findings block, with one fix wave and one
+   re-review for each wave. A fix wave that changes only documents gets no re-review. If the fix of
+   a Minor finding is one line and needs no new device run, no new proof run, and no re-review,
+   make it. Put everything else under Follow-ups in the pull request description and in the ledger.
+   The final review gets one fix wave and one re-review, and then the ticket ships. Answer every
+   review comment on its own thread, with the prefix `Claude said:` and the commit that addressed
+   it. `run-rules`, Review findings gives the rules.
 6b. Work the ship checklist in `controller`, Ship checklist, in order, as the last task of the
    plan. Do not work from memory. If a ship step mutates code, cite the review that ran the same
    mutation and its result. If the file changed after that review, run the mutation again.

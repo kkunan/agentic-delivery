@@ -181,3 +181,39 @@ Rule: A retro proposes a rule change as an action item and never edits plugin fi
 A team ran the plugin on a CI that starts a build on each push to a merge request branch. The team has a limited number of build minutes. The rule "push after each task" started one build for each task. The team wrote an override in the body of its project file. The override allows two pushes: at the start of the merge request, and at ship. Any other push needs a word from the engineer. An override in prose is easy to miss, because no script reads the body.
 
 Rule: The key `push_policy` sets the push times of the feature branch. With `mr-and-ship`, push at the start of the pull request and at ship. Ask before any other push.
+
+## planning-share
+
+On one day, a ticket sized S spent 544k tokens on its plan phase, against a measure of 250k. Three hours of spec and planning passed before any work started. On the same day, a dark mode change with no plan shipped in 55 minutes. The spec, the plan, and their reviews cost more than the work that they guarded.
+
+Rule: The size of the ticket picks the path. XS and S run in lite mode, M gets one document and one review, and planning takes about 10% of the budget.
+
+## seats-by-knowledge
+
+Three review lenses differed in attitude but shared one knowledge base. Each lens missed one third of a list of defects that was written before the review. Together they cost 1.8 times as much as one reviewer. One reviewer that got the union of their prompts found the whole list.
+
+Rule: A seat earns its place with knowledge that the other seats do not have. An M ticket gets one review seat, and a second seat needs a named reason.
+
+## disk-full-at-ship
+
+A release build at the ship step failed with 121 MB of free disk. The run held five build output folders of about 3 to 4 GB each, from earlier tasks and probes.
+
+Rule: The document header or the brief names each build output folder. The ship step deletes the named folders that it does not use, and no folder found by a pattern.
+
+## doc-fix-re-review
+
+Sessions dispatched a full re-review after a fix wave of a few one-line document fixes. A re-review of prose runs no check, so its cost bought only a second reading of the same lines.
+
+Rule: A fix wave that changes only documents gets no re-review. A changed number, command, or check still gets the re-review that runs its failing input.
+
+## large-text-loop
+
+Three plan re-reviews in one run went to one header row at the largest accessibility text size. The plan phase cost 544k tokens against a measure of 250k. No rule said how to rate a finding that only the largest sizes show.
+
+Rule: A finding that shows only at the accessibility text sizes is Minor, and it goes under Follow-ups.
+
+## kill-by-name
+
+A probe stopped its own build with `pkill -x xcodebuild`. The command matched every build on the machine, and another ticket was building at the same time. It killed a mutation run of the other ticket's plan review, and that review had to run it again.
+
+Rule: Stop only a process whose process id your own command started. Never stop a process by name.

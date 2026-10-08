@@ -11,6 +11,17 @@ The project file is `.claude/agentic-delivery.md` in the repository of the user.
 
 Where a rule here says "the gate owner", it means the person who approves the plan and who says merge.
 
+## Size decides the process
+
+The size of the ticket, as the section Estimates defines it, picks the path:
+
+- XS and S run in lite mode by default. One session works from a short brief, with no spec, no plan, and no implementer, and one final review. The section Lite mode gives the conditions.
+- M gets one short document that holds the spec and the plan, and one review of that document. Planning takes about 10% of the token budget. Tasks get no separate review, except a task that touches a server contract or pattern-matching code. That task gets a focused review. The section The M document and its review gives the method.
+- Every ticket gets one final review of the whole branch.
+- Split anything larger than M before it starts. Slice it by what a user sees, so that each part ships on its own.
+
+The gate owner can name a different path for one ticket. Write the path and its reason in the brief or the document header. (lesson: planning-share)
+
 ## Dispatch
 
 ### Parallel work
@@ -49,13 +60,12 @@ Dispatch the agents of this plugin, not `general-purpose`. This overrides any te
 
 | Dispatch point | Agent | Project file key |
 |---|---|---|
-| Implementer, one per task | `implementer` | `implementer_agent` |
-| Task review, spec and quality | `reviewer` | `reviewer_agent` |
+| Implementer, one per task of an M ticket | `implementer` | `implementer_agent` |
+| Review of the M document, before the gate | `reviewer` | `reviewer_agent` |
+| Focused task review, server contract or pattern-matching code | `reviewer` | `reviewer_agent` |
 | Scoped re-review after a fix | `reviewer` | `reviewer_agent` |
 | Final whole-branch review | `reviewer` | `reviewer_agent` |
-| Spec review at grooming, engineering | `reviewer` | `reviewer_agent` |
-| Spec review at grooming, testability | `qa-reviewer` | `qa_agent` |
-| Plan review, before the gate | `reviewer` | `reviewer_agent` |
+| Second seat that a document header names | `qa-reviewer` | `qa_agent` |
 
 The project file can name a team's own agent for each seat with the keys in the last column. Each key defaults to the plugin's agent. Three rules apply to every dispatch:
 
@@ -69,13 +79,9 @@ Do not pass a model override on these dispatches. A model passed at dispatch ove
 
 ## Review seats
 
-Groom the spec before you write the plan. By default, two seats run in parallel. The `reviewer` seat reviews whether the design is right and whether this codebase can carry it. The `qa-reviewer` seat reviews whether anyone can tell that it worked. Merge their findings into one list. Where they disagreed, say so. Do not pick one side without a word. Fix what you can fix, and amend the spec for each fix. At the gate, the gate owner reads one list, not two.
+An M ticket gets one review before the gate: one `reviewer` seat over the M document. Brief the QA questions onto that seat: can each acceptance criterion fail, and can each manual check fail? If the document changes a screen, also brief the skills `design-critique` and `accessibility-review` onto it, against the design documents of the project. XS and S tickets get no review before the gate. Every ticket gets one final review of the whole branch.
 
-A seat earns its place with knowledge that the other seats do not have, never with a different attitude. Reviewers that differ only in attitude share a knowledge base. Each one misses part of what a single reviewer with the union of their prompts finds, and together they cost more. Do not add a reviewer to be more careful. If a reviewer knows something that the others do not, add it. QA qualifies. A product seat does not, because the gate owner writes the brainstorm and reads the spec.
-
-If the spec changes a screen, brief the skills `design-critique` and `accessibility-review` onto the `reviewer` seat, against the design documents of the project.
-
-Name the seats in the spec header at brainstorm time, beside the estimate, because they are part of the estimate. A feature that changes a screen adds the design review. A documentation-only change can take one seat. If you decide the list late, whoever is available decides it.
+A seat earns its place with knowledge that the other seats do not have, never with a different attitude. Reviewers that differ only in attitude share a knowledge base. Each one misses part of what a single reviewer with the union of their prompts finds, and together they cost more. Do not add a reviewer to be more careful. If a ticket needs a second seat, name it and its reason in the document header, beside the estimate. The seat is part of the estimate. An example is `qa-reviewer` on a server contract. A product seat does not qualify, because the gate owner writes the brainstorm and reads the document. (lesson: seats-by-knowledge)
 
 ### Rulings and fix briefs
 
@@ -93,41 +99,44 @@ When an agent reports that it waits and is not finished, do not dispatch it agai
 
 A one-line fix is never a known limitation. If you can state the fix of a limitation in one line, do not record it. Give it to the gate owner as a decision. Include the measurement, the proposed value, and the blast radius, so that one word can answer it. This rule does not permit a fix round, because a round costs two seats and every proof that the change runs again.
 
-## Plan review
+## The M document and its review
 
-A reviewer reviews the plan. Its author does not review it alone. In the brief, tell the reviewer to run each command whose output the plan predicts. Also tell the reviewer to make sure that the acceptance criteria of each task can fail.
+An M ticket has one short document under `docs_dir` that holds the spec and the plan. It states the goal and the design decisions. It gives the tasks with exact signatures and test bodies. It lists the manual checks, each with its value on a correct tree and on the defect. Its header lists each build output folder that the run builds into. Writing and reviewing the document takes about 10% of the token budget of the ticket. If planning passes that share, say so at that time.
 
-The plan reviewer does four things, and it does not only read about them. It does all four in one pass over the plan, not one pass each. The review reports what it ran and what it skipped.
+A reviewer reviews the document before the gate, in one pass. Its author does not review it alone. Brief the QA questions onto the same seat, as the section Review seats says. The reviewer does these things, and it reports what it ran and what it skipped:
 
-1. Typecheck the code of the plan against the platform SDK. Do not build it and do not run it. The implementer compiles and runs the code of the plan, and a build in the review makes every gate slow.
-2. Mutate the code that the plan writes with `scripts/mutate.sh`, one time for each task that adds tests. In the skills and commands of this plugin, `scripts/...` means the `scripts` folder of the plugin, not a folder of the project. The start-up pointer gives its full path. Make sure that a test goes red. Do not mutate the whole tree, and do not mutate every branch that you find. Pick the branch that the acceptance criteria of that task depend on. For each row test, also record whether the test is green before the action that it tests. A test that is already green without the action proves nothing about the action.
-3. Run each check that the plan writes against the input that its author thinks the check misses. The plan carries that input beside the check, written at the same time. If a plan arrives without that input, send it back and do not review it. The reviewer runs the input of the author and does not invent more.
-4. Read each check for the case where its inputs are missing. The rule about missing inputs is in the `run-rules` skill. This step is reading only, and it costs nothing.
+1. Typecheck the code of the document against the platform SDK. Do not build it and do not run the tests. The implementer compiles and runs the code, and a build in the review makes every gate slow.
+2. For a task that touches a server contract or pattern-matching code, run each check against the input that its author thinks the check misses. The document carries that input beside the check, written at the same time. If it does not, send the document back. This is the focused review. The costly misses of the source project came from those two kinds of work.
+3. Read each check for the case where its inputs are missing. The rule about missing inputs is in the `run-rules` skill. This step is reading only, and it costs nothing.
 
-Size the mutation table of each task by what the task adds. On a task whose diff is mostly view code, the table covers the logic that the task adds, for example routing, validation, and state changes. It adds at most eight view mutations, and each row says why it was chosen. A snapshot test already shows a change to a view. A task whose diff is mostly logic keeps the full table. The plan review makes sure that each view task names its sample.
+No review mutates the code by default. For each new test, the implementer still reports one red run and one green run on its own acceptance branch. That proves that the test can fail. A focused task review can run `scripts/mutate.sh` on the branch that the acceptance criteria of its task depend on. In the skills and commands of this plugin, `scripts/...` means the `scripts` folder of the plugin, not a folder of the project. The start-up pointer gives its full path.
 
-A plan with several view tasks ends them with a visual fix task. The rule for visual findings is in the `run-rules` skill, under review findings. The plan review marks each screen whose visual fixes must stay in their own task, and says why.
+Every implementer brief says this: if a test cannot go green with a correct body, stop and report. Never change the test, and never fake the body.
 
-The `plan` cost line in the ledger records what this seat costs. The retro copies that line beside the number of fix rounds that the run needed after it.
+A document with several view tasks ends them with a visual fix task. The rule for visual findings is in the `run-rules` skill, under review findings. The review marks each screen whose visual fixes must stay in their own task, and says why.
 
-If the project file names a gate delegate, send the plan to the delegate under the rules of the section Delegated gate. Send the plan commit and the plan review result in one message.
+The `spec` cost line of an M ticket reads `tokens=0k minutes=0 fix_rounds=0`. The `plan` line holds the writing and the review of the document. The retro copies that line beside the number of fix rounds that the run needed after it.
+
+If the project file names a gate delegate, send the document to the delegate under the rules of the section Delegated gate. Send the document commit and the review result in one message.
 
 ## Lite mode
 
-Lite mode is experimental. The source project runs it as a trial on two small tickets, and nobody measured its cost yet. In lite mode, the controller does the work itself from a short brief. It writes no spec and no plan, and it dispatches no implementer.
+Lite mode is the default for every XS or S ticket, unless the gate owner says otherwise for that ticket. In lite mode, the controller does the work itself from a short brief. It writes no spec and no plan, and it dispatches no implementer.
 
-Before you offer lite mode at the brainstorm, make sure that each of these is true:
+For lite mode, each of these must be true:
 
 - The ticket is XS or S, as the section Estimates defines.
 - The ticket touches no server contract, no request or reply body, and no fixture.
 - The ticket writes no pattern-matching code, for example a lint, a parser, a regex, or a guard. The costly misses of the source project came from this kind of code and from server contracts.
 - If the ticket changes a screen, the gate owner already approved its design.
 
-The brief replaces the spec and the plan. It states the goal, the files, the tests, and the manual checks. Each check gives its value on a correct tree and on the defect. Write the brief under `docs_dir`, with the ticket key and the estimate in its header. The gate owner approves the brief, and that is the one gate. A gate delegate can approve it under the first four conditions of the section Delegated gate. The fifth condition does not apply, because lite mode has no plan review.
+If one condition is false, the ticket takes the M path. Write which condition failed in the document header.
+
+The brief replaces the spec and the plan. It states the goal, the files, the tests, the manual checks, and each build output folder that the run builds into. Each check gives its value on a correct tree and on the defect. Write the brief under `docs_dir`, with the ticket key and the estimate in its header. The gate owner approves the brief, and that is the one gate. A gate delegate can approve it under the first four conditions of the section Delegated gate. The fifth condition does not apply, because lite mode has no review before the gate.
 
 After the gate, the controller writes each test before its code. It commits after each step, and it pushes at the times that the section Pushes names. At the end, it dispatches the reviewer agent one time over the whole branch, with one fix wave and one re-review. Then it works the ship checklist, the handoff, the retro, and the merge steps as usual. The ledger starts with the line `mode: lite`, and its cost lines follow the `run-rules` skill, The ledger.
 
-If the work finds a server contract or pattern-matching code partway, stop. Record a ruling, and move the ticket to the full pipeline from step 1 of the feature command. The retro of a lite run compares its total cost with recent full runs of the same size. It also lists each defect that turned up after the merge.
+If the work finds a server contract or pattern-matching code partway, stop. Record a ruling, and move the ticket to the M path from step 1 of the feature command. The retro of a lite run compares its total cost with recent full runs of the same size. It also lists each defect that turned up after the merge.
 
 ## Estimates
 
@@ -136,6 +145,7 @@ Agree on test data and accounts before execution starts, in the plan header. The
 - The account and environment that QA runs against.
 - What QA can create, change, and permanently delete on that account.
 - Whether a valid session already exists on the target device. Find out by launching the app.
+- Each build output folder that the run builds into. The ship step deletes the ones that it does not use.
 - Each step that the permission check of the session will deny. Examples are an edit to a protected file and a test run while a script holds a mutation. Another example is an install on a device that holds a signed-in session. The gate owner allows them all in one message at the gate. If a delegate approves the plan, the controller still sends that one request to the gate owner. A peer cannot grant a permission.
 
 "Requires a fresh sign-in, therefore blocked" is a claim to test, not a fact.
@@ -144,7 +154,7 @@ Every spec has an estimate, and the retro reports it against the actual result. 
 
 - A t-shirt size. XS is one task, S is two or three, M is four to six, L is seven to ten, and XL is more than ten. If you can, split an XL ticket. Give the size at spec time, before the breakdown. If a ticket builds its own proof, count that proof as one task. That applies to a test rig, a lint, or a self-test, because every later change runs it again.
 - The wall-clock time to done, as a range, from the approval gate to the moment that the pull request is ready.
-- A token budget for the whole run, for the controller and the agents together. Build it from seats: one implementer seat for each task, one reviewer seat for each review pass, and the controller. Count every pass, including the spec review, the plan review, each task review, the whole-branch review, and each re-review. State how many fix rounds the figure assumes. Count two fix rounds for each proof task, because proof tasks restart on every edit.
+- A token budget for the whole run, for the controller and the agents together. Build it from seats: one implementer seat for each task, one reviewer seat for each review pass, and the controller. Count every pass: the review of the M document, each focused task review, the whole-branch review, and each re-review. Planning is about 10% of the budget. State how many fix rounds the figure assumes. Count two fix rounds for each proof task, because proof tasks restart on every edit.
 - The number of human touches that you expect. Normally that is one, the approval gate. If a feature needs more, say which touches and why at the start.
 
 Use the estimate as a tripwire. When the elapsed time or the tokens pass the estimate, say so without a prompt. Include what is left and the revised figure. Do not wait for the gate owner to ask.
@@ -191,6 +201,8 @@ While a fix waits, record it in the action items of the retro. If nobody can fin
 
 You never edit plugin files during a run. A fix to a plugin rule or script becomes an action item that names the plugin file, for a pull request to the plugin repository.
 
+The Agents section of the project file can name a process owner, as a session or a person. The process owner decides each process change and triages the action items of each retro. Another session or person can make the edits after that decision. A decision arrives as a message from the named process owner. If the project file names no process owner, the gate owner decides.
+
 ## Pushes
 
 The key `push_policy` in the project file sets the push times of the feature branch. Read it with `scripts/project-config.sh push_policy each-task`, so that a project file without the key gets `each-task`. If the value is not `each-task` or `mr-and-ship`, stop the run and name the key. Each push of the feature branch can start a CI build, and some teams pay for each build. (lesson: build-per-push)
@@ -211,7 +223,7 @@ Before any other push of the feature branch, ask the gate owner. Never push only
 
 ## Tracker and pull request
 
-The key `tracker` in the project file names the ticket tracker: `jira`, `linear`, `github`, `gitlab`, or `none`. Never assume Jira. The ticket id is the key on Jira and Linear, for example `ABC-123`, and the issue reference on GitHub and GitLab, for example `#123`, or `group/project#123` for an issue in another repository. With `none`, the team has no tracker, so skip every tracker step and say so once.
+The key `tracker` in the project file names the ticket tracker: `jira`, `linear`, `github`, `gitlab`, or `none`. Never assume Jira. On Jira and Linear, the ticket id is the key, for example `ABC-123`. On GitHub and GitLab, it is the issue reference, for example `#123`, or `group/project#123` for an issue in another repository. With `none`, the team has no tracker, so skip every tracker step and say so once.
 
 Get the ticket id in the first exchange of the brainstorm, not in the plan header. If the gate owner gave an id in the request, use it. If not, ask. A feature with no ticket is legitimate. In that case, say so and skip every tracker step. Do not guess an id later. After you get the id, put it in the spec header, the plan header, and the pull request body.
 
@@ -230,7 +242,7 @@ Resolve every status change from what the tracker offers for that ticket. Do not
 
 Stay in this scope and go no further: that one ticket, its status only, and the single trail comment. Do not edit the description. Do not change other fields or other tickets. Do not move anything to done during the run, because closing a ticket is the decision of the gate owner. If the tracker has no status for the stage that you want, say so. Do not pick a different status.
 
-On GitHub and GitLab, a closing keyword in the pull request body closes the issue at merge. So name the issue with `Refs #123` on GitHub and `Related to #123` on GitLab, never with a closing keyword such as `Closes`, `Fixes`, `Resolves`, or, on GitLab, `Implements`. Use a closing keyword only if the section Tracker steps says that the team closes the issue at merge.
+On GitHub and GitLab, a closing keyword in the pull request body closes the issue at merge. So name the issue with `Refs #123` on GitHub and `Related to #123` on GitLab. Never use a closing keyword such as `Closes`, `Fixes`, `Resolves`, or, on GitLab, `Implements`. If the section Tracker steps says that the team closes the issue at merge, use a closing keyword.
 
 Reply to every pull request review comment, and start the reply with `Claude said:`. Write one reply for each comment, on the thread of that comment. Never write a summary somewhere else, and never stay silent. A reply says what changed and names the commit that changed it. Reply after the push that carries that commit, so that the reader can open it. Otherwise, it says clearly that nothing changed and why. You can disagree without permission. You cannot say nothing.
 
@@ -240,7 +252,7 @@ Leave one trail comment on the ticket, and continue to edit it. Post it as soon 
 
 The last plan task is always "ship", and these are its steps. They are a dispatched task, not remembered rules. Do the steps in this order. Do not skip a step, and do not defer a step to a line in the pull request description.
 
-1. Make sure that the final whole-branch review passed and that every change after the review is committed.
+1. Make sure that the final whole-branch review passed and that every change after the review is committed. Then free the disk for the ship builds. The document header or the brief names the build output folders of earlier tasks and probes. If the ship step does not use one of them, delete it. Delete only those paths, never a path found by a pattern. (lesson: disk-full-at-ship)
 2. Run every manual check. An unrun check blocks ready-for-review. A "still open" note does not replace the run. Run the check, or ask the gate owner for what unblocks it. Run the checks as an `exploratory-testing` session with a charter and a session log. Save the log as `qa-session-log.md` in the ledger folder, because `scripts/ready-check.sh` reads that name.
 
    End the log with a tally line in exactly this shape, because step 7 parses it:
@@ -253,7 +265,7 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 
 3. Read the spec again against what shipped, and fix any drift.
 4. Make sure that the ledger has an entry that names every commit on the branch. Do this after the final push, because at write time the ready check cannot see the commit that you are writing. A commit that changes only files in the ledger folder needs no entry, so a ledger that git tracks can record itself. With `push_policy: mr-and-ship`, the final push comes after this step, not before it. Write the entry after the last commit outside the ledger folder. If `docs` is `repo`, commit the ledger. Then push the feature branch. This push is the ship push.
-5. Take the screenshots again on the final tree, after all the steps above, and push them to the branch that `screenshot_branch` names. On GitLab, you can instead upload them to the merge request description, and you must if `screenshot_branch` is empty. Use `scripts/settle-screenshot.swift --capture "<command>"` so that each capture waits for the screen to settle.
+5. Take the screenshots again on the final tree, after all the steps above, and push them to the branch that `screenshot_branch` names. On GitLab, you can instead upload them to the merge request description. If `screenshot_branch` is empty, you must upload them. Use `scripts/settle-screenshot.swift --capture "<command>"` so that each capture waits for the screen to settle.
 6. Rewrite the pull request description.
 7. Run `scripts/ready-check.sh`. It must exit 0. With `mr-and-ship`, a failure can need a new commit on the feature branch. In that case, fix all the failures, and ask the gate owner before you push again. When the check exits 0, mark the pull request ready. Do not ask the gate owner. On GitHub that is `gh pr ready`. On GitLab, where the pull request is a merge request, it is `glab mr update --ready`. The key `forge` in the project file says which one.
 8. Immediately after that, move the ticket to review, and post or update the trail comment, as the section Tracker and pull request says.
@@ -263,10 +275,10 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 
 - The base is merged into the branch, and the tree is committed and pushed.
 - The ledger names every commit in `<base_branch>..HEAD`, except a commit that changes only files in the ledger folder.
-- The ledger has cost lines for the spec review, the plan review, the final review, and at least one task.
+- The ledger has cost lines for `spec`, `plan`, `final`, and at least one task. A lite ledger has `build` and `final` instead.
 - The QA tally line reads all run, or each waived check has a waiver line from the gate owner.
 - The pull request body is a real description.
-- If the branch touches a file that matches `view_globs`, the body links screenshots on the screenshot branch, or, on GitLab, images uploaded to the merge request.
+- If the branch touches a file that matches `view_globs`, the body links screenshots on the screenshot branch. On GitLab, images uploaded to the merge request also count.
 
 The screenshot proof is a URL in the body that contains `/<screenshot_branch>/`. On GitLab, a link that contains `/uploads/<hash>/`, the form that GitLab gives an uploaded image, is also proof. If a view file changed but no screen changed, the body has a line that reads `No screen changed.` and the ready check accepts it. It skips the screenshot proof on a branch that changes no view. Run it from the checkout that holds the ledger. It reads the pull request through `gh` on GitHub and the merge request through `glab` on GitLab.
 
@@ -311,7 +323,7 @@ The delegate approves a plan only on these conditions:
 - The plan adds no dependency and changes no platform floor, such as a deployment target or a minimum version.
 - The plan changes nothing that a user sees, beyond what a design that the gate owner approved already shows. A change that the plan puts beside the newest baseline for review counts as visible.
 - The plan marks no decision as the decision of the gate owner.
-- The plan review ran, and it left no Critical or Important finding open.
+- The review of the M document ran, and it left no Critical or Important finding open.
 
 If a condition is false, the gate goes to the gate owner as usual, and the delegate names the condition that failed. The project file can add conditions. It cannot remove one of these five.
 
@@ -349,7 +361,7 @@ Every run ends with a retro at `<docs_dir>/retros/<yyyy-mm-dd>-<slug>-retro.md`,
 
    Write it as one line, for example `touches: steering 1, permission 2, rescue 1`.
 
-   Add one line for the plan review: copy its `plan` cost line, and give the number of fix rounds that the run then needed. That seat runs the plan and does not only read it.
+   Add one line for the planning share: copy the `plan` cost line, give its share of the total tokens, and give the number of fix rounds that the run then needed.
 3. Score, 1 to 4. Give one sentence of justification. Score the run, not the feature.
    - 1: the run did not land, or it needed rescue throughout.
    - 2: the run landed, but with significant rework or human help beyond the agreed gates.
@@ -358,7 +370,7 @@ Every run ends with a retro at `<docs_dir>/retros/<yyyy-mm-dd>-<slug>-retro.md`,
 4. What went well. Give each item with the evidence that it worked. If something carried the run, name it so that the next run keeps it.
 5. What to improve. Write one entry for each problem: what happened, the root cause, and the change that removes it. Say clearly whose error it was, including errors of the controller. Order the entries by what the problem cost, heaviest first. Anything that damaged work outside this run goes first, whatever its size.
 6. Waivers. List each ship checklist step that did not run as written, who agreed to waive it, and when. If there were no waivers, say so in one line. A deferred manual check is a waiver.
-7. Action items. These are proposals, and the triage belongs to the gate owner. Say so at the top. Then, for each item, say what changes, which plugin file it belongs in, and who does it. The run never edits plugin files. A rule change becomes an action item that names the plugin file, and it goes to the plugin repository as a pull request.
+7. Action items. These are proposals, and the triage belongs to the process owner, as the section Process fixes says. Say so at the top. Then, for each item, say what changes, which plugin file it belongs in, and who does it. The run never edits plugin files. A rule change becomes an action item that names the plugin file, and it goes to the plugin repository as a pull request.
    - Prefer a mechanism to a rule. An armed watch, a check that runs, and a script that aborts are better than a sentence that someone must remember at the right moment. Say what the mechanism makes unnecessary.
    - An amendment is not an addition. If an existing rule covers the ground and was wrong or incomplete, say which rule and how it must read.
    - Rank the items, and say which items you recommend that the gate owner drops.
