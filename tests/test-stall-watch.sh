@@ -39,9 +39,14 @@ rm "$work/.claude/agentic-delivery.md"
 
 out=$(cd "$work" && bash "$watch" --process fake_tester --roots "$work/root" --interval 1 --polls 1 2>&1)
 check "the disk figure is free space in GB" 2 "$(printf '%s\n' "$out" | grep -c 'disk=[0-9][0-9]*G$')"
-check "plenty of space prints no warning" 0 "$(printf '%s\n' "$out" | grep -c 'DISK LOW')"
 
 mkdir "$work/bin"
+printf '#!/bin/bash\nprintf "Filesystem 1G-blocks Used Available Capacity Mounted\\n/dev/x 900 400 500 45%% /\\n"\n' > "$work/bin/df"
+chmod +x "$work/bin/df"
+out=$(PATH="$work/bin:$PATH" bash "$watch" --process fake_tester --roots "$work/root" --interval 1 --polls 1 2>&1)
+check "plenty of space prints no warning" 0 "$(printf '%s\n' "$out" | grep -c 'DISK LOW')"
+check "plenty of space prints the heartbeat figure" 2 "$(printf '%s\n' "$out" | grep -c 'HEARTBEAT.*disk=500G$')"
+
 printf '#!/bin/bash\nprintf "Filesystem 1G-blocks Used Available Capacity Mounted\\n/dev/x 100 98 2 98%% /\\n"\n' > "$work/bin/df"
 chmod +x "$work/bin/df"
 out=$(PATH="$work/bin:$PATH" bash "$watch" --process fake_tester --roots "$work/root" --interval 1 --polls 1 2>&1)

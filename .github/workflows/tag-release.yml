@@ -1,0 +1,50 @@
+name: tag release
+
+# Each version of the plugin gets a tag, so that a team can pin it.
+# The job reads the version from .claude-plugin/plugin.json. If the tag
+# v<version> does not exist, the job creates it on the pushed commit.
+# The job never moves a tag that exists.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tag-release
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create the tag for the version
+        run: |
+          version=$(jq -r .version .claude-plugin/plugin.json)
+          if ! printf '%s\n' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "The version in plugin.json is not x.y.z: '$version'"
+            exit 1
+          fi
+          tag="v$version"
+
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "The tag $tag exists. The job does not move it."
+            exit 0
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            echo "The tag $tag exists on the remote. The job does not move it."
+            exit 0
+          fi
+
+          # A push without --force cannot replace a tag that exists.
+          git tag "$tag" "$GITHUB_SHA"
+          git push origin "refs/tags/$tag"
+          echo "Created the tag $tag at $GITHUB_SHA."

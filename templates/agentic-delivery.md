@@ -77,3 +77,5 @@ List the parts of the code and the actions that need a word from the gate owner 
 ## Agents
 
 By default each seat uses the agent of this plugin. Claude Code lists a plugin agent as `<plugin>:<agent>`, so the defaults are `agentic-delivery:implementer`, `agentic-delivery:reviewer`, and `agentic-delivery:qa-reviewer`. To use an agent of your team for a seat, put its name in `implementer_agent`, `reviewer_agent`, or `qa_agent`. For example, name an agent from a file in the `.claude/agents/` folder of the project by its `name` line. A key that names a missing agent stops the run at its first dispatch and names the key. There is no fallback to another agent. The brief still makes that agent load the run rules and the platform skill. So an agent of your team gets the same rules as the default one. Write here what each custom agent is for and why the team chose it.
+
+Optionally, name a process owner here, as a session or a person. The process owner decides each process change and triages the action items of each retro. If you name none, the gate owner decides. The `controller` skill, section Process fixes, gives the rule.
