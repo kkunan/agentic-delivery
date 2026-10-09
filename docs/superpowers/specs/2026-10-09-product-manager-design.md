@@ -40,11 +40,13 @@ a product squad at a company. The second is a small app with one owner.
 - The evidence rule: every claim in a memo names its source. A claim without a source says "no
   data". A guess is labeled as a guess.
 - Privacy: a memo holds no personal data of a user or a customer, such as a name, an email, or an
-  account id. It quotes a number or a paraphrase.
+  account id. It quotes a number or a paraphrase. The same rule covers the decision record and each
+  ticket.
 - The record: after each answer, the agent writes the decision, its date, and the person who decided
   in the place that the project file names for open questions.
 - When it works: when the gate owner asks, and in each grooming pass. In a pass, it lists each ticket
-  whose user value or metric has no evidence, as a decision to prepare.
+  whose user value or metric has no evidence, as a decision to prepare. A ticket on that list does
+  not go to the lead until its decision is recorded.
 - Limits: it never decides on its own, never contacts a user or a customer, and writes no code,
   brief, spec, or plan.
 - Expert skills, by job: `metrics-review`, `synthesize-research`, `roadmap-update`, `write-spec`,
