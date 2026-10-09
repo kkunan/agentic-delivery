@@ -28,6 +28,7 @@ Read these keys from the front matter of the project file:
 - `po_grooming`: `events`, `daily`, or `events,daily`. If it is empty or missing, it is `events`.
 - `po_authority`: `backlog`, `next-up`, or `all-but-done`. If it is empty or missing, it is `next-up`.
 - `sprint_days`, `sprint_tokens`, and `size_tokens`: sprint mode needs all three.
+- `po_scope`: `tickets` or `product`. If it is empty or missing, it is `tickets`. With `product`, also load the skill `product-manager`.
 
 If a key holds a value outside its list, stop and name the key. In sprint mode, if `sprint_days`, `sprint_tokens`, or `size_tokens` is empty, do not plan the sprint. Name the key, and ask the gate owner for the value. Grooming still runs.
 

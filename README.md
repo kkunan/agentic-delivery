@@ -7,7 +7,7 @@
 A Claude Code plugin that takes a feature from an idea to a merged pull request.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-0.4.0-informational)
+![Version](https://img.shields.io/badge/version-0.5.0-informational)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A63D2)
 ![Status](https://img.shields.io/badge/status-pilot%20not%20run-orange)
 ![Platforms](https://img.shields.io/badge/platforms-Flutter%20%7C%20iOS%20(in%20progress)-lightgrey)
@@ -26,7 +26,7 @@ something went wrong without it, and [`lessons.md`](lessons.md) tells the story 
 > [!NOTE]
 > The core is in place and has tests: the rules, the agents, the feature command, the project file,
 > the scripts, and the hooks. The Flutter layer is written, and two runs on Flutter 3.38.9 stable
-> measured its commands. The team pilot has not run yet, so version 0.4.0 is not tested on a real
+> measured its commands. The team pilot has not run yet, so version 0.5.0 is not tested on a real
 > feature. See [Status](#status) and [Platforms](#platforms) before you install.
 
 ## Quick start
@@ -39,7 +39,7 @@ For a team, pin the plugin to a release tag. Run these two commands at the root 
 repository:
 
 ```bash
-claude plugin marketplace add 'kkunan/agentic-delivery#v0.4.0' --scope project
+claude plugin marketplace add 'kkunan/agentic-delivery#v0.5.0' --scope project
 ```
 
 ```bash
@@ -53,7 +53,7 @@ team gets the same version:
 {
   "extraKnownMarketplaces": {
     "agentic-delivery": {
-      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.4.0" }
+      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.5.0" }
     }
   },
   "enabledPlugins": { "agentic-delivery@agentic-delivery": true }
@@ -104,6 +104,10 @@ flowchart LR
     Y -->|flow| N[Next ticket to the lead]
     Y -->|sprint| Z[Lead sizes] --> C[Cut-off at the token budget] --> V{{You approve the sprint}}
 ```
+
+With `po_scope: product`, the Product Owner also prepares product decisions before the tickets. For
+each decision, it shows you a short memo with options, the evidence for each, and its pick. You, or
+the person whom the project file names, make the call. The Product Owner then writes the tickets.
 
 ### 2. Shape the work
 
@@ -300,6 +304,7 @@ tests/                   a test file for each script
 | `agentic-delivery:controller` | The rules that only the controller follows: dispatch, review seats, estimates, stall watch, tracker steps, ship, merge, report, and retro | Step 0 of `/feature`, and again after a compaction |
 | `agentic-delivery:run-rules` | The rules that every agent follows | Step 0 of `/feature`, and at the start of every dispatched task and review |
 | `agentic-delivery:product-owner` | The rules for an optional Product Owner session: ready ticket, grooming, sprint planning, and replan | The Product Owner session loads it at start, and again after a compaction |
+| `agentic-delivery:product-manager` | The optional Product Manager scope: decision memos, evidence, and privacy | With `po_scope: product`, the Product Owner session loads it after `product-owner` |
 | `platform-flutter` | The Flutter layer, with the commands for build and test | For a project with `platform: flutter`, step 0 of `/feature` loads it after the two above. Its commands were measured on Flutter 3.38.9 stable |
 | `platform-ios` | The iOS layer, SwiftUI first with UIKit notes | For a project with `platform: ios`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on Xcode 16.4 |
 | `platform-go` | The Go layer, for services with an HTTP API | For a project with `platform: go`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on a real Go toolchain |
@@ -403,9 +408,9 @@ layer comes from a native iOS project that ran more than 30 tickets through earl
 workflow and its scripts. A CI job runs the layer's commands and its mutation runner on Xcode 16.4
 against a sample app. It runs on each pull request that changes the iOS layer or a script that the
 job runs. No project has run a feature through the plugin itself yet. The rest of the plugin is in place and has tests.
-The team pilot has not run yet, so version 0.4.0 is not tested on a real feature.
+The team pilot has not run yet, so version 0.5.0 is not tested on a real feature.
 
-Each version gets a tag, such as `v0.4.0`, for a team to pin. On each push to `main`, the workflow
+Each version gets a tag, such as `v0.5.0`, for a team to pin. On each push to `main`, the workflow
 `tag-release.yml` reads the version in `.claude-plugin/plugin.json`. If the tag does not exist, the
 workflow creates it. It never moves a tag that exists.
 
