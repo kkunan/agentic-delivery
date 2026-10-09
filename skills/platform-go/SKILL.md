@@ -78,7 +78,7 @@ A service run has no manual checks, unless the repository can start the service 
 
 A test id has the form `<package>::<test name>`, for example `./internal/usecase::TestSendMessage`. The package is a path that `go test` accepts, such as `.` or `./internal/usecase`. A subtest keeps its slash, for example `.::TestClamp/low`. Go replaces each space in a subtest name with `_`, so write the name as `go test -v` prints it.
 
-The runner calls `<go> test -json -count=1 -run <pattern> <package>` once for each test id. The pattern anchors each part of the name. The verdicts:
+The runner calls `<go> test -json -count=1 -run <pattern> <package>` once for each test id, from the top of the worktree. The pattern anchors each part of the name. The runner needs Go 1.24 or later, because an older `go test -json` prints a build failure as text. The verdicts:
 
 - A passing test gives `passed`, and a failing test gives `failed`, so the verdict is `killed`.
 - A skipped test gives `skipped`, so the verdict is `error`.

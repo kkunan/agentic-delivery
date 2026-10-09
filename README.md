@@ -401,8 +401,8 @@ Flutter layer, and propose it as a pull request.
 The Flutter layer is written, and two runs on Flutter 3.38.9 stable measured its commands. The iOS
 layer comes from a native iOS project that ran more than 30 tickets through earlier versions of this
 workflow and its scripts. A CI job runs the layer's commands and its mutation runner on Xcode 16.4
-against a sample app, on each pull request. No project has run a feature through the plugin itself
-yet. The rest of the plugin is in place and has tests.
+against a sample app. It runs on each pull request that changes the iOS layer or a script that the
+job runs. No project has run a feature through the plugin itself yet. The rest of the plugin is in place and has tests.
 The team pilot has not run yet, so version 0.4.0 is not tested on a real feature.
 
 Each version gets a tag, such as `v0.4.0`, for a team to pin. On each push to `main`, the workflow

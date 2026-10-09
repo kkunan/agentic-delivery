@@ -78,6 +78,18 @@ run missing ./a::TestMissing
 check "no match: exit 0" 0 "$rc"
 check "no match: no entry" "True " "$(entries missing)"
 
+mkdir -p "$app/sub"
+rc=0
+(cd "$app/sub" && GO_BIN="$fake" "$runner" --out "$work/sub.json" --log "$work/sub.log" -- ./a::TestAdd < /dev/null 2>/dev/null) || rc=$?
+check "from a subfolder: exit 0" 0 "$rc"
+check "from a subfolder: go runs at the top" "$app" "$(cat "$FAKE_CALLS.pwd")"
+check "from a subfolder: entry" "True ./a::TestAdd=passed" "$(entries sub)"
+
+outside=$(cd "$(mktemp -d "$work/outside.XXXXXX")" && pwd -P)
+rc=0
+(cd "$outside" && GO_BIN="$fake" "$runner" --out "$work/outside.json" --log "$work/outside.log" -- ./a::TestAdd < /dev/null 2>/dev/null) || rc=$?
+check "outside a git repository: exit 2" 2 "$rc"
+
 # ── Build failure ─────────────────────────────────────────────────────────
 
 events ./b \

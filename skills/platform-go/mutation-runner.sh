@@ -40,9 +40,11 @@ done
 
 # ── The Go command ────────────────────────────────────────────────────────
 
+top=$(git rev-parse --show-toplevel 2>/dev/null) || { say "REFUSED: the current folder is not in a git repository"; exit 2; }
+
 config_value() {
     local file
-    file="$(git rev-parse --show-toplevel 2>/dev/null)/.claude/agentic-delivery.md"
+    file="$top/.claude/agentic-delivery.md"
     [ -f "$file" ] || return 0
     awk -v k="$1" '
         NR == 1 && $0 != "---" { exit }
@@ -73,7 +75,7 @@ for id in "${ids[@]}"; do
     pkg=${id%%::*}
     pattern=$(python3 -c "$anchor" "${id#*::}")
     say "$go_command test -json -count=1 -run $pattern $pkg"
-    bash -c "$go_command"' "$@"' go-command test -json -count=1 -run "$pattern" "$pkg" > "$work/$n.jsonl" 2>> "$log" < /dev/null
+    (cd "$top" && bash -c "$go_command"' "$@"' go-command test -json -count=1 -run "$pattern" "$pkg") > "$work/$n.jsonl" 2>> "$log" < /dev/null
     records+=("$id" "$work/$n.jsonl" "$?")
 done
 
