@@ -12,11 +12,12 @@ in your context, so do not open it again.
    `templates/agentic-delivery.md` of the plugin into the project, and wait for the answer. If the file
    exists, check these keys first: `platform`, `base_branch`, `release_branch`, `branch_prefix`,
    `protected_branches`, `docs`, `docs_dir`, `view_globs`, `screenshot_branch`, and `tracker`. If one
-   is empty or missing, stop. The one exception is `screenshot_branch` on GitLab, which can stay empty,
-   because a merge request takes uploaded images. Ask the developer for each empty key, and write the
-   answers into the project file only after the developer agrees. Never guess a value from the branches
-   or the folders that you see. When you ask for `base_branch` or `release_branch`, show each
-   candidate branch on `origin` with the date of its last commit, from
+   is empty or missing, stop. One exception is `screenshot_branch` on GitLab, which can stay empty,
+   because a merge request takes uploaded images. A project with no screens sets `view_globs` to
+   `none`, and its `screenshot_branch` can also stay empty. Ask the developer for each empty key, and
+   write the answers into the project file only after the developer agrees. Never guess a value from
+   the branches or the folders that you see. When you ask for `base_branch` or `release_branch`, show
+   each candidate branch on `origin` with the date of its last commit, from
    `git log -1 --format=%cs origin/<branch>`. Never take `origin/HEAD` as the answer by itself. It can
    point to a branch that the team no longer uses. The key `push_policy` can be missing, and then it
    is `each-task`. If it holds a value other than `each-task` or `mr-and-ship`, stop and name the key.

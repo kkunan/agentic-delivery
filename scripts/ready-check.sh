@@ -32,7 +32,7 @@ case "$forge" in
 esac
 
 # GitLab takes images uploaded to the merge request, so the branch is optional there.
-if [ "$forge" = gitlab ]; then
+if [ "$forge" = gitlab ] || [ "$view_globs" = none ]; then
     screenshot_branch=$(bash "$reader" screenshot_branch "") || exit $?
 else
     screenshot_branch=$(bash "$reader" screenshot_branch) || exit $?
@@ -250,7 +250,7 @@ else
                 $pattern) views=$((views + 1)); break ;;
             esac
         done
-    done < <(git diff --name-only "$base...HEAD")
+    done < <([ "$view_globs" = none ] || git diff --name-only "$base...HEAD")
     if [ "$views" -eq 0 ]; then
         printf 'SKIP  %s links screenshots\n      no file that matches view_globs changed on this branch\n' "$pr_word"
     else

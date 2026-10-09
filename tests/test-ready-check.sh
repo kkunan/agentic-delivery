@@ -29,8 +29,8 @@ build() {
         printf 'docs/\nnotes/\n' >> "$repo/.git/info/exclude"
     fi
     [ "$docs" = private ] || ledger="$repo/$docs_dir/2026-10-02-demo"
-    printf -- '---\nplatform: flutter\nbase_branch: %s\nbranch_prefix: %s\ndocs: %s\ndocs_dir: %s\nview_globs: %s\nscreenshot_branch: screenshots\n---\n' \
-        "$base" "$prefix" "$docs" "${T_DOCS_DIR_VALUE:-$docs_dir}" "${T_GLOBS:-lib/**/views/**,lib/**/widgets/**}" > "$repo/.claude/agentic-delivery.md"
+    printf -- '---\nplatform: flutter\nbase_branch: %s\nbranch_prefix: %s\ndocs: %s\ndocs_dir: %s\nview_globs: %s\nscreenshot_branch: %s\n---\n' \
+        "$base" "$prefix" "$docs" "${T_DOCS_DIR_VALUE:-$docs_dir}" "${T_GLOBS:-lib/**/views/**,lib/**/widgets/**}" "${T_SHOTS-screenshots}" > "$repo/.claude/agentic-delivery.md"
     if [ -n "${T_FORGE:-}" ]; then
         awk -v f="$T_FORGE" 'NR == 2 { print "forge: " f } { print }' "$repo/.claude/agentic-delivery.md" > "$repo/.claude/tmp.md"
         mv "$repo/.claude/tmp.md" "$repo/.claude/agentic-delivery.md"
@@ -472,6 +472,28 @@ else
     check "no glab: exit 1" 1 "$rc"
     check "no glab: says glab is not installed" yes "$(has 'glab is not installed or not on PATH')"
 fi
+cleanup
+
+# ── A project with no screens ─────────────────────────────────────────────
+T_GLOBS=none T_SHOTS= build
+mkdir -p "$repo/lib/a/views"
+printf 'view\n' > "$repo/lib/a/views/page.dart"
+git_in add -A
+git_in commit -q -m "add a file in a views folder"
+git_in push -q origin feature/demo
+write_ledger "$(git_in log --first-parent develop..HEAD --format=%h | tr '\n' ' ')"
+run_with_pr
+check "no screens: exit 0" 0 "$rc"
+check "no screens: the screenshot proof skips" yes "$(has 'SKIP  PR links screenshots')"
+printf 'tally: 0 checks, 0 run, 0 unrun, 0 waived\n' > "$ledger/qa-session-log.md"
+run_with_pr
+check "no manual checks: exit 0" 0 "$rc"
+check "no manual checks: passes" yes "$(has 'PASS  every manual check ran (0 checks)')"
+cleanup
+
+T_SHOTS= build
+run
+check "empty screenshot_branch with view globs: exit 3" 3 "$rc"
 cleanup
 
 finish
