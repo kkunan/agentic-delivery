@@ -1,0 +1,56 @@
+name: go-toolchain
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/go-toolchain.yml
+      - skills/platform-go/**
+      - tests/go-module/**
+      - tests/go-toolchain/**
+      - tests/lib.sh
+      - scripts/mutate.sh
+      - scripts/mutate/**
+      - scripts/project-config.sh
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/go-toolchain.yml
+      - skills/platform-go/**
+      - tests/go-module/**
+      - tests/go-toolchain/**
+      - tests/lib.sh
+      - scripts/mutate.sh
+      - scripts/mutate/**
+      - scripts/project-config.sh
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: go-toolchain-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go:
+    name: Go layer on a real toolchain
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: tests/go-module/go.mod
+          cache: false
+
+      - name: Run the Go commands and the mutation runner
+        run: bash tests/go-toolchain/check.sh "$RUNNER_TEMP/go-toolchain"
+
+      - name: Keep the evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-toolchain-evidence
+          path: ${{ runner.temp }}/go-toolchain/evidence
+          if-no-files-found: warn

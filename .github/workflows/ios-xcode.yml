@@ -1,0 +1,59 @@
+name: ios-xcode
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/ios-xcode.yml
+      - skills/platform-ios/**
+      - tests/ios-xcode/**
+      - tests/lib.sh
+      - scripts/claim-device.sh
+      - scripts/mutate.sh
+      - scripts/mutate/**
+      - scripts/project-config.sh
+      - scripts/settle-screenshot.swift
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/ios-xcode.yml
+      - skills/platform-ios/**
+      - tests/ios-xcode/**
+      - tests/lib.sh
+      - scripts/claim-device.sh
+      - scripts/mutate.sh
+      - scripts/mutate/**
+      - scripts/project-config.sh
+      - scripts/settle-screenshot.swift
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-xcode-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  xcode:
+    name: iOS layer on real Xcode
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Run the iOS commands and the mutation runner
+        run: bash tests/ios-xcode/check.sh "$RUNNER_TEMP/ios-xcode"
+
+      - name: Keep the evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-xcode-evidence
+          path: ${{ runner.temp }}/ios-xcode/evidence
+          if-no-files-found: warn

@@ -7,7 +7,7 @@
 A Claude Code plugin that takes a feature from an idea to a merged pull request.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-0.3.0-informational)
+![Version](https://img.shields.io/badge/version-0.4.0-informational)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A63D2)
 ![Status](https://img.shields.io/badge/status-pilot%20not%20run-orange)
 ![Platforms](https://img.shields.io/badge/platforms-Flutter%20%7C%20iOS%20(in%20progress)-lightgrey)
@@ -26,7 +26,7 @@ something went wrong without it, and [`lessons.md`](lessons.md) tells the story 
 > [!NOTE]
 > The core is in place and has tests: the rules, the agents, the feature command, the project file,
 > the scripts, and the hooks. The Flutter layer is written, and two runs on Flutter 3.38.9 stable
-> measured its commands. The team pilot has not run yet, so version 0.3.0 is not tested on a real
+> measured its commands. The team pilot has not run yet, so version 0.4.0 is not tested on a real
 > feature. See [Status](#status) and [Platforms](#platforms) before you install.
 
 ## Quick start
@@ -39,7 +39,7 @@ For a team, pin the plugin to a release tag. Run these two commands at the root 
 repository:
 
 ```bash
-claude plugin marketplace add 'kkunan/agentic-delivery#v0.3.0' --scope project
+claude plugin marketplace add 'kkunan/agentic-delivery#v0.4.0' --scope project
 ```
 
 ```bash
@@ -53,7 +53,7 @@ team gets the same version:
 {
   "extraKnownMarketplaces": {
     "agentic-delivery": {
-      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.3.0" }
+      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.4.0" }
     }
   },
   "enabledPlugins": { "agentic-delivery@agentic-delivery": true }
@@ -281,7 +281,7 @@ agents/                  implementer, reviewer, qa-reviewer
 skills/run-rules/        the rules that every agent follows
 skills/controller/       the rules for the session that runs the pipeline
 skills/product-owner/    the rules for an optional Product Owner session
-skills/platform-*/       one platform layer in each folder: flutter, ios
+skills/platform-*/       one platform layer in each folder: flutter, ios, go
 templates/               the project file template
 hooks/                   the start-up pointer and the retro reminder
 output-styles/lean.md    the optional lean output style
@@ -302,6 +302,7 @@ tests/                   a test file for each script
 | `agentic-delivery:product-owner` | The rules for an optional Product Owner session: ready ticket, grooming, sprint planning, and replan | The Product Owner session loads it at start, and again after a compaction |
 | `platform-flutter` | The Flutter layer, with the commands for build and test | For a project with `platform: flutter`, step 0 of `/feature` loads it after the two above. Its commands were measured on Flutter 3.38.9 stable |
 | `platform-ios` | The iOS layer, SwiftUI first with UIKit notes | For a project with `platform: ios`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on Xcode 16.4 |
+| `platform-go` | The Go layer, for services with an HTTP API | For a project with `platform: go`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on a real Go toolchain |
 
 The plugin also has three agents. The project file names the one for each seat, and the defaults
 are these:
@@ -389,7 +390,7 @@ screenshots. Without a layer, the agents have the rules but no platform commands
 | Flutter | iOS, Android, web | Written. Two runs on Flutter 3.38.9 stable measured its commands. It has the mutation runner. |
 | Native iOS | iOS, SwiftUI first, with UIKit notes | Rules written. It has the mutation runner. A CI job runs its commands and the runner against a sample app on Xcode 16.4. No real feature used it yet. |
 | Native Android | Android | Not started |
-| Backend services | APIs and workers | Not started |
+| Go | Services with an HTTP API | Rules written. It has the mutation runner. A CI job runs its commands and the runner on a real Go toolchain. No real feature used it yet. |
 | Web front ends | Browsers | Not started |
 
 A platform layer is one skill in `skills/platform-<name>/`. To add one, follow the shape of the
@@ -400,11 +401,11 @@ Flutter layer, and propose it as a pull request.
 The Flutter layer is written, and two runs on Flutter 3.38.9 stable measured its commands. The iOS
 layer comes from a native iOS project that ran more than 30 tickets through earlier versions of this
 workflow and its scripts. A CI job runs the layer's commands and its mutation runner on Xcode 16.4
-against a sample app, on each pull request. No project has run a feature through the plugin itself
-yet. The rest of the plugin is in place and has tests.
-The team pilot has not run yet, so version 0.3.0 is not tested on a real feature.
+against a sample app. It runs on each pull request that changes the iOS layer or a script that the
+job runs. No project has run a feature through the plugin itself yet. The rest of the plugin is in place and has tests.
+The team pilot has not run yet, so version 0.4.0 is not tested on a real feature.
 
-Each version gets a tag, such as `v0.3.0`, for a team to pin. On each push to `main`, the workflow
+Each version gets a tag, such as `v0.4.0`, for a team to pin. On each push to `main`, the workflow
 `tag-release.yml` reads the version in `.claude-plugin/plugin.json`. If the tag does not exist, the
 workflow creates it. It never moves a tag that exists.
 
