@@ -1,6 +1,6 @@
 ---
 platform:
-min_plugin_version: 0.4.0
+min_plugin_version: 0.5.0
 base_branch:
 release_branch:
 branch_prefix:
@@ -22,6 +22,7 @@ po:
 delivery_mode: flow
 po_grooming: events
 po_authority: next-up
+po_scope: tickets
 sprint_days:
 sprint_tokens:
 size_tokens:
@@ -54,6 +55,7 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 - `delivery_mode` is `flow` or `sprint`. In flow mode, the Product Owner sends the next ready ticket to the lead when a team is free. In sprint mode, the team plans a batch of tickets at a fixed time.
 - `po_grooming` sets when the Product Owner grooms the backlog by itself: `events`, `daily`, or `events,daily`. The events are a new ticket and a ship. The Product Owner also grooms whenever the gate owner asks.
 - `po_authority` sets what the Product Owner changes in the tracker without the gate owner's yes. Its value is `backlog`, `next-up`, or `all-but-done`. The skill `product-owner` defines each value.
+- `po_scope` is `tickets` or `product`. With `tickets`, the Product Owner orders and writes tickets. With `product`, it also prepares product decisions for a person to make, and loads the skill `product-manager`. If the key is empty or missing, it is `tickets`.
 - `sprint_days` is the length of a sprint in working days. Sprint mode needs it.
 - `sprint_tokens` is the token budget of one sprint, for example `6M`. Sprint mode needs it.
 - `size_tokens` gives a token range for each t-shirt size, for example `XS=100k-250k,S=250k-600k,M=600k-2M`. Sprint mode needs it. It is empty in this file, because each team measures its own ranges from its retros.
@@ -97,3 +99,7 @@ Optionally, name a process owner here, as a session or a person. The process own
 ## Product Owner
 
 Fill in this section only if `po` names a Product Owner. Name what the Product Owner weighs to order the backlog, for example the next release date or a customer promise. Name where the Product Owner keeps the open questions for the gate owner, for example a page in the tracker.
+
+## Product Manager
+
+Fill in this section only if `po_scope` is `product`. Name the person who makes product decisions, for example the squad's Product Manager. Name each evidence source that the Product Owner can read, and how to read it. Examples are an analytics export and a folder of research notes. If the team has a strategy document, name it too.
