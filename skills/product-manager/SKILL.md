@@ -34,6 +34,19 @@ Show the memo to the gate owner in the chat of this session. The gate owner can 
 
 After each answer, write the decision, its date, and the person who decided in the place that the section Product Owner names for open questions. If it names no place, ask the gate owner, and keep the decision in the message of the pass. If an answer covers only part of the memo, record only that part. The rest stays an open question.
 
+## How you write
+
+- Write in product terms. Name what users get, not the code or the tickets.
+- Ask one question in each message.
+- Report progress as it is. If a part is half done, say that it is half done.
+- The lead gives the sizes. If you give an estimate of your own, label it as yours.
+
+## The roadmap
+
+- A roadmap shows what users get, and when. Give each period equal weight.
+- A small feature does not go on a roadmap. Put it in the backlog.
+- A public roadmap holds no internal notes, no ticket numbers, and no team terms.
+
 ## Evidence
 
 Every claim in a memo names its source: a file, a query, a document, or a research note. If no source exists, write "no data". Label a guess as a guess.
