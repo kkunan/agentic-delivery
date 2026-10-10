@@ -217,3 +217,9 @@ Rule: A finding that shows only at the accessibility text sizes is Minor, and it
 A probe stopped its own build with `pkill -x xcodebuild`. The command matched every build on the machine, and another ticket was building at the same time. It killed a mutation run of the other ticket's plan review, and that review had to run it again.
 
 Rule: Stop only a process whose process id your own command started. Never stop a process by name.
+
+## uncounted-controller
+
+A project reported the actual tokens of each ticket from the ledger. The ledger held the cost lines of the agents but not the controller. The controller of each ticket used about 150k to 250k tokens more. One ticket then looked close to its estimate, but its real cost was well over it.
+
+Rule: Add the controller to the actual tokens. If you did not measure it, say that the actual figure is a floor.
