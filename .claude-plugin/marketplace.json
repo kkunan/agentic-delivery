@@ -3,14 +3,14 @@
   "owner": {
     "name": "kkunan"
   },
-  "description": "The Agentic Delivery plugin: a spec-driven feature pipeline for Claude Code.",
+  "description": "The Agentic Delivery marketplace: a spec-driven feature pipeline for Claude Code, and optional product skills.",
   "plugins": [
     {
       "name": "agentic-delivery",
       "source": "./",
       "displayName": "Agentic Delivery",
       "description": "A spec-driven feature pipeline for Claude Code: one plan gate, reviewed tasks, a ledger, and a retro, with platform layers.",
-      "version": "0.5.1",
+      "version": "0.5.2",
       "author": {
         "name": "kkunan"
       },
@@ -21,6 +21,23 @@
         "agents",
         "spec-driven",
         "flutter"
+      ]
+    },
+    {
+      "name": "agentic-discovery",
+      "source": "./plugins/agentic-discovery",
+      "displayName": "Agentic Discovery",
+      "description": "Optional product skills for Claude Code: writing for readers outside the team, and a public roadmap built from a talk with the owner.",
+      "version": "0.1.0",
+      "author": {
+        "name": "kkunan"
+      },
+      "repository": "https://github.com/kkunan/agentic-delivery",
+      "license": "MIT",
+      "keywords": [
+        "product",
+        "roadmap",
+        "writing"
       ]
     }
   ]
