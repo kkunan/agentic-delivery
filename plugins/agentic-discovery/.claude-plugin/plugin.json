@@ -1,0 +1,16 @@
+{
+  "name": "agentic-discovery",
+  "displayName": "Agentic Discovery",
+  "description": "Optional product skills for Claude Code: writing for readers outside the team, and a public roadmap built from a talk with the owner.",
+  "version": "0.1.0",
+  "author": {
+    "name": "kkunan"
+  },
+  "repository": "https://github.com/kkunan/agentic-delivery",
+  "license": "MIT",
+  "keywords": [
+    "product",
+    "roadmap",
+    "writing"
+  ]
+}

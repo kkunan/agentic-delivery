@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClinicDesk Roadmap</title>
+<style>
+:root {
+  --bg: #F6F8FB;
+  --surface: #FFFFFF;
+  --line: #E2E6EE;
+  --fg: #1A2233;
+  --muted: #5F6779;
+  --accent: #0055FF;
+  --accent-soft: #EAF3FF;
+  --on-accent: #FFFFFF;
+  --p1: #6A3FD8;
+  --p1-soft: #F1ECFD;
+  --p2: #0055FF;
+  --p2-soft: #EAF3FF;
+  --p3: #0E8A57;
+  --p3-soft: #E6F7EE;
+  --live: #0E8A57;
+  --warn: #B26A00;
+  --risk: #C93A3F;
+  --display: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #070E1A; --surface: #0D1524; --line: #2B3445; --fg: #EFF2F7; --muted: #A3AABA;
+    --accent: #6FA8FF; --accent-soft: #0F2347; --on-accent: #07101F;
+    --p1: #B29BFF; --p1-soft: #221A3D; --p2: #6FA8FF; --p2-soft: #0F2347;
+    --p3: #3CC98C; --p3-soft: #0D2A1E; --live: #3CC98C; --warn: #F0A93A; --risk: #F07175;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #070E1A; --surface: #0D1524; --line: #2B3445; --fg: #EFF2F7; --muted: #A3AABA;
+  --accent: #6FA8FF; --accent-soft: #0F2347; --on-accent: #07101F;
+  --p1: #B29BFF; --p1-soft: #221A3D; --p2: #6FA8FF; --p2-soft: #0F2347;
+  --p3: #3CC98C; --p3-soft: #0D2A1E; --live: #3CC98C; --warn: #F0A93A; --risk: #F07175;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 72px; display: grid; gap: 64px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.3; }
+h1 { font-size: clamp(28px, 4.4vw, 40px); font-weight: 700; }
+h2 { font-size: 24px; font-weight: 700; }
+h3 { font-size: 17px; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent); }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+section { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; scroll-margin-top: 16px; }
+.level { font: 500 12px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lead { max-width: 64ch; color: var(--muted); }
+.lead b { color: var(--fg); font-weight: 600; }
+.lead.bridge { color: var(--fg); font: 600 16px/1.5 var(--display); padding-top: 8px; }
+
+.answer { display: grid; gap: 18px; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 28px; align-items: center; background: linear-gradient(135deg, var(--accent-soft), var(--surface) 65%); border: 1px solid var(--line); border-radius: 20px; padding: clamp(20px, 4vw, 36px); }
+.hero-text { display: grid; gap: 14px; }
+.answer .big { font: 600 clamp(18px, 2.4vw, 22px)/1.5 var(--display); max-width: 46ch; text-wrap: pretty; }
+@media (max-width: 720px) { .hero { grid-template-columns: 1fr; } }
+.mini-tl { list-style: none; margin: 0; padding: 0; display: grid; }
+.mini-tl li { position: relative; display: grid; gap: 2px; padding: 0 0 18px 26px; border-left: 2px dashed var(--line); margin-left: 7px; }
+.mini-tl li:last-child { padding-bottom: 0; border-left-color: transparent; }
+.mini-tl li::before { content: ""; position: absolute; left: -9px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 2px solid var(--muted); }
+.mini-tl li.on { border-left-style: solid; border-left-color: var(--live); }
+.mini-tl li.on::before { background: var(--live); border-color: var(--live); box-shadow: 0 0 0 4px color-mix(in srgb, var(--live) 22%, transparent); }
+.mini-tl .y { font: 600 12px/1.4 var(--mono); color: var(--muted); }
+.mini-tl li.on .y { color: var(--live); }
+.mini-tl .t { font: 600 15px/1.35 var(--display); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.facts li { display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.facts li > span:last-child { display: grid; font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+.facts li b { font: 600 15px/1.35 var(--display); color: var(--fg); }
+.fi { flex: none; width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; color: var(--c); background: color-mix(in srgb, var(--c) 13%, transparent); }
+.jump { display: grid; gap: 10px; }
+.jumps { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.jumps a { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-content: start; text-decoration: none; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.jumps a:hover { border-color: var(--accent); }
+.jumps .no { grid-row: span 2; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); font: 600 13px/1 var(--mono); }
+.jumps .jt { font: 600 14.5px/1.35 var(--display); }
+.jumps .jh { font-size: 13px; color: var(--muted); }
+
+.pill { display: inline-block; font: 500 11.5px/1 var(--mono); border-radius: 999px; padding: 4px 9px; white-space: nowrap; text-decoration: none; }
+.pl1 { color: var(--p1); background: var(--p1-soft); }
+.pl2 { color: var(--p2); background: var(--p2-soft); }
+.pl3 { color: var(--p3); background: var(--p3-soft); }
+
+.house { display: grid; max-width: 920px; width: 100%; }
+.peak { height: 44px; background: var(--fg); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.roof { background: var(--fg); color: var(--bg); text-align: center; padding: 2px 20px 18px; display: grid; gap: 2px; }
+.roof .k, .beam .k { font: 500 11px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
+.roof p.v { font: 700 clamp(19px, 3vw, 27px)/1.25 var(--display); text-wrap: balance; }
+.beam { background: var(--surface); border: 1px solid var(--line); border-top: 0; text-align: center; padding: 12px 20px; display: grid; gap: 2px; }
+.beam p.n { font: 600 clamp(15px, 2.2vw, 19px)/1.35 var(--display); }
+.pillars-label { border-left: 1px solid var(--line); border-right: 1px solid var(--line); padding: 12px 20px 0; text-align: center; }
+.pillars-label .k { font: 500 11px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.pillars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 12px 0; }
+.pillar { background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--c); padding: 14px 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.pillar h3 { color: var(--c); }
+.pillar h3::before { content: "\201C"; } .pillar h3::after { content: "\201D"; }
+.pillar p:not(.in) { font-style: italic; }
+.pillar p { font-size: 14px; color: var(--muted); }
+.pillar .in { font-size: 13px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--muted); padding-top: 4px; }
+.pillar .in a { font: 500 12px/1 var(--mono); text-decoration: none; border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; color: var(--fg); }
+.foundation { background: var(--fg); padding: 6px 14px 16px; display: grid; gap: 8px; }
+.f-label { text-align: center; padding-top: 8px; }
+.f-label .k { font: 500 11px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--bg); opacity: 0.75; }
+.stones { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 6px; }
+.stones.wide { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.stone { background: var(--surface); color: var(--fg); border-radius: 6px; padding: 10px 12px; font: 600 14px/1.35 var(--display); text-align: center; display: grid; place-items: center; min-height: 56px; }
+.stone.ground { background: var(--accent-soft); font-weight: 500; font-size: 13.5px; }
+
+.timeline { display: grid; gap: 12px; }
+.rel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; scroll-margin-top: 16px; }
+.rel:target { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.rel > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 6px 18px; align-items: start; padding: 16px 18px; }
+.rel > summary::-webkit-details-marker { display: none; }
+.rel .when { display: grid; gap: 4px; }
+.rel .date { font: 600 14px/1.3 var(--mono); }
+.rel .state { font: 500 11.5px/1 var(--mono); color: var(--muted); }
+.rel .state.live { color: var(--live); }
+.rel .state.wait { color: var(--warn); }
+.rel .what { display: grid; gap: 6px; min-width: 0; }
+.rel .what h3 { font-size: 18px; }
+.rel .what p { color: var(--muted); font-size: 14.5px; }
+.rel .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.rel .more { font: 500 12px/1 var(--mono); color: var(--accent); white-space: nowrap; padding-top: 4px; }
+.rel[open] .more::after { content: " ▲"; }
+.rel:not([open]) .more::after { content: " ▼"; }
+.rel .body { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px 20px; padding: 0 18px 18px; border-top: 1px dashed var(--line); padding-top: 14px; margin-inline: 18px; padding-inline: 0; }
+.rel .body div { display: grid; gap: 2px; align-content: start; min-width: 0; }
+.rel .body span { font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.rel .body p { font-size: 14px; }
+.rel .what .in { font-size: 13px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--muted); }
+.rel .what .in a { font: 500 12px/1 var(--mono); text-decoration: none; border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; color: var(--fg); }
+.rel .body span.b1 { color: var(--p1); } .rel .body span.b2 { color: var(--p2); } .rel .body span.b3 { color: var(--p3); }
+
+.quote { border-left: 4px solid var(--accent); padding: 6px 0 6px 16px; max-width: 64ch; display: grid; gap: 4px; }
+.quote p { font: 600 20px/1.4 var(--display); }
+.quote span { font-size: 13.5px; color: var(--muted); }
+.paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; max-width: 760px; }
+.path { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.path .k { font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.path .t { font: 600 16px/1.4 var(--display); }
+.path p { font-size: 14.5px; }
+.path.empty { border-style: dashed; }
+.path.found { border-color: var(--live); background: var(--p3-soft); }
+.path.found .k { color: var(--live); }
+.walk { list-style: none; margin: 0; padding: 0; max-width: 640px; }
+.walk li { position: relative; margin-left: 6px; padding: 0 0 16px 24px; border-left: 2px solid var(--line); }
+.walk li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.walk li::before { content: ""; position: absolute; left: -8px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--p1); }
+.walk li.back::before { background: var(--p1); }
+.walk .m { display: block; font: 500 11.5px/1.4 var(--mono); color: var(--muted); }
+.walk li.back .m { color: var(--p1); }
+.walk p { font-size: 14.5px; }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; max-width: 760px; }
+.act { border: 1px solid var(--c); background: var(--cs); color: var(--c); border-radius: 999px; padding: 6px 12px; font: 500 14px/1.3 var(--body); }
+.map { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; max-width: 900px; }
+.map div { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 10px; display: grid; gap: 4px; font: 600 13.5px/1.35 var(--display); }
+.map div span { font: 500 11px/1.3 var(--mono); color: var(--muted); }
+.map div i { display: block; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.map div i::after { content: ""; display: block; height: 100%; width: var(--p); background: var(--live); border-radius: 3px; }
+.fill { display: grid; grid-template-columns: minmax(110px, 1.5fr) repeat(5, minmax(0, 1fr)); gap: 8px 10px; align-items: center; max-width: 760px; }
+.fill .h { font: 500 11px/1.3 var(--mono); color: var(--muted); }
+.fill .st { font: 600 13.5px/1.3 var(--display); }
+.fill i { display: block; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.fill i::after { content: ""; display: block; height: 100%; width: var(--p); background: var(--live); border-radius: 4px; }
+.track { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; max-width: 900px; }
+.track div { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 12px; display: grid; gap: 4px; align-content: start; }
+.track div.now { border-style: dashed; }
+.track .k { font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--live); }
+.track div.now .k { color: var(--muted); }
+.track p { font-size: 14px; }
+.signs { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.sign { background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
+.sign .kind { font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.sign .n { font: 600 12px/1.4 var(--mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--c); }
+.sign .q { font: 600 17px/1.4 var(--display); }
+.sign .why { font-size: 14.5px; color: var(--muted); }
+.sign .now { font: 500 12.5px/1.45 var(--mono); color: var(--fg); border-top: 1px dashed var(--line); padding-top: 8px; }
+.deeps { display: grid; gap: 10px; }
+.deep { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--c); border-radius: 12px; }
+.deep > summary { cursor: pointer; list-style: none; padding: 14px 18px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; align-items: baseline; }
+.deep > summary::-webkit-details-marker { display: none; }
+.deep > summary span { font-size: 13.5px; color: var(--muted); }
+.deep .body { padding: 0 18px 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.deep .body > p { font-size: 15px; max-width: 64ch; }
+.deep .sh { font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 6px; }
+.map .later { border-style: dashed; }
+
+.readers { display: grid; gap: 10px; }
+.reader { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.reader > summary { cursor: pointer; list-style: none; padding: 14px 18px; display: flex; gap: 14px; align-items: center; }
+.reader { border-left: 4px solid var(--c, var(--line)); }
+.reader .ic { flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: var(--c); background: color-mix(in srgb, var(--c) 13%, transparent); }
+.reader .tt { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.reader .more { font: 500 12px/1 var(--mono); color: var(--accent); white-space: nowrap; }
+.reader[open] .more::after { content: " ▲"; }
+.reader:not([open]) .more::after { content: " ▼"; }
+@media (max-width: 560px) { .reader .ic { width: 38px; height: 38px; } }
+.reader > summary::-webkit-details-marker { display: none; }
+.reader > summary h3 { font-size: 18px; }
+.reader > summary .tt > span { font-size: 14px; color: var(--muted); }
+.reader .body { padding: 0 18px 18px 76px; display: grid; gap: 10px; max-width: calc(72ch + 76px); }
+@media (max-width: 560px) { .reader .body { padding-left: 18px; } }
+.reader .body p { font-size: 14.5px; }
+.reader .body p b { font-weight: 600; }
+
+footer { font-size: 13px; color: var(--muted); max-width: 75ch; }
+
+
+.moments { display: grid; gap: 10px; }
+.moment { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 8px 24px; }
+.moment:target { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.moment { scroll-margin-top: 16px; }
+.moment .head { display: grid; gap: 4px; align-content: start; }
+.moment .stage { font: 500 11.5px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.moment .thought { font: 600 17px/1.35 var(--display); text-wrap: balance; }
+.moment .story { display: grid; gap: 6px; max-width: 64ch; min-width: 0; }
+.moment .story p { font-size: 14.5px; }
+.moment .tags { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 2px; }
+.turn { background: var(--fg); color: var(--bg); border-radius: 18px; padding: clamp(22px, 4vw, 40px); gap: 16px; }
+.turn h2 { color: var(--bg); font-size: clamp(22px, 3vw, 30px); }
+.tale { display: grid; gap: 12px; max-width: 66ch; }
+.tale p { font-size: 16px; line-height: 1.7; opacity: 0.92; }
+.tale p.open { font: 600 clamp(17px, 2.2vw, 20px)/1.5 var(--display); opacity: 1; }
+.tale p.close { font: 600 clamp(17px, 2.2vw, 20px)/1.5 var(--display); opacity: 1; padding-top: 6px; }
+.reader .body .sh { font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 4px; margin-bottom: -6px; }
+.turn .contact { font-size: 15px; opacity: 0.9; }
+.turn .contact a { color: var(--bg); text-decoration: underline; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.cta { background: var(--accent); color: var(--on-accent); padding: 12px 20px; border-radius: 999px; text-decoration: none; font: 600 15px/1 var(--display); }
+.cta-row span { font-size: 14px; opacity: 0.85; }
+.underneath { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--p3); border-radius: 0 12px 12px 0; padding: 14px 16px; display: grid; gap: 4px; max-width: 80ch; }
+.underneath p { font-size: 14.5px; }
+.underneath p.you { font: 600 16px/1.5 var(--display); padding-top: 6px; }
+@media (max-width: 760px) {
+  .moment { grid-template-columns: minmax(0, 1fr); }
+  .pillars { grid-template-columns: minmax(0, 1fr); }
+  .rel > summary { grid-template-columns: minmax(0, 1fr); }
+  .rel .more { padding-top: 0; }
+  .reader > summary { flex-direction: column; gap: 2px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+</style></head>
+<body>
+
+<div class="wrap">
+
+<section class="answer" aria-label="In one sentence">
+  <div class="hero">
+    <div class="hero-text">
+      <p class="level">ClinicDesk roadmap · updated 11 October 2026</p>
+      <h1>ClinicDesk Roadmap</h1>
+      <p class="big">ClinicDesk is where patients book a visit without a phone call, and where the front desk sees the whole day in one calendar, built with a dental association and payment providers. It opens to every small clinic on 1 February 2027 with online booking. In the second half of 2027 it adds the health form before the visit. In 2028 it adds follow-up visits that patients book without a call.</p>
+    </div>
+    <ol class="mini-tl" aria-label="The plan at a glance">
+      <li class="on"><span class="y">First half 2027</span><span class="t">Book without a call</span></li>
+      <li><span class="y">Second half 2027</span><span class="t">Ready before the visit</span></li>
+      <li><span class="y">2028</span><span class="t">The next visit, without a call</span></li>
+    </ol>
+  </div>
+  <ul class="facts">
+    <li><span class="fi" style="--c: var(--accent)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span><b>1 Feb 2027</b>Opens to every small clinic</span></li>
+    <li><span class="fi" style="--c: var(--risk)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10A4.5 4.5 0 0 1 12 7.2 4.5 4.5 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/></svg></span><span><b>One price per clinic</b>Paid monthly by the clinic. Patients never pay to book.</span></li>
+    <li><span class="fi" style="--c: var(--p3)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.8"/><path d="M17.5 14.2A5.5 5.5 0 0 1 21.5 20"/></svg></span><span><b>12 clinics today</b>Dental, skin and physiotherapy clinics use it now</span></li>
+    <li><span class="fi" style="--c: var(--p1)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span><span><b>Patient data stays with the clinic</b>We never sell it, and the booking page has no ads.</span></li>
+  </ul>
+  <nav class="jump" aria-label="On this page">
+    <span class="level">On this page</span>
+    <div class="jumps"><a href="#who"><span class="no">1</span><span class="jt">Who we build for</span><span class="jh">The front desk, the owner and the patients</span></a><a href="#why"><span class="no">2</span><span class="jt">What ClinicDesk is, and where it is going</span><span class="jh">No visit depends on a call</span></a><a href="#when"><span class="no">3</span><span class="jt">From the first booking to the next visit</span><span class="jh">What arrives in the first half of 2027, the second half of 2027 and 2028</span></a><a href="#measure"><span class="no">4</span><span class="jt">How we know it works</span><span class="jh">Three moments we watch</span></a><a href="#readers"><span class="no">5</span><span class="jt">What it means for you</span><span class="jh">Find your part, and how to reach us</span></a></div>
+  </nav>
+</section>
+
+<section id="who">
+  <p class="level">The problem</p>
+  <h2>Who we build for</h2>
+  <p class="lead">A small clinic has one phone, and one person to answer it. That same person greets each patient at the counter. Patients call when they can, at lunch or after work, and often the line is busy. When a patient forgets a visit, the chair stays empty and the doctor waits.</p>
+  <p class="lead">We build for all of them. Here are five of their journeys, as examples. They are not everyone, but you may know someone in each one.</p>
+  <div class="moments">
+    <div class="moment" id="m1">
+      <div class="head"><span class="stage">At the front desk</span><p class="thought">How do I answer the phone and look after the patient in front of me?</p></div>
+      <div class="story">
+        <p>It is Monday, 9 in the morning, at a dental clinic with two doctors. The phone rings while one patient waits at the counter to pay and another asks where to sit.</p>
+        <p>The bookings live in a paper book, a chat app and the doctor's own phone. To find a free time, she checks all of them while the caller waits on the line.</p>
+        <div class="tags"><span class="pill pl1">Book without a call</span><span class="pill pl2">Ready before you arrive</span></div>
+      </div>
+    </div>
+    <div class="moment" id="m2">
+      <div class="head"><span class="stage">Booking a first visit</span><p class="thought">Can I book without calling in work hours?</p></div>
+      <div class="story">
+        <p>A teacher has a sore tooth. She can only call at lunch, and at lunch the clinic line is busy.</p>
+        <p>At night she sends a message to the clinic's page on social media. The answer comes the next afternoon, while she is in class. The big booking apps list hospitals, not the small clinic near her home.</p>
+        <div class="tags"><span class="pill pl1">Book without a call</span></div>
+      </div>
+    </div>
+    <div class="moment" id="m3">
+      <div class="head"><span class="stage">Before the visit</span><p class="thought">What do they need from me, and what should I bring?</p></div>
+      <div class="story">
+        <p>A man comes to a physiotherapy clinic for his back. At the counter he gets three pages of paper and a pen.</p>
+        <p>He does not remember the names of his medicines, so he leaves blanks. The physiotherapist reads the form during the visit, and every patient after him waits a little longer.</p>
+        <div class="tags"><span class="pill pl2">Ready before you arrive</span></div>
+      </div>
+    </div>
+    <div class="moment" id="m4">
+      <div class="head"><span class="stage">Running the clinic</span><p class="thought">Why are chairs empty when the book was full?</p></div>
+      <div class="story">
+        <p>The owner of a skin clinic counts four empty visits this week. Each one is an hour of her doctor's time with nobody in the chair.</p>
+        <p>Her front desk is meant to call each patient the day before. The calls take an hour, so on a busy day nobody makes them.</p>
+        <div class="tags"><span class="pill pl2">Ready before you arrive</span><span class="pill pl3">Every visit, kept</span></div>
+      </div>
+    </div>
+    <div class="moment" id="m5">
+      <div class="head"><span class="stage">After the visit</span><p class="thought">Did she say two weeks, or four?</p></div>
+      <div class="story">
+        <p>After his first session, a man with a sore knee is told to come back in two weeks. He means to call, and then work gets busy.</p>
+        <p>The clinic keeps a paper list of who should come back, and the front desk calls when it has time. A month later his knee hurts again, and he starts over.</p>
+        <div class="tags"><span class="pill pl3">Every visit, kept</span><span class="pill pl1">Book without a call</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="underneath">
+    <p>Their questions differ, but most of them end in a phone call that should not be needed. Each of those calls costs time, at the desk and for the patient.</p>
+    <p class="you">Maybe you saw yourself in one of them. Maybe you thought of the person at the desk of your own dentist.</p>
+  </div>
+</section>
+
+<section id="value" class="turn">
+  <h2>Now imagine fewer calls and fewer empty chairs</h2>
+  <div class="tale">
+    <p class="open">A patient books in a minute, at any hour, and the front desk spends the morning on the people in the room.</p>
+    <p>The front desk opens the day and sees every booking in one calendar: from the booking page, from the counter and from the phone. The phone still rings, but less often, so she can look after the patient at the counter first.</p>
+    <p>The teacher with the sore tooth books at ten at night, from her bed. The man with the bad back fills in his health form at home, with his medicine boxes on the table, and the physiotherapist reads it before he walks in.</p>
+    <p>The owner sees fewer empty chairs, because each patient gets a reminder the day before. The man with the sore knee gets a link to book his next session, so nobody has to remember to call.</p>
+    <p class="close">That is ClinicDesk. Part of it is already here today, and the plan below shows when the rest arrives.</p>
+  </div>
+</section>
+
+<section id="why">
+  <p class="level">Our plan on one page</p>
+  <h2>What ClinicDesk is, and where it is going</h2>
+  <p class="lead">So what is ClinicDesk? A booking and front-desk tool for small clinics with one to five doctors, made for the people you just met, at the desk and in the waiting room.</p>
+  <p class="lead">Below is our plan on one page. At the top is what ClinicDesk will become. Under it is what we want every user to feel. Then come three things ClinicDesk says to every one of them. At the bottom are the promises we never break, and what keeps ClinicDesk running.</p>
+  <div class="house">
+    <div class="peak" aria-hidden="true"></div>
+    <div class="roof"><span class="k">What ClinicDesk will become</span><p class="v">A small clinic where no visit depends on a phone call.</p></div>
+    <div class="beam"><span class="k">What every user should feel</span><p class="n">My time counts here.</p></div>
+    <div class="pillars-label"><span class="k">What ClinicDesk says to every one of them</span></div>
+    <div class="pillars">
+      <div class="pillar" style="--c: var(--p1)">
+        <h3>Book without a call</h3>
+        <p>Patients used to call in work hours and wait on hold. Now they pick a free time on the booking page, day or night, and it lands in the clinic calendar.</p>
+        <p class="in">Helps most <a href="#m2">Booking a first visit</a><a href="#m1">At the front desk</a></p>
+      </div>
+      <div class="pillar" style="--c: var(--p2)">
+        <h3>Ready before you arrive</h3>
+        <p>Patients used to fill in paper in the waiting room, and the visit started late. Now the form comes with the reminder, and the doctor reads it before the visit.</p>
+        <p class="in">Helps most <a href="#m3">Before the visit</a><a href="#m1">At the front desk</a></p>
+      </div>
+      <div class="pillar" style="--c: var(--p3)">
+        <h3>Every visit, kept</h3>
+        <p>A missed visit or a forgotten follow-up used to leave a chair empty. Now the patient books the next visit from a link, and the front desk sees who has not.</p>
+        <p class="in">Helps most <a href="#m4">Running the clinic</a><a href="#m5">After the visit</a></p>
+      </div>
+    </div>
+    <div class="foundation">
+      <div class="f-label"><span class="k">Promises ClinicDesk never breaks</span></div>
+      <div class="stones">
+        <div class="stone">Patients never pay to book</div>
+        <div class="stone">The clinic owns its patient data</div>
+        <div class="stone">No ads, and no data sold</div>
+        <div class="stone">A patient can still call</div>
+      </div>
+      <div class="f-label"><span class="k">What keeps ClinicDesk running</span></div>
+      <div class="stones wide">
+        <div class="stone ground">Partners: payment providers, and a dental association that helps shape the forms</div>
+        <div class="stone ground">One monthly price, paid by each clinic</div>
+      </div>
+    </div>
+  </div>
+  <p class="lead bridge">That is where ClinicDesk is going. We cannot build it all at once. Next, you see which part comes first, and when the others follow.</p>
+</section>
+
+<section id="when">
+  <p class="level">First half 2027 to 2028</p>
+  <h2>From the first booking to the next visit</h2>
+  <p class="lead">We split the plan into three parts that follow a patient through the clinic: the first booking, the visit itself, and the visit after it. The first part already runs in 12 clinics, and it opens to every small clinic on 1 February 2027.</p>
+  <p class="lead">Each part below shows its period, who it helps most, and what it adds to each of the three promises.</p>
+  <div class="timeline">
+
+    <details class="rel" id="y1">
+      <summary>
+        <div class="when"><span class="date">First half 2027</span><span class="state live">Opens 1 Feb 2027</span></div>
+        <div class="what"><h3>Book without a call</h3><p>Every small clinic gets a booking page for its patients, and one calendar for its front desk.</p><p class="in">Helps most <a href="#m2">Booking a first visit</a><a href="#m1">At the front desk</a></p></div>
+        <span class="more">More</span>
+      </summary>
+      <div class="body">
+        <div><span class="b1">Book without a call</span><p>A booking page for each clinic, with the doctors, the kinds of visit and the free times the clinic chooses. Bookings from the page, the counter and the phone all land in one calendar. The 12 clinics use this today.</p></div>
+        <div><span class="b2">Ready before you arrive</span><p>A text message the day before the visit, with the time, the address and what to bring. It is half built, and the 12 clinics try it first.</p></div>
+        <div><span class="b3">Every visit, kept</span><p>The front desk marks who did not come. Each week, the owner sees how many chairs stood empty, and on which days.</p></div>
+        <div><span>Partners</span><p>The 12 clinics that use it today. The dental association, which tells its member clinics when ClinicDesk opens to them.</p></div>
+      </div>
+    </details>
+
+    <details class="rel" id="y2">
+      <summary>
+        <div class="when"><span class="date">Second half 2027</span><span class="state">Planned</span></div>
+        <div class="what"><h3>Ready before the visit</h3><p>Patients fill in their health form at home, and the doctor reads it before they walk in.</p><p class="in">Helps most <a href="#m3">Before the visit</a><a href="#m4">Running the clinic</a></p></div>
+        <span class="more">More</span>
+      </summary>
+      <div class="body">
+        <div><span class="b1">Book without a call</span><p>Patients move or cancel their own visit on the booking page. The free time opens for the next patient at once, with no call to the desk.</p></div>
+        <div><span class="b2">Ready before you arrive</span><p>The health form goes online and comes with the reminder. Dental, skin and physiotherapy clinics each start from a form made for them. The doctor sees the answers in the calendar.</p></div>
+        <div><span class="b3">Every visit, kept</span><p>A clinic can ask for a deposit for a long visit, paid online. The clinic decides when the deposit comes back.</p></div>
+        <div><span>Partners</span><p>Payment providers, for deposits. The dental association, for the dental health form.</p></div>
+      </div>
+    </details>
+
+    <details class="rel" id="y3">
+      <summary>
+        <div class="when"><span class="date">2028</span><span class="state">Planned</span></div>
+        <div class="what"><h3>The next visit, without a call</h3><p>Patients book the follow-up from a link, and the front desk sees who has not booked yet.</p><p class="in">Helps most <a href="#m5">After the visit</a><a href="#m4">Running the clinic</a></p></div>
+        <span class="more">More</span>
+      </summary>
+      <div class="body">
+        <div><span class="b1">Book without a call</span><p>A patient books for a child or a parent from the same phone. When a visit is cancelled, a waiting list offers the free time to the next patient.</p></div>
+        <div><span class="b2">Ready before you arrive</span><p>A returning patient sees the answers from last time, and changes only what is new.</p></div>
+        <div><span class="b3">Every visit, kept</span><p>At the end of a visit, the doctor sets when the patient should come back, and the patient gets a link to book it. A course of visits, such as six physiotherapy sessions, books in one go. Dental patients get a reminder for a check-up every six months.</p></div>
+        <div><span>Partners</span><p>The dental association, so the check-up reminders follow its advice. Physiotherapy and skin clinics that want to test courses of visits.</p></div>
+      </div>
+    </details>
+
+  </div>
+  <p class="lead bridge">By the end of 2028, a patient can go from the first booking to the follow-up without a phone call, and the front desk spends its day on the people in the room. Some patients will still prefer to call, and they can. We keep building after 2028, with the clinics that use ClinicDesk every day.</p>
+  <p class="lead">But features alone do not make it work. Next, you see how we will know that it does.</p>
+</section>
+
+<section id="measure">
+  <p class="level">Three moments we watch</p>
+  <h2>How we know it works</h2>
+  <p class="lead">ClinicDesk works when three things happen to a patient: she books her first visit online, she fills in her health form before she comes, and she books her follow-up without a call.</p>
+  <div class="quote"><p>"My time counts here."</p><span>What we want every user to feel.</span></div>
+
+  <div class="signs">
+    <div class="sign" style="--c: var(--p1)">
+      <span class="kind">Books on her own</span>
+      <span class="n">1 · She books her first visit online</span>
+      <p class="q">Can a new patient find a free time and book it, with no help from the desk?</p>
+      <p class="why">If it fails, she calls and waits on hold, and the front desk stops what it is doing to answer.</p>
+      <p class="now">Today: live in 12 clinics. Most first visits there still start with a phone call.</p>
+    </div>
+    <div class="sign" style="--c: var(--p2)">
+      <span class="kind">Comes ready</span>
+      <span class="n">2 · She fills in her form before the visit</span>
+      <p class="q">Does the patient fill in the form at home, before she arrives?</p>
+      <p class="why">If it fails, she fills in paper in the waiting room, and the visit starts late for every patient after her.</p>
+      <p class="now">Today: not started. The 12 clinics still use paper forms.</p>
+    </div>
+    <div class="sign" style="--c: var(--p3)">
+      <span class="kind">Comes back</span>
+      <span class="n">3 · She books her follow-up without a call</span>
+      <p class="q">When the doctor asks her to come back, does she book the next visit herself?</p>
+      <p class="why">If it fails, she forgets and her treatment stops halfway. The clinic loses the visit.</p>
+      <p class="now">Today: not started. The front desk calls each patient about the next visit, when it has time.</p>
+    </div>
+  </div>
+  <p class="lead">We do not count page views, or how many clinics sign up. A clinic can sign up and still answer the phone all day.</p>
+
+  <p class="lead">Open each moment to see the story behind it, where we are, and how we hope it grows.</p>
+  <div class="deeps">
+    <details class="deep" style="--c: var(--p1)">
+      <summary><h3>1 · She books her first visit online</h3><span>The story, where we are, how it grows</span></summary>
+      <div class="body">
+        <p>The teacher with the sore tooth opens the clinic's booking page at ten at night, after she marks her class's homework.</p>
+        <div class="paths">
+          <div class="path empty"><span class="k">If it fails</span><p class="t">She has to call.</p><p>She waits for lunch the next day, and the line is busy. She tries a hospital across town instead, and the small clinic near her home never hears from her.</p></div>
+          <div class="path found"><span class="k">If it works</span><p class="t">She books in a minute.</p><p>She picks Thursday at 5 in the afternoon and gets a message with the time. In the morning, the front desk sees her name in the calendar, with no call.</p></div>
+        </div>
+        <span class="sh">Where we are</span>
+        <div class="map">
+          <div>Booking page<i style="--p: 60%"></i><span>Live in 12 clinics</span></div>
+          <div>A new clinic signs up on its own<i style="--p: 10%"></i><span>Barely started</span></div>
+          <div class="later">Move or cancel online<i style="--p: 0%"></i><span>Not started · second half 2027</span></div>
+        </div>
+        <span class="sh">How it grows</span>
+        <div class="track"><div class="now"><span class="k">Today</span><p>Live in 12 clinics. Most first visits still start with a phone call.</p></div><div><span class="k">First half 2027</span><p>Open to every small clinic. We hope most first visits in the 12 clinics are booked online.</p></div><div><span class="k">Second half 2027</span><p>Patients move or cancel online, so nobody calls just to change a time.</p></div><div><span class="k">2028</span><p>A patient books for her child or her parent from the same page.</p></div></div>
+      </div>
+    </details>
+    <details class="deep" style="--c: var(--p2)">
+      <summary><h3>2 · She fills in her form before the visit</h3><span>The story, where we are, how it grows</span></summary>
+      <div class="body">
+        <p>Two patients get the same reminder the day before a physiotherapy visit. The first one ignores the link, and fills in paper in the waiting room. The second one fills in the form at home, with his medicine boxes on the table.</p>
+        <div class="acts">
+          <span class="act" style="--c: var(--p1); --cs: var(--p1-soft)">He opens the link in the reminder</span>
+          <span class="act" style="--c: var(--p2); --cs: var(--p2-soft)">He copies his medicines from the boxes</span>
+          <span class="act" style="--c: var(--p3); --cs: var(--p3-soft)">He marks where it hurts</span>
+        </div>
+        <span class="sh">Where we are, and how it grows</span>
+        <div class="track"><div class="now"><span class="k">Today</span><p>Not started. The 12 clinics use paper forms. The reminder the day before is half built.</p></div><div><span class="k">First half 2027</span><p>The reminder reaches every patient, and tells them what to bring.</p></div><div><span class="k">Second half 2027</span><p>The form goes online, with a starting form for dental, skin and physiotherapy clinics. We hope half of the patients fill it in before they arrive.</p></div><div><span class="k">2028</span><p>A returning patient changes only what is new since last time.</p></div></div>
+      </div>
+    </details>
+    <details class="deep" style="--c: var(--p3)">
+      <summary><h3>3 · She books her follow-up without a call</h3><span>The story, where we are, how it grows</span></summary>
+      <div class="body">
+        <p>A woman starts physiotherapy for her back. Her physiotherapist wants to see her every two weeks for three months, and then once more if the pain comes back.</p>
+        <ul class="walk">
+          <li><span class="m">Month 1</span><p>She books her first visit online, and fills in her form at home.</p></li>
+          <li class="back"><span class="m">Month 2 · comes back</span><p>The reminder holds a link to her next session. She books it on the bus, with no call.</p></li>
+          <li class="back"><span class="m">Month 5 · comes back</span><p>Her back hurts again after a long drive. She books from the same page, and her form already holds last time's answers.</p></li>
+        </ul>
+        <span class="sh">Where we are, and how it grows</span>
+        <div class="track"><div class="now"><span class="k">Today</span><p>Not started. The front desk calls each patient about the next visit, when it has time. On a busy day, the calls do not happen.</p></div><div><span class="k">First half 2027</span><p>The front desk marks who did not come, and the owner sees the empty chairs each week.</p></div><div><span class="k">Second half 2027</span><p>Deposits for long visits, so fewer patients miss them.</p></div><div><span class="k">2028</span><p>The doctor sets the next visit, and the patient books it from a link. Dental check-ups come with a reminder every six months.</p></div></div>
+      </div>
+    </details>
+  </div>
+
+  <p class="lead">We look at all three moments with the 12 clinics in March 2027, a month after ClinicDesk opens to every clinic. Then we decide which comes first in the second half of 2027: the health form, or the deposits.</p>
+  <p class="lead bridge">You now know who we build for, where ClinicDesk is going, what arrives in each period, and how we will know it works. What this means for you depends on who you are.</p>
+</section>
+
+<section id="readers">
+  <p class="level">The same plan, for you</p>
+  <h2>What it means for you</h2>
+  <p class="lead">Whoever you are, there is a part of this plan for you. Find yourself below.</p>
+  <div class="readers">
+    <details class="reader" style="--c: var(--p1)">
+      <summary><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4.5"/><path d="M19.5 21a7.5 7.5 0 0 0-15 0"/></svg></span><span class="tt"><h3>You are a patient</h3><span>What you can use today, and what is coming</span></span><span class="more">More</span></summary>
+      <div class="body">
+        <span class="sh">Today</span>
+        <p>If your clinic is one of the 12 that use ClinicDesk, open its booking page on your phone. Pick a doctor and a free time, and you get a message with your booking. You can still call the clinic if you prefer.</p>
+        <span class="sh">Your privacy</span>
+        <p>Your details belong to your clinic, not to us. We use them only to run your booking. We never sell them, and the booking page has no ads.</p>
+        <span class="sh">What is coming</span>
+        <p>In the second half of 2027, you fill in your health form at home, and you can move or cancel a visit yourself. In 2028, you book your follow-up from a link, with no call.</p>
+        <span class="sh">How you can help</span>
+        <p>If something on the booking page confused you, tell us what it was. Write to <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+      </div>
+    </details>
+    <details class="reader" style="--c: var(--p2)">
+      <summary><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4.5"/><path d="M19.5 21a7.5 7.5 0 0 0-15 0"/></svg></span><span class="tt"><h3>You work at the front desk</h3><span>What changes in your day</span></span><span class="more">More</span></summary>
+      <div class="body">
+        <span class="sh">Today</span>
+        <p>In the 12 clinics, online bookings land in the shared calendar on their own. You still type in the bookings that come by phone or at the counter. Each doctor's day is in one place, on any computer at the desk.</p>
+        <span class="sh">What is coming</span>
+        <p>In the first half of 2027, a text message reminds each patient the day before, so you do not need to call them. In the second half, patients move their own visits, and the health form arrives before the patient does. In 2028, you see a list of patients who should have booked a follow-up and have not.</p>
+        <span class="sh">How you can help</span>
+        <p>You use ClinicDesk more than anyone. Tell us what slows you down, even if it seems small. Write to <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+      </div>
+    </details>
+    <details class="reader" style="--c: var(--warn)">
+      <summary><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-8"/><path d="M12 13c0-4.5 3.2-7.5 8-7.5 0 5-3.2 7.5-8 7.5z"/><path d="M12 15c0-3.3-2.2-5.5-6.5-5.5 0 3.8 2.2 5.5 6.5 5.5z"/></svg></span><span class="tt"><h3>You own a clinic</h3><span>What it costs, and what you get back</span></span><span class="more">More</span></summary>
+      <div class="body">
+        <span class="sh">Why it matters</span>
+        <p>Each missed visit is an hour of a doctor's time with nobody in the chair. Each call to book takes your front desk away from the patient at the counter.</p>
+        <span class="sh">What exists today</span>
+        <p>A booking page and a shared calendar, used by 12 dental, skin and physiotherapy clinics with one to five doctors. The reminder the day before is half built. The health form and the follow-up link are not started.</p>
+        <span class="sh">What it takes</span>
+        <p>One monthly price for the clinic, however many doctors or bookings you have. To set it up, you enter your doctors, your opening hours and the kinds of visit you offer.</p>
+        <span class="sh">What would help most</span>
+        <p>We look for more clinics to try each new part before it opens to everyone, from March 2027. Write to <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+      </div>
+    </details>
+    <details class="reader" style="--c: var(--p3)">
+      <summary><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.8"/><path d="M17.5 14.2A5.5 5.5 0 0 1 21.5 20"/></svg></span><span class="tt"><h3>You are a partner</h3><span>What you get, and what we ask</span></span><span class="more">More</span></summary>
+      <div class="body">
+        <span class="sh">What you get</span>
+        <p>Payment providers: clinics that take deposits online from the second half of 2027. A dental association: a health form and check-up reminders that follow your advice, in the clinics of your members.</p>
+        <span class="sh">What we ask</span>
+        <p>Help us shape the forms and the rules for deposits. Tell your members when ClinicDesk opens to them. Write to <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+        <span class="sh">What we promise</span>
+        <p>No partner pays for a better place on a booking page. Each clinic chooses its own payment provider. A payment provider sees patient details only when a patient pays a deposit through it.</p>
+      </div>
+    </details>
+  </div>
+  <p class="lead bridge">Whichever box was yours, the plan comes back to the same people: the ones at the desk and in the waiting room.</p>
+</section>
+
+<section id="close" class="turn">
+  <h2>Time for the person in front of you</h2>
+  <div class="tale">
+    <p class="open">Think back to the people you met at the start.</p>
+    <p>The front desk with a ringing phone and a patient at the counter. The teacher who could only call at lunch. The man with three pages of paper in the waiting room. The owner who counted empty chairs. The man with the sore knee who meant to call back.</p>
+    <p>Today ClinicDesk is a booking page and a shared calendar in 12 clinics. On 1 February 2027 it opens to every small clinic. The health form comes in the second half of 2027, and the follow-up link in 2028.</p>
+    <p>We do not build it alone. The 12 clinics try each part first. A dental association helps shape the forms, and payment providers handle the deposits.</p>
+    <p class="close">"My time counts here."</p>
+  </div>
+  <p class="cta-row"><a class="cta" href="https://example.com">Open ClinicDesk</a><span>For the 12 clinics today, and for every small clinic from 1 February 2027.</span></p>
+  <p class="contact">A question, or a wrong detail? Write to us at <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+</section>
+
+<footer>
+  <p>Updated 11 October 2026. Everything after 11 October 2026 is a plan, and it changes as we learn from the people who use ClinicDesk. ClinicDesk is a made-up product, and this page is a sample for the roadmap template. Its clinics, partners and dates are not real.</p>
+</footer>
+
+</div>
+</body>
+</html>

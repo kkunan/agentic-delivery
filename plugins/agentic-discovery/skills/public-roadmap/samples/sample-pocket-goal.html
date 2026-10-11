@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Goal Roadmap</title>
+<style>
+:root {
+  --bg: #F6F8FB;
+  --surface: #FFFFFF;
+  --line: #E2E6EE;
+  --fg: #1A2233;
+  --muted: #5F6779;
+  --accent: #0055FF;
+  --accent-soft: #EAF3FF;
+  --on-accent: #FFFFFF;
+  --p1: #6A3FD8;
+  --p1-soft: #F1ECFD;
+  --p2: #0055FF;
+  --p2-soft: #EAF3FF;
+  --p3: #0E8A57;
+  --p3-soft: #E6F7EE;
+  --live: #0E8A57;
+  --warn: #B26A00;
+  --risk: #C93A3F;
+  --display: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #070E1A; --surface: #0D1524; --line: #2B3445; --fg: #EFF2F7; --muted: #A3AABA;
+    --accent: #6FA8FF; --accent-soft: #0F2347; --on-accent: #07101F;
+    --p1: #B29BFF; --p1-soft: #221A3D; --p2: #6FA8FF; --p2-soft: #0F2347;
+    --p3: #3CC98C; --p3-soft: #0D2A1E; --live: #3CC98C; --warn: #F0A93A; --risk: #F07175;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #070E1A; --surface: #0D1524; --line: #2B3445; --fg: #EFF2F7; --muted: #A3AABA;
+  --accent: #6FA8FF; --accent-soft: #0F2347; --on-accent: #07101F;
+  --p1: #B29BFF; --p1-soft: #221A3D; --p2: #6FA8FF; --p2-soft: #0F2347;
+  --p3: #3CC98C; --p3-soft: #0D2A1E; --live: #3CC98C; --warn: #F0A93A; --risk: #F07175;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 72px; display: grid; gap: 64px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.3; }
+h1 { font-size: clamp(28px, 4.4vw, 40px); font-weight: 700; }
+h2 { font-size: 24px; font-weight: 700; }
+h3 { font-size: 17px; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent); }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+section { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; scroll-margin-top: 16px; }
+.level { font: 500 12px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lead { max-width: 64ch; color: var(--muted); }
+.lead b { color: var(--fg); font-weight: 600; }
+.lead.bridge { color: var(--fg); font: 600 16px/1.5 var(--display); padding-top: 8px; }
+
+.answer { display: grid; gap: 18px; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 28px; align-items: center; background: linear-gradient(135deg, var(--accent-soft), var(--surface) 65%); border: 1px solid var(--line); border-radius: 20px; padding: clamp(20px, 4vw, 36px); }
+.hero-text { display: grid; gap: 14px; }
+.answer .big { font: 600 clamp(18px, 2.4vw, 22px)/1.5 var(--display); max-width: 46ch; text-wrap: pretty; }
+@media (max-width: 720px) { .hero { grid-template-columns: 1fr; } }
+.mini-tl { list-style: none; margin: 0; padding: 0; display: grid; }
+.mini-tl li { position: relative; display: grid; gap: 2px; padding: 0 0 18px 26px; border-left: 2px dashed var(--line); margin-left: 7px; }
+.mini-tl li:last-child { padding-bottom: 0; border-left-color: transparent; }
+.mini-tl li::before { content: ""; position: absolute; left: -9px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 2px solid var(--muted); }
+.mini-tl li.on { border-left-style: solid; border-left-color: var(--live); }
+.mini-tl li.on::before { background: var(--live); border-color: var(--live); box-shadow: 0 0 0 4px color-mix(in srgb, var(--live) 22%, transparent); }
+.mini-tl .y { font: 600 12px/1.4 var(--mono); color: var(--muted); }
+.mini-tl li.on .y { color: var(--live); }
+.mini-tl .t { font: 600 15px/1.35 var(--display); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.facts li { display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.facts li > span:last-child { display: grid; font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+.facts li b { font: 600 15px/1.35 var(--display); color: var(--fg); }
+.fi { flex: none; width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; color: var(--c); background: color-mix(in srgb, var(--c) 13%, transparent); }
+.jump { display: grid; gap: 10px; }
+.jumps { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.jumps a { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-content: start; text-decoration: none; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.jumps a:hover { border-color: var(--accent); }
+.jumps .no { grid-row: span 2; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); font: 600 13px/1 var(--mono); }
+.jumps .jt { font: 600 14.5px/1.35 var(--display); }
+.jumps .jh { font-size: 13px; color: var(--muted); }
+
+.pill { display: inline-block; font: 500 11.5px/1 var(--mono); border-radius: 999px; padding: 4px 9px; white-space: nowrap; text-decoration: none; }
+.pl1 { color: var(--p1); background: var(--p1-soft); }
+.pl2 { color: var(--p2); background: var(--p2-soft); }
+.pl3 { color: var(--p3); background: var(--p3-soft); }
+
+.house { display: grid; max-width: 920px; width: 100%; }
+.peak { height: 44px; background: var(--fg); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.roof { background: var(--fg); color: var(--bg); text-align: center; padding: 2px 20px 18px; display: grid; gap: 2px; }
+.roof .k, .beam .k { font: 500 11px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
+.roof p.v { font: 700 clamp(19px, 3vw, 27px)/1.25 var(--display); text-wrap: balance; }
+.beam { background: var(--surface); border: 1px solid var(--line); border-top: 0; text-align: center; padding: 12px 20px; display: grid; gap: 2px; }
+.beam p.n { font: 600 clamp(15px, 2.2vw, 19px)/1.35 var(--display); }
+.pillars-label { border-left: 1px solid var(--line); border-right: 1px solid var(--line); padding: 12px 20px 0; text-align: center; }
+.pillars-label .k { font: 500 11px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.pillars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 12px 0; }
+.pillar { background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--c); padding: 14px 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.pillar h3 { color: var(--c); }
+.pillar h3::before { content: "\201C"; } .pillar h3::after { content: "\201D"; }
+.pillar p:not(.in) { font-style: italic; }
+.pillar p { font-size: 14px; color: var(--muted); }
+.pillar .in { font-size: 13px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--muted); padding-top: 4px; }
+.pillar .in a { font: 500 12px/1 var(--mono); text-decoration: none; border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; color: var(--fg); }
+.foundation { background: var(--fg); padding: 6px 14px 16px; display: grid; gap: 8px; }
+.f-label { text-align: center; padding-top: 8px; }
+.f-label .k { font: 500 11px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--bg); opacity: 0.75; }
+.stones { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 6px; }
+.stones.wide { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.stone { background: var(--surface); color: var(--fg); border-radius: 6px; padding: 10px 12px; font: 600 14px/1.35 var(--display); text-align: center; display: grid; place-items: center; min-height: 56px; }
+.stone.ground { background: var(--accent-soft); font-weight: 500; font-size: 13.5px; }
+
+.timeline { display: grid; gap: 12px; }
+.rel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; scroll-margin-top: 16px; }
+.rel:target { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.rel > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 6px 18px; align-items: start; padding: 16px 18px; }
+.rel > summary::-webkit-details-marker { display: none; }
+.rel .when { display: grid; gap: 4px; }
+.rel .date { font: 600 14px/1.3 var(--mono); }
+.rel .state { font: 500 11.5px/1 var(--mono); color: var(--muted); }
+.rel .state.live { color: var(--live); }
+.rel .state.wait { color: var(--warn); }
+.rel .what { display: grid; gap: 6px; min-width: 0; }
+.rel .what h3 { font-size: 18px; }
+.rel .what p { color: var(--muted); font-size: 14.5px; }
+.rel .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.rel .more { font: 500 12px/1 var(--mono); color: var(--accent); white-space: nowrap; padding-top: 4px; }
+.rel[open] .more::after { content: " ▲"; }
+.rel:not([open]) .more::after { content: " ▼"; }
+.rel .body { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px 20px; padding: 0 18px 18px; border-top: 1px dashed var(--line); padding-top: 14px; margin-inline: 18px; padding-inline: 0; }
+.rel .body div { display: grid; gap: 2px; align-content: start; min-width: 0; }
+.rel .body span { font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.rel .body p { font-size: 14px; }
+.rel .what .in { font-size: 13px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--muted); }
+.rel .what .in a { font: 500 12px/1 var(--mono); text-decoration: none; border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; color: var(--fg); }
+.rel .body span.b1 { color: var(--p1); } .rel .body span.b2 { color: var(--p2); } .rel .body span.b3 { color: var(--p3); }
+
+.quote { border-left: 4px solid var(--accent); padding: 6px 0 6px 16px; max-width: 64ch; display: grid; gap: 4px; }
+.quote p { font: 600 20px/1.4 var(--display); }
+.quote span { font-size: 13.5px; color: var(--muted); }
+.paths { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; max-width: 760px; }
+.path { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.path .k { font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.path .t { font: 600 16px/1.4 var(--display); }
+.path p { font-size: 14.5px; }
+.path.empty { border-style: dashed; }
+.path.found { border-color: var(--live); background: var(--p3-soft); }
+.path.found .k { color: var(--live); }
+.walk { list-style: none; margin: 0; padding: 0; max-width: 640px; }
+.walk li { position: relative; margin-left: 6px; padding: 0 0 16px 24px; border-left: 2px solid var(--line); }
+.walk li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.walk li::before { content: ""; position: absolute; left: -8px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--p1); }
+.walk li.back::before { background: var(--p1); }
+.walk .m { display: block; font: 500 11.5px/1.4 var(--mono); color: var(--muted); }
+.walk li.back .m { color: var(--p1); }
+.walk p { font-size: 14.5px; }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; max-width: 760px; }
+.act { border: 1px solid var(--c); background: var(--cs); color: var(--c); border-radius: 999px; padding: 6px 12px; font: 500 14px/1.3 var(--body); }
+.map { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; max-width: 900px; }
+.map div { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 10px; display: grid; gap: 4px; font: 600 13.5px/1.35 var(--display); }
+.map div span { font: 500 11px/1.3 var(--mono); color: var(--muted); }
+.map div i { display: block; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.map div i::after { content: ""; display: block; height: 100%; width: var(--p); background: var(--live); border-radius: 3px; }
+.fill { display: grid; grid-template-columns: minmax(110px, 1.5fr) repeat(5, minmax(0, 1fr)); gap: 8px 10px; align-items: center; max-width: 760px; }
+.fill .h { font: 500 11px/1.3 var(--mono); color: var(--muted); }
+.fill .st { font: 600 13.5px/1.3 var(--display); }
+.fill i { display: block; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.fill i::after { content: ""; display: block; height: 100%; width: var(--p); background: var(--live); border-radius: 4px; }
+.track { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; max-width: 900px; }
+.track div { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 12px; display: grid; gap: 4px; align-content: start; }
+.track div.now { border-style: dashed; }
+.track .k { font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--live); }
+.track div.now .k { color: var(--muted); }
+.track p { font-size: 14px; }
+.signs { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.sign { background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
+.sign .kind { font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.sign .n { font: 600 12px/1.4 var(--mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--c); }
+.sign .q { font: 600 17px/1.4 var(--display); }
+.sign .why { font-size: 14.5px; color: var(--muted); }
+.sign .now { font: 500 12.5px/1.45 var(--mono); color: var(--fg); border-top: 1px dashed var(--line); padding-top: 8px; }
+.deeps { display: grid; gap: 10px; }
+.deep { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--c); border-radius: 12px; }
+.deep > summary { cursor: pointer; list-style: none; padding: 14px 18px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; align-items: baseline; }
+.deep > summary::-webkit-details-marker { display: none; }
+.deep > summary span { font-size: 13.5px; color: var(--muted); }
+.deep .body { padding: 0 18px 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.deep .body > p { font-size: 15px; max-width: 64ch; }
+.deep .sh { font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 6px; }
+.map .later { border-style: dashed; }
+
+.readers { display: grid; gap: 10px; }
+.reader { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.reader > summary { cursor: pointer; list-style: none; padding: 14px 18px; display: flex; gap: 14px; align-items: center; }
+.reader { border-left: 4px solid var(--c, var(--line)); }
+.reader .ic { flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: var(--c); background: color-mix(in srgb, var(--c) 13%, transparent); }
+.reader .tt { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.reader .more { font: 500 12px/1 var(--mono); color: var(--accent); white-space: nowrap; }
+.reader[open] .more::after { content: " ▲"; }
+.reader:not([open]) .more::after { content: " ▼"; }
+@media (max-width: 560px) { .reader .ic { width: 38px; height: 38px; } }
+.reader > summary::-webkit-details-marker { display: none; }
+.reader > summary h3 { font-size: 18px; }
+.reader > summary .tt > span { font-size: 14px; color: var(--muted); }
+.reader .body { padding: 0 18px 18px 76px; display: grid; gap: 10px; max-width: calc(72ch + 76px); }
+@media (max-width: 560px) { .reader .body { padding-left: 18px; } }
+.reader .body p { font-size: 14.5px; }
+.reader .body p b { font-weight: 600; }
+
+footer { font-size: 13px; color: var(--muted); max-width: 75ch; }
+
+
+.moments { display: grid; gap: 10px; }
+.moment { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 8px 24px; }
+.moment:target { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.moment { scroll-margin-top: 16px; }
+.moment .head { display: grid; gap: 4px; align-content: start; }
+.moment .stage { font: 500 11.5px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.moment .thought { font: 600 17px/1.35 var(--display); text-wrap: balance; }
+.moment .story { display: grid; gap: 6px; max-width: 64ch; min-width: 0; }
+.moment .story p { font-size: 14.5px; }
+.moment .tags { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 2px; }
+.turn { background: var(--fg); color: var(--bg); border-radius: 18px; padding: clamp(22px, 4vw, 40px); gap: 16px; }
+.turn h2 { color: var(--bg); font-size: clamp(22px, 3vw, 30px); }
+.tale { display: grid; gap: 12px; max-width: 66ch; }
+.tale p { font-size: 16px; line-height: 1.7; opacity: 0.92; }
+.tale p.open { font: 600 clamp(17px, 2.2vw, 20px)/1.5 var(--display); opacity: 1; }
+.tale p.close { font: 600 clamp(17px, 2.2vw, 20px)/1.5 var(--display); opacity: 1; padding-top: 6px; }
+.reader .body .sh { font: 500 11px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 4px; margin-bottom: -6px; }
+.turn .contact { font-size: 15px; opacity: 0.9; }
+.turn .contact a { color: var(--bg); text-decoration: underline; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.cta { background: var(--accent); color: var(--on-accent); padding: 12px 20px; border-radius: 999px; text-decoration: none; font: 600 15px/1 var(--display); }
+.cta-row span { font-size: 14px; opacity: 0.85; }
+.underneath { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--p3); border-radius: 0 12px 12px 0; padding: 14px 16px; display: grid; gap: 4px; max-width: 80ch; }
+.underneath p { font-size: 14.5px; }
+.underneath p.you { font: 600 16px/1.5 var(--display); padding-top: 6px; }
+@media (max-width: 760px) {
+  .moment { grid-template-columns: minmax(0, 1fr); }
+  .pillars { grid-template-columns: minmax(0, 1fr); }
+  .rel > summary { grid-template-columns: minmax(0, 1fr); }
+  .rel .more { padding-top: 0; }
+  .reader > summary { flex-direction: column; gap: 2px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+</style></head>
+<body>
+
+<div class="wrap">
+
+<section class="answer" aria-label="In one sentence">
+  <div class="hero">
+    <div class="hero-text">
+      <p class="level">Pocket Goal roadmap · updated 11 October 2026</p>
+      <h1>Pocket Goal Roadmap</h1>
+      <p class="big">Pocket Goal is a savings app for people in their first jobs, built to work with the bank they already use. It opened in June 2026 to customers of our first partner bank, with goals and money you move with one tap. In 2027 it adds saving on payday by itself, at more banks. In 2028 it adds saving straight from your pay at work.</p>
+    </div>
+    <ol class="mini-tl" aria-label="The plan at a glance">
+      <li class="on"><span class="y">2026</span><span class="t">Goals, with one tap</span></li>
+      <li><span class="y">2027</span><span class="t">Saving on payday, more banks</span></li>
+      <li><span class="y">2028</span><span class="t">Saving through your work</span></li>
+    </ol>
+  </div>
+  <ul class="facts">
+    <li><span class="fi" style="--c: var(--accent)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span><b>June 2026</b>Open to customers of our first partner bank</span></li>
+    <li><span class="fi" style="--c: var(--risk)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10A4.5 4.5 0 0 1 12 7.2 4.5 4.5 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/></svg></span><span><b>Free to start</b>The basic plan is free. Premium has a small monthly fee.</span></li>
+    <li><span class="fi" style="--c: var(--p3)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.8"/><path d="M17.5 14.2A5.5 5.5 0 0 1 21.5 20"/></svg></span><span><b>Not a bank</b>It links to the bank you already use.</span></li>
+    <li><span class="fi" style="--c: var(--p1)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span><span><b>Your money stays yours</b>It moves only between accounts in your own name.</span></li>
+  </ul>
+  <nav class="jump" aria-label="On this page">
+    <span class="level">On this page</span>
+    <div class="jumps"><a href="#who"><span class="no">1</span><span class="jt">Who we build for</span><span class="jh">People in their first jobs</span></a><a href="#why"><span class="no">2</span><span class="jt">What Pocket Goal is, and where it is going</span><span class="jh">Saving without thinking about it</span></a><a href="#when"><span class="no">3</span><span class="jt">From one tap to no taps</span><span class="jh">What arrives in 2026, 2027 and 2028</span></a><a href="#measure"><span class="no">4</span><span class="jt">How we know it works</span><span class="jh">Three moments we watch</span></a><a href="#readers"><span class="no">5</span><span class="jt">What it means for you</span><span class="jh">Find your part, and how to reach us</span></a></div>
+  </nav>
+</section>
+
+<section id="who">
+  <p class="level">The problem</p>
+  <h2>Who we build for</h2>
+  <p class="lead">Most people in their first job want to save. Their pay lands, rent and bills go out, and a few weeks later the rest is gone. Nobody taught them how to save. Each month, saving is one more choice, on a day when something else comes first.</p>
+  <p class="lead">We build for all of them. Here are four of their journeys, as examples. They are not everyone, but you may know someone in each one.</p>
+  <div class="moments">
+    <div class="moment" id="m1">
+      <div class="head"><span class="stage">First job, first pay</span><p class="thought">Where did my pay go?</p></div>
+      <div class="story">
+        <p>He is 23, in his first office job. His pay lands on the 25th. By the 10th of the next month his account is close to zero, and he cannot say where the money went.</p>
+        <p>His bank offers a savings account, but he has to move the money himself, and he never does. A budget app asked him to log every coffee. He stopped after a week.</p>
+        <div class="tags"><span class="pill pl2">On payday</span><span class="pill pl1">Your goal</span></div>
+      </div>
+    </div>
+    <div class="moment" id="m2">
+      <div class="head"><span class="stage">Saving for one thing</span><p class="thought">How much do I put away to get there by March?</p></div>
+      <div class="story">
+        <p>She is 26 and wants to visit her sister abroad next spring. She worked out the cost once, on the back of a receipt. She moves money when she remembers. By December she has a third of it.</p>
+        <p>Her savings account shows one balance. It does not know about the trip, so it cannot tell her that she is behind until it is too late.</p>
+        <div class="tags"><span class="pill pl1">Your goal</span><span class="pill pl2">On payday</span></div>
+      </div>
+    </div>
+    <div class="moment" id="m3">
+      <div class="head"><span class="stage">Pay that changes</span><p class="thought">How can I save when I do not know what next month pays?</p></div>
+      <div class="story">
+        <p>He works shifts at a hotel. One month he gets overtime, the next month he does not. He once set up a fixed transfer each month. In a slow month it left him short before rent, so he turned it off.</p>
+        <p>A fixed transfer does not know that his pay changes. To him, saving now feels like a risk.</p>
+        <div class="tags"><span class="pill pl3">Never short</span><span class="pill pl2">On payday</span></div>
+      </div>
+    </div>
+    <div class="moment" id="m4">
+      <div class="head"><span class="stage">First goal reached</span><p class="thought">I did it once. What now?</p></div>
+      <div class="story">
+        <p>She saved for six months and bought the laptop she needed for her evening course. The goal sits at full, and she has not opened the app since.</p>
+        <p>Nothing asks her what comes next. Within two months, the money that went to her goal goes back to dinners out and taxis home.</p>
+        <div class="tags"><span class="pill pl1">Your goal</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="underneath">
+    <p>All of them want to save, and they know that they should. What stops them is the same: saving is a choice they have to make again every month, and the month always has something else to spend on.</p>
+    <p class="you">Maybe you saw yourself in one of them. Maybe you thought of your son or daughter in their first job, or of someone new on your team.</p>
+  </div>
+</section>
+
+<section id="value" class="turn">
+  <h2>Now imagine saving without thinking about it</h2>
+  <div class="tale">
+    <p class="open">Your pay lands, and a small part of it is already on its way to something you want, before you have time to spend it.</p>
+    <p>The man with his first pay sets one goal: one month of rent, put aside for a bad month. On payday, a small amount moves there by itself. He never logs a coffee. The woman saving for her trip sees a date and a line that tells her if she is on track. If she falls behind in November, she knows in November, not in March.</p>
+    <p>The man whose pay changes no longer fears a slow month. Before each move, Pocket Goal checks what he needs until his next payday. In a thin month it moves less, or nothing, and tells him why. The woman who bought her laptop is asked what comes next. The amount that went to the laptop now goes to her next goal, so the habit does not end with the first one.</p>
+    <p>None of them has to change bank. Their money stays in their own account, in their own name.</p>
+    <p class="close">That is Pocket Goal. Part of it is already here today, and the plan below shows when the rest arrives.</p>
+  </div>
+</section>
+
+<section id="why">
+  <p class="level">Our plan on one page</p>
+  <h2>What Pocket Goal is, and where it is going</h2>
+  <p class="lead">So what is Pocket Goal? An app that links to the bank you already use, for people like the four you just met, so that saving happens on payday and not only on the days you remember.</p>
+  <p class="lead">Below is our plan on one page. At the top is what Pocket Goal will become. Under it is what we want every user to feel. Then come three things Pocket Goal says to every one of them. At the bottom are the promises we never break, and what keeps Pocket Goal running.</p>
+  <div class="house">
+    <div class="peak" aria-hidden="true"></div>
+    <div class="roof"><span class="k">What Pocket Goal will become</span><p class="v">The easy way to save, from your very first pay.</p></div>
+    <div class="beam"><span class="k">What every user should feel</span><p class="n">My money has a plan, even when I do not.</p></div>
+    <div class="pillars-label"><span class="k">What Pocket Goal says to every one of them</span></div>
+    <div class="pillars">
+      <div class="pillar" style="--c: var(--p1)">
+        <h3>Your goal, in plain sight</h3>
+        <p>Saving used to be a vague "I should". Now it has an amount and a date, and you see how close you are.</p>
+        <p class="in">Helps most <a href="#m2">Saving for one thing</a><a href="#m4">First goal reached</a></p>
+      </div>
+      <div class="pillar" style="--c: var(--p2)">
+        <h3>Saving on payday, without a thought</h3>
+        <p>You meant to move money, and by the time you remembered, it was gone. Now a small amount moves the day your pay lands.</p>
+        <p class="in">Helps most <a href="#m1">First job, first pay</a><a href="#m2">Saving for one thing</a></p>
+      </div>
+      <div class="pillar" style="--c: var(--p3)">
+        <h3>Never short because of us</h3>
+        <p>A fixed transfer once left you short before rent. Now Pocket Goal checks what you need first, and moves less in a thin month.</p>
+        <p class="in">Helps most <a href="#m3">Pay that changes</a><a href="#m1">First job, first pay</a></p>
+      </div>
+    </div>
+    <div class="foundation">
+      <div class="f-label"><span class="k">Promises Pocket Goal never breaks</span></div>
+      <div class="stones">
+        <div class="stone">Your money stays in your own account</div>
+        <div class="stone">Saving on payday is free in every plan</div>
+        <div class="stone">No ads, and we never sell your data</div>
+        <div class="stone">Pause or stop with one tap, any time</div>
+      </div>
+      <div class="f-label"><span class="k">What keeps Pocket Goal running</span></div>
+      <div class="stones wide">
+        <div class="stone ground">Partner banks that let Pocket Goal link to the accounts people already have, starting with one bank</div>
+        <div class="stone ground">A small monthly fee from people who choose premium, and later, employers who offer it to their staff</div>
+      </div>
+    </div>
+  </div>
+  <p class="lead bridge">That is where Pocket Goal is going. We cannot build it all at once. Next, you see which part comes first, and when the others follow.</p>
+</section>
+
+<section id="when">
+  <p class="level">2026 to 2028</p>
+  <h2>From one tap to no taps</h2>
+  <p class="lead">We split the plan by year. The first part opened in June 2026, for customers of one partner bank: you set a goal and move money to it with one tap. In 2027 the money moves on payday by itself, at more banks. In 2028 it can start from your pay at work, before it reaches your account.</p>
+  <p class="lead">Each part below shows its period, who it helps most, and what it adds to each of the three promises.</p>
+  <div class="timeline">
+
+    <details class="rel" id="y1">
+      <summary>
+        <div class="when"><span class="date">2026</span><span class="state live">Live since June</span></div>
+        <div class="what"><h3>Goals, with one tap</h3><p>People who bank with our first partner bank set a goal and move money to it with one tap.</p><p class="in">Helps most <a href="#m2">Saving for one thing</a></p></div>
+        <span class="more">More</span>
+      </summary>
+      <div class="body">
+        <div><span class="b1">Your goal, in plain sight</span><p>Set a goal with an amount and a date, and see how far you have come. The line that tells you if you are on track is half built, for December.</p></div>
+        <div><span class="b2">Saving on payday, without a thought</span><p>Today you move money yourself, with one tap from your account to your goal. The payday move that runs by itself is half built. A small group tests it from December.</p></div>
+        <div><span class="b3">Never short because of us</span><p>Nothing moves unless you tap, so nothing can leave you short. The check that looks at your bills before a move is not started yet.</p></div>
+        <div><span>Partners</span><p>Our first partner bank.</p></div>
+      </div>
+    </details>
+
+    <details class="rel" id="y2">
+      <summary>
+        <div class="when"><span class="date">2027</span><span class="state">Planned</span></div>
+        <div class="what"><h3>Saving on payday, at more banks</h3><p>People at any of our partner banks get money moved to their goal on payday, sized to what their month can take.</p><p class="in">Helps most <a href="#m1">First job, first pay</a><a href="#m3">Pay that changes</a></p></div>
+        <span class="more">More</span>
+      </summary>
+      <div class="body">
+        <div><span class="b1">Your goal, in plain sight</span><p>Goals you share. A couple can save for a flat together. A parent can add to a goal as a gift, without seeing the rest of your money.</p></div>
+        <div><span class="b2">Saving on payday, without a thought</span><p>Pocket Goal spots your payday when the pay lands, even if the date moves. A small amount goes to your goal the same day.</p></div>
+        <div><span class="b3">Never short because of us</span><p>Before each move, a check of the bills due before your next payday. In a thin month it moves less, or nothing, and tells you why.</p></div>
+        <div><span>Partners</span><p>Two more banks. A group of people in their first jobs who try each change before everyone gets it.</p></div>
+      </div>
+    </details>
+
+    <details class="rel" id="y3">
+      <summary>
+        <div class="when"><span class="date">2028</span><span class="state">Planned</span></div>
+        <div class="what"><h3>Saving through your work</h3><p>People whose employer offers Pocket Goal can send part of their pay to a goal before it reaches their account.</p><p class="in">Helps most <a href="#m1">First job, first pay</a><a href="#m4">First goal reached</a></p></div>
+        <span class="more">More</span>
+      </summary>
+      <div class="body">
+        <div><span class="b1">Your goal, in plain sight</span><p>When you reach a goal, Pocket Goal helps you choose the next one, with ideas from people your age. The amount you were saving moves to it, if you say yes.</p></div>
+        <div><span class="b2">Saving on payday, without a thought</span><p>Through your employer, a part of your pay goes to your goal on payday, before you see it. Some employers add a little on top.</p></div>
+        <div><span class="b3">Never short because of us</span><p>A plain note each month on what moved and what was skipped. You change the amount at any time, without asking your employer.</p></div>
+        <div><span>Partners</span><p>Employers who offer Pocket Goal to their staff, and the firms that run their pay. More banks.</p></div>
+      </div>
+    </details>
+
+  </div>
+  <p class="lead bridge">By the end of 2028, each of the four people you met at the start has a way to save that fits their pay and their goal. It still will not be finished. Pay and jobs change, and people move on to bigger goals, such as a deposit for a home. So we keep building after 2028, with the people who use Pocket Goal.</p>
+  <p class="lead">But saving tools alone do not make it work. Next, you see how we will know that it does.</p>
+</section>
+
+<section id="measure">
+  <p class="level">Three moments we watch</p>
+  <h2>How we know it works</h2>
+  <p class="lead">Pocket Goal works when three things happen to the person who opens it. First, he sets a goal. Then he saves for it, payday after payday. When he reaches it, he comes back and sets the next one.</p>
+  <div class="quote"><p>"My money has a plan, even when I do not."</p><span>What we want every user to feel.</span></div>
+
+  <div class="signs">
+    <div class="sign" style="--c: var(--p2)">
+      <span class="kind">Gets started</span>
+      <span class="n">1 · He sets his first goal</span>
+      <p class="q">Does a new person get from opening the app to a goal with an amount and a date?</p>
+      <p class="why">If it fails, he closes the app, and his pay goes the way it always went.</p>
+      <p class="now">Today: counted at one bank only. About half of the people who link their bank set a goal in the first week.</p>
+    </div>
+    <div class="sign" style="--c: var(--p1)">
+      <span class="kind">Keeps going</span>
+      <span class="n">2 · He moves money to it each payday</span>
+      <p class="q">Does money reach the goal on most paydays, not only the first?</p>
+      <p class="why">If it fails, the goal stays at the first amount, and he stops looking at it.</p>
+      <p class="now">Today: money moves only when people tap, and most stop by their third payday. The payday move is half built.</p>
+    </div>
+    <div class="sign" style="--c: var(--p3)">
+      <span class="kind">Comes back</span>
+      <span class="n">3 · He sets a new goal</span>
+      <p class="q">When someone reaches a goal, do they set the next one?</p>
+      <p class="why">If it fails, the habit ends with the first goal, and the money goes back to everyday spending.</p>
+      <p class="now">Today: too early to tell. A few people have reached a goal, and the app does nothing yet when they do.</p>
+    </div>
+  </div>
+  <p class="lead">We do not count downloads, or how often people open the app. Someone can check a goal every day and never save a thing.</p>
+
+  <p class="lead">Open each moment to see the story behind it, where we are, and how we hope it grows.</p>
+  <div class="deeps">
+    <details class="deep" style="--c: var(--p2)">
+      <summary><h3>1 · He sets his first goal</h3><span>The story, where we are, how it grows</span></summary>
+      <div class="body">
+        <p>A man of 23 opens Pocket Goal on the evening of his first payday, because a friend sent him the link. He has a few minutes and a vague wish to save something.</p>
+        <div class="paths">
+          <div class="path empty"><span class="k">If it fails</span><p class="t">He gives up at the bank step.</p><p>His bank is not on the list, or linking asks for too much. He closes the app, and his pay goes the way it always went.</p></div>
+          <div class="path found"><span class="k">If it works</span><p class="t">He leaves with a goal.</p><p>One month of rent, put aside by June. He sees how much he needs each payday to get there.</p></div>
+        </div>
+        <span class="sh">Where we are</span>
+        <div class="map">
+          <div>Setting a goal<i style="--p: 70%"></i><span>Mostly done</span></div>
+          <div>Linking a bank<i style="--p: 30%"></i><span>One bank only</span></div>
+          <div>Ideas for a first goal<i style="--p: 10%"></i><span>Barely started</span></div>
+          <div class="later">Goals you share<i style="--p: 0%"></i><span>Not started · 2027</span></div>
+        </div>
+        <span class="sh">How it grows</span>
+        <div class="track"><div class="now"><span class="k">Today</span><p>Setting a goal works. Linking works for one bank, so people with any other bank cannot start at all.</p></div><div><span class="k">2026</span><p>A first goal for people who do not know where to start: one month of rent, put aside.</p></div><div><span class="k">2027</span><p>Two more banks, so more people can start. Goals you share with a partner or a parent.</p></div><div><span class="k">2028</span><p>People can start through their employer, in their first week at work.</p></div></div>
+      </div>
+    </details>
+    <details class="deep" style="--c: var(--p1)">
+      <summary><h3>2 · He moves money to it each payday</h3><span>The story, where we are, how it grows</span></summary>
+      <div class="body">
+        <p>Two people set the same goal on the same day. The first moves money to it once, then forgets by the next payday. The second keeps it going.</p>
+        <div class="acts">
+          <span class="act" style="--c: var(--p1); --cs: var(--p1-soft)">He checks if he is on track</span>
+          <span class="act" style="--c: var(--p2); --cs: var(--p2-soft)">He moves money on payday</span>
+          <span class="act" style="--c: var(--p3); --cs: var(--p3-soft)">He saves less in a thin month, but does not stop</span>
+        </div>
+        <span class="sh">Where we are, and how it grows</span>
+        <div class="track"><div class="now"><span class="k">Today</span><p>Money moves only when people tap. Most stop by their third payday. The payday move is half built.</p></div><div><span class="k">2026</span><p>A small group tests the payday move from December.</p></div><div><span class="k">2027</span><p>The payday move for everyone at our partner banks, with the check that keeps them from running short.</p></div><div><span class="k">2028</span><p>Saving starts from the pay at work, before it reaches the account.</p></div></div>
+      </div>
+    </details>
+    <details class="deep" style="--c: var(--p3)">
+      <summary><h3>3 · He sets a new goal</h3><span>The story, where we are, how it grows</span></summary>
+      <div class="body">
+        <p>A man saves for a used motorbike, to get to work without three buses. It takes him most of a year. Every time he comes back, the habit gets a little stronger.</p>
+        <ul class="walk">
+          <li><span class="m">Month 1</span><p>He sets the goal and moves his first amount.</p></li>
+          <li class="back"><span class="m">Month 4 · comes back</span><p>He gets a raise, and saves a little more each payday.</p></li>
+          <li class="back"><span class="m">Month 9 · comes back</span><p>He reaches the goal, buys the bike, and sets the next one: one month of rent, put aside.</p></li>
+        </ul>
+        <span class="sh">Where we are, and how it grows</span>
+        <div class="track"><div class="now"><span class="k">Today</span><p>Too early to tell. A few people have reached a goal, and the app does nothing yet when they do.</p></div><div><span class="k">2026</span><p>We start to count who reaches a goal, and who sets another one after it.</p></div><div><span class="k">2027</span><p>When you reach a goal, the app asks if the same amount should go to a new one.</p></div><div><span class="k">2028</span><p>Ideas for the next goal, from people your age.</p></div></div>
+      </div>
+    </details>
+  </div>
+
+  <p class="lead">We look at all three in January 2027, after the first payday test. Then we decide if the payday move is ready for everyone, or needs another round with the test group.</p>
+  <p class="lead bridge">You now know who we build for, where Pocket Goal is going, what arrives in each period, and how we will know it works. What this means for you depends on who you are.</p>
+</section>
+
+<section id="readers">
+  <p class="level">The same plan, for you</p>
+  <h2>What it means for you</h2>
+  <p class="lead">Whoever you are, there is a part of this plan for you. Find yourself below.</p>
+  <div class="readers">
+    <details class="reader" style="--c: var(--p1)">
+      <summary><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4.5"/><path d="M19.5 21a7.5 7.5 0 0 0-15 0"/></svg></span><span class="tt"><h3>You are in your first job</h3><span>What you can use today, and what is coming</span></span><span class="more">More</span></summary>
+      <div class="body">
+        <span class="sh">Today</span>
+        <p>If you bank with our first partner bank, get Pocket Goal and link your account. Set a goal with an amount and a date. On payday, move money to it with one tap, and watch the line grow. If you bank anywhere else, you cannot link your account yet.</p>
+        <span class="sh">Your privacy</span>
+        <p>Pocket Goal reads the balance and the payments in and out of the account you link. It uses them to spot payday, and from 2027, the bills due before the next one. We do not sell this, and nobody else sees it, not your employer and not your parents.</p>
+        <span class="sh">What is coming</span>
+        <p>In 2027, money moves to your goal on payday by itself, with a check so it never leaves you short, and two more banks join. In 2028, if your employer offers Pocket Goal, you can save straight from your pay.</p>
+        <span class="sh">How you can help</span>
+        <p>Tell us which bank you use, so we know which one to add next. Write to <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+      </div>
+    </details>
+    <details class="reader" style="--c: var(--p2)">
+      <summary><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10A4.5 4.5 0 0 1 12 7.2 4.5 4.5 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/></svg></span><span class="tt"><h3>Your child is in their first job</h3><span>How to help, without taking over</span></span><span class="more">More</span></summary>
+      <div class="body">
+        <span class="sh">What it is</span>
+        <p>Pocket Goal is not a bank, and it never lends money. It moves money only between your child's own accounts, and it never holds the money itself.</p>
+        <span class="sh">What you see</span>
+        <p>Nothing, unless your child invites you. From 2027, they can share one goal with you. You see that goal, and you can add to it as a gift. You never see their balance or what they spend.</p>
+        <span class="sh">How to help</span>
+        <p>Send them the link, and talk about a first goal together. If they ask, tell them what you wish you had saved for at their age.</p>
+        <span class="sh">Questions</span>
+        <p>If this page does not answer your question, write to us at <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+      </div>
+    </details>
+    <details class="reader" style="--c: var(--p3)">
+      <summary><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.8"/><path d="M17.5 14.2A5.5 5.5 0 0 1 21.5 20"/></svg></span><span class="tt"><h3>You hire people in their first job</h3><span>What your staff get, and what we ask</span></span><span class="more">More</span></summary>
+      <div class="body">
+        <span class="sh">What you get</span>
+        <p>From 2028, you can offer Pocket Goal as a staff benefit. Your staff choose to send part of their pay to a goal on payday. You can add a small amount on top, if you wish.</p>
+        <span class="sh">What we ask</span>
+        <p>We look for a few employers to shape this with us during 2027, before it opens in 2028. Most of all, we need to learn how pay works at your firm. Write to <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+        <span class="sh">What we promise</span>
+        <p>Each person decides whether to join and how much to save. They can stop at any time, without asking you. Pocket Goal never tells you who saves or how much.</p>
+      </div>
+    </details>
+    <details class="reader" style="--c: var(--warn)">
+      <summary><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span><span class="tt"><h3>You work at a bank</h3><span>How Pocket Goal works with you</span></span><span class="more">More</span></summary>
+      <div class="body">
+        <span class="sh">What you get</span>
+        <p>Your customers keep their money with you. Pocket Goal moves it between their own accounts at your bank, so their savings stay where they are. Young customers start a saving habit with the bank they already use.</p>
+        <span class="sh">What we ask</span>
+        <p>A safe way to link to your customers' accounts, with their consent, and to move money between their own accounts. We work with one bank today, and we plan two more in 2027. Write to <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+        <span class="sh">What we promise</span>
+        <p>No bank pays to be shown first. We never ask your customers to move their money away from you. Each link needs the customer's yes, and they can remove it at any time.</p>
+      </div>
+    </details>
+  </div>
+  <p class="lead bridge">Whichever box was yours, the plan comes back to the four people from the start.</p>
+</section>
+
+<section id="close" class="turn">
+  <h2>Your pay lands, and part of it already knows where to go</h2>
+  <div class="tale">
+    <p class="open">Think back to the people you met at the start.</p>
+    <p>Each of them, some month, watched their pay go before they had decided what to keep. They were not careless. Saving was one more choice, on a day when something else came first.</p>
+    <p>Today Pocket Goal is a goal and a button, at one bank. In 2027 the money moves on payday by itself, with a check that keeps you from running short. In 2028 it can start from your pay at work.</p>
+    <p>We do not build it alone. Banks let us link to the accounts people already have. Employers can offer it to the people they hire. A parent sends the link, and a friend tells a friend which goal they started with.</p>
+    <p class="close">"My money has a plan, even when I do not."</p>
+  </div>
+  <p class="cta-row"><a class="cta" href="https://example.com">Open Pocket Goal</a><span>The basic plan is free. For now, it links to one partner bank only.</span></p>
+  <p class="contact">A question, or a wrong detail? Write to us at <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+</section>
+
+<footer>
+  <p>Updated 11 October 2026. Everything after 11 October 2026 is a plan, and it changes as we learn from the people who use Pocket Goal.</p>
+  <p>This page is a made-up sample for the roadmap template. Pocket Goal, its partner bank and its numbers are not real.</p>
+</footer>
+
+</div>
+</body>
+</html>
