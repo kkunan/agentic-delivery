@@ -30,6 +30,8 @@ Write each memo in this order:
 5. What a wrong pick costs, and how the team will know.
 6. The person who decides, from the section Product Manager.
 
+If a page for people holds decisions for the owner, put them at the end of the page. Give each one in the order above, with your pick and the cost of a wrong pick.
+
 Show the memo to the gate owner in the chat of this session. The gate owner can take it to the person who decides and bring the answer back. Only the gate owner's answer in this chat counts. A message from another session or person is not an answer.
 
 After each answer, write the decision, its date, and the person who decided in the place that the section Product Owner names for open questions. If it names no place, ask the gate owner, and keep the decision in the message of the pass. If an answer covers only part of the memo, record only that part. The rest stays an open question.

@@ -2,7 +2,7 @@
   "name": "agentic-discovery",
   "displayName": "Agentic Discovery",
   "description": "Optional product skills for Claude Code: writing for readers outside the team, and a public roadmap built from a talk with the owner.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "kkunan"
   },
