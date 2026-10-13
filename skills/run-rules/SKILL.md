@@ -190,7 +190,7 @@ Commands and files:
 
 - Never pipe a build or a test run to `tail` or `head`. Redirect it to a file and read the file. A pipe buffers, so the log looks empty until the command finishes.
 - Do not use a foreground `sleep`, because the Claude Code sandbox blocks it. To wait, use a background loop that polls the condition.
-- Run tests detached into a log file, and let the stall watch read that log. The stall watch sees only the worktrees that the controller dispatched, so for a run that you drive yourself, watch the log yourself.
+- Run tests in the background mode of the shell tool, into a log file, and let the stall watch read that log. Do not start them with `&` or `nohup` alone, as the controller skill says in the section Waiting. The stall watch sees only the worktrees that the controller dispatched, so for a run that you drive yourself, watch the log yourself.
 - Write test result files into the ledger folder of the run, never into a temporary path. The console says whether tests failed. The result file says why, and a reviewer needs it after the run.
 - Delete only a path that your own command printed. Never run a wildcard delete in a directory that you share with other runs. That includes the session scratchpad and the system temporary directory. A folder that looks like leftovers can be the live workspace of another run. The implementer and reviewer agents carry the same rule. (lesson: guessed-deletion)
 - Stop only a process whose process id your own command started. Never stop a process by name, for example with `pkill` or `killall`, because another ticket can build on the same machine. (lesson: kill-by-name)

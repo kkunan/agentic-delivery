@@ -167,6 +167,18 @@ Each agent carries a fixed load before it reads the work. A review seat loads ab
 
 Count tokens for each distinct agent, and use the final cumulative count of each agent. If you add up the completion notices, you count a resumed agent two times. The actual figure for a run is the sum of the cost lines plus the controller. The first few runs are calibration, so record their numbers anyway.
 
+## Waiting
+
+A session that ends its turn while work is still pending sleeps until something wakes it. If nothing will wake it, the run stalls in silence. (lesson: no-wake-up)
+
+- Before you end a turn while you wait, set up a wake-up for each outcome: the run ends, the run fails, or the run hangs.
+- Start a long run with the background mode of the shell tool, which wakes the session when the run exits. Never start it with `&` or `nohup` alone, because then nothing wakes the session.
+- Give each background run a time limit, because a hung run never exits. The stall watch below also catches a hang.
+- Do not poll CI in a loop. If the host wakes the session when CI ends, on a pass and on a failure, use that. Otherwise, end the turn and say that you wait on CI.
+- End each such turn with one line that names the next step and what will wake the session.
+
+If a lead hands runs to other sessions, the lead asks for a notice each time a busy session goes idle. On each notice, the lead reads the last line of that session. If the line names no wake-up, the lead treats it as a stall at once. If the line says that the session waits on CI, the lead checks CI. (lesson: no-wake-up)
+
 ## The stall watch
 
 Arm a stall watch at dispatch, and keep it armed until every agent returns. Task notifications report completion. They cannot report that progress stopped, so an agent blocked on a hung build stays "running" forever. Two problems occur. In the first, a build freezes and its processor time stops. In the second, an agent does nothing at all, and no build watch can see it.
@@ -178,6 +190,12 @@ Use `scripts/stall-watch.sh`. Do not write another watch, because hand-written w
 When a log keeps the same size for `--build-after` minutes, the watch writes one `LOG STALLED <path>` line. It writes the line again only after the log grows and then stops again. The processor total alone does not show a hung Gradle build, because idle build daemons keep adding a little processor time. The log size shows it.
 
 With no `--roots`, the script asks `git worktree list`. If nothing resolves, it refuses to start, so it never polls an empty set and reports all clear. It writes a heartbeat line on every poll. Do not dispatch until you see a heartbeat. If the heartbeat stops, treat that as a stall in the watcher. An unverified watcher is worse than none, because it looks like coverage.
+
+Run the watch so that each alert wakes the session. A watch that only writes to a file wakes nobody. In Claude Code, start it with the Monitor tool. Keep the full output in a log, and pass only the alert lines on:
+
+    scripts/stall-watch.sh --interval 60 --log <log> 2>&1 | tee <watch-log> | grep --line-buffered -E "LOG STALLED|BUILD FROZEN|AGENT IDLE|DISK LOW|STOPPED|WARN"
+
+Read `<watch-log>` for the heartbeat. A monitor stops after at most 30 minutes, and its stop notice also wakes the session. Arm it again each time.
 
 A running watch never gets an edit to the script, because bash parses the whole loop before it runs it. To use a fix, stop the watch and arm it again.
 

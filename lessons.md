@@ -235,3 +235,9 @@ Rule: Give no review seat a cap under 60k. A brief with a cap tells the agent to
 A project saw its one-task tickets run 20 to 40 percent over their caps. Its owner then made each cap a stop: at the cap, the lead holds the run and asks the budget owner, even for a small finish. A small finish still spends tokens that the owner did not approve.
 
 Rule: At a hard cap, hold the run, and ask the gate owner before the next step.
+
+## no-wake-up
+
+Two sessions of one project stalled in the middle of a ticket. Each ended its turn while it waited. One waited on CI, and CI passed, but the host wakes a session only on a CI failure. The other started a browser run that wrote nothing for 87 minutes, and the session stayed idle. The owner noticed both before any agent did. A stall watch writes its alerts to a file, so it cannot wake an idle session either.
+
+Rule: Before you end a turn while you wait, set up a wake-up for each outcome. The lead treats an idle session with no named wake-up as a stall.
