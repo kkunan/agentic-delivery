@@ -161,6 +161,10 @@ Every spec has an estimate, and the retro reports it against the actual result. 
 
 Use the estimate as a tripwire. When the elapsed time or the tokens pass the estimate, say so without a prompt. Include what is left and the revised figure. Do not wait for the gate owner to ask.
 
+If the gate owner sets a hard cap, hold the run when the tokens reach it. Ask the gate owner before the next step, even for a small finish. (lesson: hard-cap)
+
+Each agent carries a fixed load before it reads the work. A review seat loads about 20k tokens of skills and rules, and the controller about 35k in each run. Give no review seat a cap under 60k, because the fixed load leaves too little room for the work. An agent cannot read its own token count. If a brief gives a cap, it tells the agent to write its report at about 75 percent of the cap. (lesson: fixed-load)
+
 Count tokens for each distinct agent, and use the final cumulative count of each agent. If you add up the completion notices, you count a resumed agent two times. The actual figure for a run is the sum of the cost lines plus the controller. The first few runs are calibration, so record their numbers anyway.
 
 ## The stall watch

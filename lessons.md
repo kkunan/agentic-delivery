@@ -223,3 +223,15 @@ Rule: Stop only a process whose process id your own command started. Never stop 
 A project reported the actual tokens of each ticket from the ledger. The ledger held the cost lines of the agents but not the controller. The controller of each ticket used about 150k to 250k tokens more. One ticket then looked close to its estimate, but its real cost was well over it.
 
 Rule: Add the controller to the actual tokens. If you did not measure it, say that the actual figure is a floor.
+
+## fixed-load
+
+A project gave the review seat of a one-task ticket a cap of 40k tokens. The seat loaded about 20k of skills and rules before it read the diff, so about 20k was left for the review. The controller of each run loaded about 35k the same way. Three tickets in a row went 20 to 40 percent over their caps. An agent cannot see its own token count, so no seat stopped in time to report.
+
+Rule: Give no review seat a cap under 60k. A brief with a cap tells the agent to write its report at about 75 percent of the cap.
+
+## hard-cap
+
+A project saw its one-task tickets run 20 to 40 percent over their caps. Its owner then made each cap a stop: at the cap, the lead holds the run and asks the budget owner, even for a small finish. A small finish still spends tokens that the owner did not approve.
+
+Rule: At a hard cap, hold the run, and ask the gate owner before the next step.
