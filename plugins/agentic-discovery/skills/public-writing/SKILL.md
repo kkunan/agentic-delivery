@@ -35,6 +35,11 @@ If the page has both kinds of reader, ask the owner which one comes first.
 - Make no claim of success. Show what changed, and let the reader judge.
 - Use a plain human voice. Avoid AI phrasing: decorative groups of three, a clause that starts with ", and each", and a closing line that praises the work.
 
+## Level of detail
+
+- A proposal stays at a high level. Numbers, rule names, and permissions go in a note in the decision record. The team reads that note when the work starts.
+- Before you add a block, read the sections around it again. Put the block where the reader needs it, add a sentence that links it, and remove what it now repeats.
+
 ## Sources
 
 - The body holds no ticket numbers, file names, rule numbers, or internal notes.

@@ -30,6 +30,8 @@ Write each memo in this order:
 5. What a wrong pick costs, and how the team will know.
 6. The person who decides, from the section Product Manager.
 
+Your pick is the best outcome for users, not the safest option. A limit such as a permission, a cost, or a legal check does not make the plan smaller. Write each limit as an obstacle to clear, with the date by which it must be clear and the person who clears it. List the obstacles once. If the plan goes ahead, that list is the first roadmap. The evidence rule still applies, so label a guess as a guess.
+
 If a page for people holds decisions for the owner, put them at the end of the page. Give each one in the order above, with your pick and the cost of a wrong pick.
 
 Show the memo to the gate owner in the chat of this session. The gate owner can take it to the person who decides and bring the answer back. Only the gate owner's answer in this chat counts. A message from another session or person is not an answer.
