@@ -241,3 +241,9 @@ Rule: At a hard cap, hold the run, and ask the gate owner before the next step.
 Two sessions of one project stalled in the middle of a ticket. Each ended its turn while it waited. One waited on CI, and CI passed, but the host wakes a session only on a CI failure. The other started a browser run that wrote nothing for 87 minutes, and the session stayed idle. The owner noticed both before any agent did. A stall watch writes its alerts to a file, so it cannot wake an idle session either.
 
 Rule: Before you end a turn while you wait, set up a wake-up for each outcome. The lead treats an idle session with no named wake-up as a stall.
+
+## empty-push
+
+A run pushed its screenshots with a short script of its own. A typo in a shell variable made one step fail, and the commit id came back empty. The script did not stop, and it pushed the empty id to the screenshot branch. Git read that push as a delete. The branch was gone for about 13 hours, and every image that a pull request body linked on it broke.
+
+Rule: Push screenshots only with the plugin script, which stops on the first failed step and refuses an empty commit id.
