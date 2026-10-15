@@ -7,7 +7,7 @@
 A Claude Code plugin that takes a feature from an idea to a merged pull request.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-0.5.7-informational)
+![Version](https://img.shields.io/badge/version-0.6.0-informational)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A63D2)
 ![Status](https://img.shields.io/badge/status-pilot%20not%20run-orange)
 ![Platforms](https://img.shields.io/badge/platforms-Flutter%20%7C%20iOS%20(in%20progress)-lightgrey)
@@ -26,7 +26,7 @@ something went wrong without it, and [`lessons.md`](lessons.md) tells the story 
 > [!NOTE]
 > The core is in place and has tests: the rules, the agents, the feature command, the project file,
 > the scripts, and the hooks. The Flutter layer is written, and two runs on Flutter 3.38.9 stable
-> measured its commands. The team pilot has not run yet, so version 0.5.7 is not tested on a real
+> measured its commands. The team pilot has not run yet, so version 0.6.0 is not tested on a real
 > feature. See [Status](#status) and [Platforms](#platforms) before you install.
 
 ## Quick start
@@ -39,7 +39,7 @@ For a team, pin the plugin to a release tag. Run these two commands at the root 
 repository:
 
 ```bash
-claude plugin marketplace add 'kkunan/agentic-delivery#v0.5.7' --scope project
+claude plugin marketplace add 'kkunan/agentic-delivery#v0.6.0' --scope project
 ```
 
 ```bash
@@ -53,7 +53,7 @@ team gets the same version:
 {
   "extraKnownMarketplaces": {
     "agentic-delivery": {
-      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.5.7" }
+      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.6.0" }
     }
   },
   "enabledPlugins": { "agentic-delivery@agentic-delivery": true }
@@ -207,6 +207,8 @@ You own how the team works with the plugin.
 - If the default agent does not know your stack, replace it with your team's own. Name it in the
   project file, and the run uses it for that seat.
 - Optionally, name a delegate who approves plans that change nothing that a user sees.
+- Optionally, name a merge delegate. It merges a pull request only if the checks pass, CI passes,
+  the final review is clean, and nothing that a user sees changed beyond the approved plan.
 
 </details>
 
@@ -219,7 +221,8 @@ in the project file, which grooms and orders the backlog for you.
 - Take part in the brainstorm, or give the engineer a ticket with clear acceptance rules.
 - Each manual check in the plan states a value that can fail, so you can read the plan and know
   what "done" means.
-- A plan that changes what a user sees comes to a person, even under a delegate.
+- A plan that changes what a user sees comes to a person, even under a delegate. So does a merge
+  that changes more than the approved plan shows.
 - After the merge, read the feature report. It takes about one minute: screenshots of each screen,
   side by side with the screen before the change.
 - With a Product Owner session, the run starts from a ready ticket: goal, user value, metric,
@@ -428,9 +431,9 @@ layer comes from a native iOS project that ran more than 30 tickets through earl
 workflow and its scripts. A CI job runs the layer's commands and its mutation runner on Xcode 16.4
 against a sample app. It runs on each pull request that changes the iOS layer or a script that the
 job runs. No project has run a feature through the plugin itself yet. The rest of the plugin is in place and has tests.
-The team pilot has not run yet, so version 0.5.7 is not tested on a real feature.
+The team pilot has not run yet, so version 0.6.0 is not tested on a real feature.
 
-Each version gets a tag, such as `v0.5.7`, for a team to pin. On each push to `main`, the workflow
+Each version gets a tag, such as `v0.6.0`, for a team to pin. On each push to `main`, the workflow
 `tag-release.yml` reads the version in `.claude-plugin/plugin.json`. If the tag does not exist, the
 workflow creates it. It never moves a tag that exists.
 
