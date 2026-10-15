@@ -247,3 +247,9 @@ Rule: Before you end a turn while you wait, set up a wake-up for each outcome. T
 A run pushed its screenshots with a short script of its own. A typo in a shell variable made one step fail, and the commit id came back empty. The script did not stop, and it pushed the empty id to the screenshot branch. Git read that push as a delete. The branch was gone for about 13 hours, and every image that a pull request body linked on it broke.
 
 Rule: Push screenshots only with the plugin script, which stops on the first failed step and refuses an empty commit id.
+
+## relayed-word
+
+The owner of a project told a process session that the lead can now merge without the owner. The process session edited the rules and told the lead. The lead refused to merge on that message. A rule that removes the owner from a merge must come from the owner, and the lead had only a relayed message. The lead asked the owner in its own chat, and the owner said yes there.
+
+Rule: A delegated merge starts only after the gate owner says yes to it in the chat of the delegate.

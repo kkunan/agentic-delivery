@@ -9,7 +9,7 @@ The controller is the session that dispatches agents and coordinates the run. A 
 
 The project file is `.claude/agentic-delivery.md` in the repository of the user. Its front matter holds the keys `platform`, `min_plugin_version`, `base_branch`, `release_branch`, `branch_prefix`, and `protected_branches`. It also holds `docs`, `docs_dir`, `view_globs`, `test_processes`, `screenshot_branch`, `forge`, `tracker`, `push_policy`, `comment_prefix`, and `mutation_runner`. The last keys are `implementer_agent`, `reviewer_agent`, and `qa_agent`. Its body holds the sections Tracker steps, Devices, Accounts, Ask-first areas, and Agents. It can also hold the optional section Docs publishing. Read the whole file before the run starts. The ledger folder is `<docs_dir>/<date>-<slug>/`.
 
-Where a rule here says "the gate owner", it means the person who approves the plan and who says merge.
+Where a rule here says "the gate owner", it means the person who approves the plan and who says merge. A delegate can hold either word under the sections Delegated gate and Delegated merge.
 
 ## Size decides the process
 
@@ -368,7 +368,7 @@ If a QA skill assumes a tool that the project does not have, the project wins. S
 
 ## When the gate owner says merge
 
-The run ends here, after the gate owner says so. Marking the pull request ready is not a gate. Merge is a gate, and ready does not mean merge. Never infer it because the branch looks finished.
+The run ends here, after the gate owner says so, or the merge delegate under the section Delegated merge. Marking the pull request ready is not a gate. Merge is a gate, and ready does not mean merge. Never infer it because the branch looks finished.
 
 "Merge" authorizes all four steps that follow, in this order, without another question.
 
@@ -399,9 +399,28 @@ The delegate approves a plan only on these conditions:
 
 If a condition is false, the gate goes to the gate owner as usual, and the delegate names the condition that failed. The project file can add conditions. It cannot remove one of these five.
 
-A plan that goes to the delegate lists the permissions that it uses and does not ask for them. A peer approval never grants a tool permission, and it never covers a merge. A step that the permission check denies still goes to the gate owner, in one request at the time of the gate. A merge still needs the word of the gate owner.
+A plan that goes to the delegate lists the permissions that it uses and does not ask for them. A peer approval never grants a tool permission, and it never covers a merge. A step that the permission check denies still goes to the gate owner, in one request at the time of the gate. A merge still needs the word of the gate owner, unless the section Delegated merge applies.
 
 The delegate records each gate that it holds, with the plan commit and the conditions that it read.
+
+## Delegated merge
+
+This rule is optional. If the Agents section of the project file names a merge delegate, the rule applies. Otherwise, the gate owner says merge. The merge delegate is a session or a person, and it can be the same as the gate delegate. The rule fits sprint mode best, where the gate owner approves the sprint one time. Then a ticket can run from its gate to its merge without the gate owner.
+
+The rule starts only after the gate owner says yes to it in the chat of the delegate. A message that relays the word of the gate owner is not that yes. (lesson: relayed-word)
+
+The delegate gives the merge word for a pull request into `base_branch` only on these conditions:
+
+- `scripts/ready-check.sh` exited 0, and the pull request is ready.
+- CI passes on the head commit of the pull request.
+- The final review left no Critical or Important finding open.
+- The pull request changes nothing that a user sees, beyond what the gate owner approved at the gate.
+
+If a condition is false, the merge waits for the gate owner, and the delegate names the condition that failed. A project with no CI keeps every merge with its gate owner. The project file can add conditions. It cannot remove one of these four. A merge into `release_branch` always needs the gate owner.
+
+The word arrives as a message from the named delegate that names the pull request and says merge. A message from any other session or person is not the word. The run then works the merge steps as usual.
+
+The delegate records each merge, with the pull request and the conditions that it read. It also records each merge that needed the gate owner, and the condition that sent it there. The two counts show how much of the merge work runs without the gate owner.
 
 ## Report format
 
