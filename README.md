@@ -1,457 +1,161 @@
 <div align="center">
 
-# Agentic Delivery
-
-**One plan to approve. A team of agents does the rest.**
-
-A Claude Code plugin that takes a feature from an idea to a merged pull request.
+<img src="docs/assets/hero.svg" alt="Agentic Delivery. A Product Owner, engineers, and QA, all agents." width="100%">
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Version](https://img.shields.io/badge/version-0.6.0-informational)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A63D2)
-![Status](https://img.shields.io/badge/status-pilot%20not%20run-orange)
-![Platforms](https://img.shields.io/badge/platforms-Flutter%20%7C%20iOS%20(in%20progress)-lightgrey)
+![Status](https://img.shields.io/badge/status-daily%20use%20%7C%20team%20pilot%20next-yellowgreen)
+![Platforms](https://img.shields.io/badge/platforms-Flutter%20%7C%20iOS%20%7C%20Go-lightgrey)
+
+### Do the part you love. Agents do the rest.
+
+Whoever you are on the team, you can now **build the whole product**, right inside Claude Code.
 
 </div>
 
 ---
 
-You approve one plan. Then agents build each task, review each diff, test what they built, and keep
-a record of every commit and decision. At the end, they hand you a pull request that is ready to
-merge, and a retro that says what the feature really cost.
+## TL;DR
 
-The workflow comes from a real mobile project that ran it for weeks. Each rule exists because
-something went wrong without it, and [`lessons.md`](lessons.md) tells the story behind each one.
+- It's a Claude Code plugin that gives you **a team of agents**: a **Product Owner**, **engineers**,
+  and **QA**.
+- **You decide** on your part. The team handles everything else.
+- Each feature comes back **tested and reviewed**, with **its real cost**.
+- We use it **every day** on iOS and Flutter, and it has also built Go, Node, and React work.
+- **Try it in two commands**, then run `/feature`:
+
+  ```bash
+  claude plugin marketplace add kkunan/agentic-delivery
+  claude plugin install agentic-delivery@agentic-delivery
+  ```
+
+## Why we built it
+
+AI can write code fast. But a feature takes more than code, and you know how it goes. The ticket
+is **one vague line**. The agent either asks you about every tiny thing, or goes quiet for an hour
+and comes back with **something else**. Then it says "all tests pass", and you end up **checking everything yourself** anyway.
+
+So we gave the agent **a team**.
+
+<table>
+<tr>
+<td width="33%" valign="top">
+
+<img src="docs/assets/icon-po.svg" width="44" alt="">
+
+**Product Owner**
+
+Turns "add a profile page" into a **real ticket**: the goal, who it's for, and how you'll know it's
+done. Keeps the backlog in order, plans sprints, and brings you **its best pick** instead of a list of questions.
+
+</td>
+<td width="33%" valign="top">
+
+<img src="docs/assets/icon-build.svg" width="44" alt="">
+
+**Engineers**
+
+Write **the test first**, then the code. **Never fake a test** to get a green tick. Work in parallel when
+it's safe, and **a different agent reviews** every change.
+
+</td>
+<td width="33%" valign="top">
+
+<img src="docs/assets/icon-qa.svg" width="44" alt="">
+
+**QA**
+
+Checks **the plan before any code** exists. **Breaks the code on purpose** to see if the tests notice.
+Won't let the pull request go out while **a check is still skipped**.
+
+</td>
+</tr>
+</table>
+
+## How a feature runs
+
+```mermaid
+flowchart LR
+    B[Backlog] --> PO[Product Owner<br/>gets it ready] --> P[Plan]
+    P --> A{{You approve}} --> D[Engineers build,<br/>another agent reviews]
+    D --> Q[QA tries<br/>to break it] --> M{{You merge, or<br/>a delegate does}}
+    M --> R[Short report<br/>and a retro] --> B
+    classDef po fill:#fff4e0,stroke:#d97706,color:#92400e
+    classDef build fill:#f1ebfe,stroke:#7c3aed,color:#5b21b6
+    classDef qa fill:#e3f8ef,stroke:#059669,color:#065f46
+    classDef you fill:#ffffff,stroke:#6366f1,color:#3730a3
+    class PO po
+    class P,D build
+    class Q qa
+    class A,M you
+```
+
+At the end you get a pull request, a **one-minute report** with screenshots, and a retro that says **what
+it really cost**. Don't want to be **the bottleneck**? Name **a delegate**, and it can approve and merge the
+changes that users won't see.
+
+## Who it's for
+
+Whatever your role, you get **the rest of the team for free**. You stay in charge of your part, and
+you approve it. The agents handle the parts you'd rather skip.
+
+| If you're a... | You stay in charge of... | The team does the rest |
+|---|---|---|
+| **Product manager** | The roadmap and the big decisions | Turns them into tickets, then **builds and ships** them |
+| **Product owner** | What matters most, and the final yes | **Writes ready tickets**, plans sprints, and builds them |
+| **Designer** | How it looks | Turns your designs into **a working product**, and shows you each screen |
+| **Engineer** | The plan and the merge | **Writes the tests and the code**, and gets every change reviewed |
+| **QA** | The bar for "done" | **Checks the plan**, tries to break the code, and logs every check |
+| **Tech lead** | The standards | **Follows them on every run**, and proposes fixes after |
+| **Engineering manager** | The budget, and who signs off | **Delivers**, and reports what each ticket cost |
+| **Solo builder** | The idea | **Everything else** |
+
+## Where we use it
+
+It was born on a **production iOS app**, with **more than 30 tickets** shipped through it. Now we
+run it **every day** on iOS and Flutter work, and it has also built Go, Node, and React tasks.
+
+| Platform | How ready |
+|---|---|
+| Flutter | Commands measured on real runs |
+| Native iOS | Built from the real project, tested in CI |
+| Go services | Tested in CI |
+| Anything else | No special commands yet, but the team and its rules still work, like on our Node and React tasks |
 
 > [!NOTE]
-> The core is in place and has tests: the rules, the agents, the feature command, the project file,
-> the scripts, and the hooks. The Flutter layer is written, and two runs on Flutter 3.38.9 stable
-> measured its commands. The team pilot has not run yet, so version 0.6.0 is not tested on a real
-> feature. See [Status](#status) and [Platforms](#platforms) before you install.
+> **Looking for pilot teams.** We use it every day, but no whole team has run it yet. Try it on
+> your next ticket and [tell us how it went](https://github.com/kkunan/agentic-delivery/issues). We'll
+> fix what you find.
 
-## Quick start
-
-The plugin needs the superpowers plugin from the `claude-plugins-official` marketplace. The feature
-command uses four of its skills. If one is missing, the command stops. The manifest names superpowers as a
-dependency, so Claude Code can install it with this plugin. If it does not, install it first.
-
-For a team, pin the plugin to a release tag. Run these two commands at the root of your
-repository:
-
-```bash
-claude plugin marketplace add 'kkunan/agentic-delivery#v0.6.0' --scope project
-```
-
-```bash
-claude plugin install agentic-delivery@agentic-delivery --scope project
-```
-
-The commands write these settings to `.claude/settings.json`. Commit that file, so that the whole
-team gets the same version:
-
-```json
-{
-  "extraKnownMarketplaces": {
-    "agentic-delivery": {
-      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.6.0" }
-    }
-  },
-  "enabledPlugins": { "agentic-delivery@agentic-delivery": true }
-}
-```
-
-Without a pin, each change to this repository reaches the whole team at the next update. With a
-pin, an update is a change that the team reviews. To update, move `ref` to the new tag in a pull
-request or merge request. After the merge, each person runs the `marketplace add` command again
-with the new tag.
-
-The owner of this repository can move a tag, so a tag pin is a review step, not a hard lock. A team
-that needs a hard lock can copy the plugin into a marketplace of its own.
-
-To try the plugin on your own, you can leave out the pin. Then each update gets the newest commit
-of the default branch:
+## Try it
 
 ```bash
 claude plugin marketplace add kkunan/agentic-delivery
 ```
 
-To install from a local clone instead, give the path of the clone to the `marketplace add` command.
-The option `--scope local`, `--scope project`, or `--scope user` on each command picks where Claude
-Code stores the setting: your own local settings for this project, the settings file that the team
-shares in the repository, or your settings for every project.
-
-Run `claude plugin list` to check that `agentic-delivery` shows as enabled. Then copy the template
-to `.claude/agentic-delivery.md` in your repository, as [Set up a project](#set-up-a-project) says,
-and run `/feature` in Claude Code.
-
-> [!IMPORTANT]
-> Install tests ran three forms, and each one installed the plugin: a local clone with
-> `--scope local`, the GitHub form with `--scope project`, and the pinned GitHub form with
-> `--scope project`. With the pin, the clone was at the commit of the tag. On Claude Code 2.1.236,
-> `ref` takes a branch or a tag, but not a commit SHA. One machine already had the marketplace.
-> There, `claude plugin marketplace update` kept the old source, without `ref`. The
-> `marketplace add` command with the tag then added the `ref`.
-
-### Optional product skills
-
-The same marketplace holds a second plugin, `agentic-discovery`. It is separate, and the delivery
-plugin does not need it. It has two skills:
-
-- `agentic-discovery:public-writing` gives the rules for a page that people outside the agent sessions read.
-- `agentic-discovery:public-roadmap` builds a public roadmap page from a talk with the owner. It
-  holds the questions, an HTML template, and three made-up samples.
-
-To install it, add the marketplace as above, then run this command:
-
 ```bash
-claude plugin install agentic-discovery@agentic-delivery
+claude plugin install agentic-delivery@agentic-delivery
 ```
 
-The writing skill comes from two products, and the roadmap skill from one. No team used them yet.
+Copy `templates/agentic-delivery.md` to `.claude/agentic-delivery.md`, fill in the blanks, and run
+`/feature`. Setting it up for a team? See the [install guide](docs/install.md).
 
-## How a feature runs
+## Want the details?
 
-### 1. Pick the work
+[Install](docs/install.md) · [Project setup](docs/setup.md) · [How it runs](docs/how-it-runs.md) ·
+[What's inside](docs/inside.md) · [Lessons behind each rule](lessons.md)
 
-This step is optional. It runs only if the project file names a Product Owner.
-
-```mermaid
-flowchart LR
-    B[Backlog] --> O[Product Owner grooms] --> Y[Ready tickets]
-    Y -->|flow| N[Next ticket to the lead]
-    Y -->|sprint| Z[Lead sizes] --> C[Cut-off at the token budget] --> V{{You approve the sprint}}
-```
-
-With `po_scope: product`, the Product Owner also prepares product decisions before the tickets. For
-each decision, it shows you a short memo with options, the evidence for each, and its pick. You, or
-the person whom the project file names, make the call. The Product Owner then writes the tickets.
-
-### 2. Shape the work
-
-```mermaid
-flowchart LR
-    A[Brainstorm] --> S{Size} -->|XS or S| L[Lite brief] --> G{{You approve}}
-    S -->|M| D[Spec and plan, one document] --> E[One review] --> G
-    S -->|larger| X[Split first]
-```
-
-### 3. Build
-
-```mermaid
-flowchart LR
-    T[Tasks: build, then review] --> F[Final review] --> Q[QA and ship checklist] --> P{{You say merge}}
-```
-
-### 4. Land
-
-```mermaid
-flowchart LR
-    M[Merge] --> R[Retro] --> O[Product Owner grooms again]
-```
-
-Two steps need you: the plan, and the merge. Everything between them runs on its own. In sprint
-mode, you also approve each sprint. A team with no Product Owner starts at the brainstorm, and its
-run ends at the retro.
-
-The size of the ticket picks the path. An XS or S ticket runs in lite mode by default: a short brief
-replaces the spec and the plan, and one session does the work, with one review at the end. An M
-ticket gets one document that holds the spec and the plan, and one review of it. A larger ticket is
-split first. The controller skill gives the conditions.
-
-## Why it works
-
-| The problem | What the plugin does |
-|---|---|
-| Agents stop and ask about every small step. | You approve the plan once. Routine steps after that need no answer. |
-| Nobody knows what a feature really cost. | A ledger records each commit, each decision, and the tokens of each phase. |
-| A check passes because it cannot fail. | Each check states the value on a correct tree and on the defect, and the run measures both. |
-| Sessions spend tokens on rules they do not need yet. | Rules are skills that load at the step that needs them. |
-| Rules drift as each run edits them. | A retro only proposes changes, as a pull request that the team reviews. |
-| Tickets arrive without a goal or acceptance, and the backlog order drifts. | An optional Product Owner session grooms and orders the backlog, plans sprints from t-shirt sizes, and replans when a run goes wrong. |
-
-## How each role uses it
-
-| You are | You do | You get |
-|---|---|---|
-| Engineer | Run `/feature`, approve the plan, say merge | A reviewed, tested pull request |
-| Tech lead | Own the project file and the rule reviews | Real costs for the next estimate |
-| Product owner | Order the backlog, or name a Product Owner session that does it | Ready tickets, a sprint plan, and a one-minute report |
-| QA | Make sure that each check can fail | A QA log with a tally of every check |
-| Designer | Give the visual source of truth | Design reviews and final screenshots |
+Ideas and fixes are welcome as pull requests. Run `bash tests/run-all.sh` first.
+[MIT](LICENSE) licensed.
 
 <details>
-<summary><b>Engineer</b></summary>
+<summary>Where these claims come from</summary>
 
-You run the pipeline for your own features.
-
-1. Start a session at the root of the repository, and run `/feature` with the ticket or the idea.
-2. Answer the brainstorm questions. The run writes a brief, or one document with the spec and the
-   plan.
-3. Read the plan and approve it. After that, the run works through the tasks without asking you.
-4. When the pull request is ready, read the handoff, and say "merge" when you agree.
-
-You can stop a run at any time. A status line that needs no answer is not a question for you.
+- More than 30 tickets: the native iOS project that the iOS layer comes from.
+- Daily use: the maintainer's projects and work, as of October 2026.
+- Flutter: two runs on Flutter 3.38.9 stable, recorded in the Flutter layer.
+- iOS and Go: the CI workflows in `.github/workflows/`.
+- No team pilot yet: no team ran a feature through version 0.6.0.
 
 </details>
-
-<details>
-<summary><b>Tech lead</b></summary>
-
-You own how the team works with the plugin.
-
-- Write the project file once for each repository: branches, devices, test accounts, the tracker
-  steps, and the actions that need a person's word.
-- Review the pull requests that retros propose against the rules. A rule changes only through that
-  review. Optionally, name a process owner in the project file who decides each process change.
-- Read the cost lines in each ledger. They give real numbers for the next estimate.
-- If the default agent does not know your stack, replace it with your team's own. Name it in the
-  project file, and the run uses it for that seat.
-- Optionally, name a delegate who approves plans that change nothing that a user sees.
-- Optionally, name a merge delegate. It merges a pull request only if the checks pass, CI passes,
-  the final review is clean, and nothing that a user sees changed beyond the approved plan.
-
-</details>
-
-<details>
-<summary><b>Product owner</b></summary>
-
-You decide what a feature must do and how it must look. You can also name a Product Owner session
-in the project file, which grooms and orders the backlog for you.
-
-- Take part in the brainstorm, or give the engineer a ticket with clear acceptance rules.
-- Each manual check in the plan states a value that can fail, so you can read the plan and know
-  what "done" means.
-- A plan that changes what a user sees comes to a person, even under a delegate. So does a merge
-  that changes more than the approved plan shows.
-- After the merge, read the feature report. It takes about one minute: screenshots of each screen,
-  side by side with the screen before the change.
-- With a Product Owner session, the run starts from a ready ticket: goal, user value, metric,
-  acceptance, out of scope, open questions, and size. The run asks the engineer only for a field
-  that is missing.
-- In flow mode, the Product Owner sends the next ready ticket when a team is free. In sprint mode,
-  it plans a batch with the lead. The lead gives each ticket a t-shirt size, and the sprint takes
-  tickets until the token budget is full.
-- When a run passes its estimate, stalls, or finds a blocker, the Product Owner replans with the
-  lead.
-
-</details>
-
-<details>
-<summary><b>QA</b></summary>
-
-You make sure that each check can fail.
-
-- Before any code exists, the review of the document asks whether each check can fail. A ticket
-  that touches a server contract can add the QA reviewer agent as a second seat.
-- Manual checks go into the plan in a form that someone can disagree with, never "looks right".
-- The run keeps a QA log that ends with a tally. The ready check refuses a branch with a check that
-  did not run, unless a person waived it in writing.
-
-</details>
-
-<details>
-<summary><b>Designer</b></summary>
-
-You give the visual source of truth.
-
-- A spec that changes a screen gets a design review and an accessibility review.
-- The pull request links a screenshot of each changed screen, taken on the final branch.
-- A visual change beside an approved design always comes to a person.
-
-</details>
-
-## Set up a project
-
-Each project adds one file, `.claude/agentic-delivery.md`, which git tracks. It holds the facts of
-that project, and the plugin never guesses these values. Its front matter names:
-
-- the platform: `flutter` or `ios`
-- the oldest plugin version that the project accepts
-- the base branch, the release branch, the branch prefix for features, and the protected branches
-- where the specs, plans, ledgers, and retros go: in the repository, or in a private folder that
-  the run never commits, such as `~/agentic-notes/<project>`
-- the file patterns of the screens, the names of the test processes, and the branch for screenshots
-- the forge of the pull request, GitHub or GitLab, and the ticket tracker
-- the push times of the feature branch: after each commit, or only at the start of the pull
-  request and at ship
-- optionally, a prefix such as `Claude said:` for each comment that the run posts with your account
-- the mutation runner for the platform
-- optionally, your own agent for any of the three seats
-
-Its body has sections for the tracker steps, the devices, the accounts, and the actions that need a
-person's word, such as signing and secrets. The key `tracker` names the ticket tracker: Jira, Linear,
-GitHub issues, GitLab issues, another tracker that the tracker steps describe, or none. The tracker
-steps are in plain words. An optional section, Docs publishing, is for a team with private docs.
-It lets the run publish a copy of each spec, plan, and retro to the team wiki, and link the page
-from the ticket.
-
-To start, copy `templates/agentic-delivery.md` from the plugin to `.claude/agentic-delivery.md` in
-your repository. The template explains each key. The keys for the platform, the branches, the docs
-folder, the screen patterns, the screenshot branch, and the tracker are empty, so fill them in. If
-one is empty, `/feature` asks you for it before it starts. On GitLab, the screenshot branch can stay
-empty, because the run can upload the images to the merge request. Fill in the sections for your
-team. Write the place to find a sign-in, never the sign-in itself. Put a device id that belongs to
-one person in `.claude/agentic-delivery.local.md`, one id or name on each line, not in the project
-file. Add that path to `.gitignore`, so that git ignores it.
-
-The plugin reads the front matter with `scripts/project-config.sh`. If the file is missing,
-`/feature` stops and offers to copy the template.
-
-## What is inside
-
-```text
-commands/feature.md      the pipeline, started with /feature
-agents/                  implementer, reviewer, qa-reviewer
-skills/run-rules/        the rules that every agent follows
-skills/controller/       the rules for the session that runs the pipeline
-skills/product-owner/    the rules for an optional Product Owner session
-skills/platform-*/       one platform layer in each folder: flutter, ios, go
-templates/               the project file template
-hooks/                   the start-up pointer and the retro reminder
-output-styles/lean.md    the optional lean output style
-lessons.md               the story behind each rule
-docs/superpowers/specs/  the design of the plugin
-docs/superpowers/plans/  the plan that builds it
-scripts/                 ready check, stall watch, device claim, screenshot settle, mutation runner
-tests/                   a test file for each script
-```
-
-### Skills, command, and agents
-
-| Name | What it is | When it loads |
-| --- | --- | --- |
-| `/feature` (listed as `agentic-delivery:feature`) | The command that runs the pipeline | You run it |
-| `agentic-delivery:controller` | The rules that only the controller follows: dispatch, review seats, estimates, stall watch, tracker steps, ship, merge, report, and retro | Step 0 of `/feature`, and again after a compaction |
-| `agentic-delivery:run-rules` | The rules that every agent follows | Step 0 of `/feature`, and at the start of every dispatched task and review |
-| `agentic-delivery:product-owner` | The rules for an optional Product Owner session: ready ticket, grooming, sprint planning, and replan | The Product Owner session loads it at start, and again after a compaction |
-| `agentic-delivery:product-manager` | The optional Product Manager scope: decision memos, evidence, and privacy | With `po_scope: product`, the Product Owner session loads it after `product-owner` |
-| `platform-flutter` | The Flutter layer, with the commands for build and test | For a project with `platform: flutter`, step 0 of `/feature` loads it after the two above. Its commands were measured on Flutter 3.38.9 stable |
-| `platform-ios` | The iOS layer, SwiftUI first with UIKit notes | For a project with `platform: ios`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on Xcode 16.4 |
-| `platform-go` | The Go layer, for services with an HTTP API | For a project with `platform: go`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on a real Go toolchain |
-
-The plugin also has three agents. The project file names the one for each seat, and the defaults
-are these:
-
-- `agentic-delivery:implementer` does one coding task from a brief.
-- `agentic-delivery:reviewer` reviews the diff of one task, and the plan.
-- `agentic-delivery:qa-reviewer` judges a spec or a plan for testability.
-
-To use an agent of your team for a seat, set `implementer_agent`, `reviewer_agent`, or `qa_agent`
-in the project file. A name that does not exist stops the run, with no fallback.
-
-### Hooks
-
-The plugin has two hooks. Each one adds a short text to the session:
-
-- At the start of a session, a hook adds a pointer to `/feature`. It does so for a project that has
-  the project file. It names the skills that the first step loads, and the folder of the plugin
-  scripts.
-- After a write to a retro file, a hook adds a reminder. The agent must not edit plugin files. It
-  proposes each change as a pull request.
-
-### Scripts and tests
-
-The scripts are in `scripts/`. Each one has a test in `tests/`.
-
-- `project-config.sh` reads one key from the front matter of the project file.
-- `claim-device.sh` claims a device for one worktree, so that two runs never use the same one, and
-  releases it.
-- `stall-watch.sh` watches the worktrees, the test processes, and the command logs of a run, and
-  reports a stall.
-- `ready-check.sh` checks the pull request and the ledger. It says whether the pull request is ready.
-  It works with a GitHub pull request through `gh` and with a GitLab merge request through `glab`.
-- `settle-screenshot.swift` runs a capture command until the screen stops changing, then saves the
-  last frame.
-- `push-screenshots.sh` adds a folder of screenshots to the screenshot branch in one new commit on
-  the remote tip. It never forces a push. It refuses an empty commit id and a folder that already
-  exists.
-- `mutate.sh` applies each mutation from a manifest, runs the test that must catch it, records the
-  verdict, and restores the file. A platform runner runs the tests. The Flutter runner is
-  `skills/platform-flutter/mutation-runner.sh`, and the iOS runner is
-  `skills/platform-ios/mutation-runner.sh`.
-
-### Lean mode
-
-The plugin ships an optional output style named `lean`, in `output-styles/lean.md`. It asks for
-short replies: the answer first, no filler, one word for one meaning. Each developer turns it on for
-themselves, through the output style setting of Claude Code. No step of the pipeline needs it.
-
-Nobody measured a token saving for this mode, so the plugin makes no claim of one.
-
-### Token cost
-
-The figures come from `claude plugin details agentic-delivery`, run on plugin version 0.1.0 after a
-local install. That run was before the platform skills existed, so the figures do not include them.
-The tool says that its counts are estimates.
-
-- Always on: about 250 tokens in every session, as measured before the platform skills existed.
-  This is the name and description of each skill and agent.
-- Paid on invoke, each time the item fires:
-
-| Item | Always on | On invoke |
-| --- | --- | --- |
-| `run-rules` | about 40 | about 6.3k |
-| `controller` | about 60 | about 8.6k |
-| `reviewer` | about 40 | about 1.3k |
-| `qa-reviewer` | about 50 | about 1.3k |
-| `implementer` | about 40 | about 1.6k |
-| `feature` | about 30 | about 1.7k |
-
-Step 0 of `/feature` loads one platform skill, so each run pays its size on top of the table. By
-`wc -c`, the `platform-flutter` skill is 31,303 characters long, and the `platform-ios` skill is
-25,228 characters long. Nobody measured either one with `claude plugin details`. The name and
-description of each one also add to the always-on figure.
-
-The tool does not count hook output. The start-up hook adds its pointer to a session in a project
-that has the project file. With `platform: flutter`, the pointer is 326 characters long, plus the
-length of the path of the plugin folder. If the `platform` key is empty, the pointer only says
-that the project file has no platform and that `/feature` asks for each empty key.
-
-## Platforms
-
-The core works with any project: the pipeline, the rules, the ledger, the reviews, and the retro do
-not depend on a platform. A platform layer adds the commands to build, test, run devices, and take
-screenshots. Without a layer, the agents have the rules but no platform commands.
-
-| Platform | Targets | Status |
-|---|---|---|
-| Flutter | iOS, Android, web | Written. Two runs on Flutter 3.38.9 stable measured its commands. It has the mutation runner. |
-| Native iOS | iOS, SwiftUI first, with UIKit notes | Rules written. It has the mutation runner. A CI job runs its commands and the runner against a sample app on Xcode 16.4. No real feature used it yet. |
-| Native Android | Android | Not started |
-| Go | Services with an HTTP API | Rules written. It has the mutation runner. A CI job runs its commands and the runner on a real Go toolchain. No real feature used it yet. |
-| Web front ends | Browsers | Not started |
-
-A platform layer is one skill in `skills/platform-<name>/`. To add one, follow the shape of the
-Flutter layer, and propose it as a pull request.
-
-## Status
-
-The Flutter layer is written, and two runs on Flutter 3.38.9 stable measured its commands. The iOS
-layer comes from a native iOS project that ran more than 30 tickets through earlier versions of this
-workflow and its scripts. A CI job runs the layer's commands and its mutation runner on Xcode 16.4
-against a sample app. It runs on each pull request that changes the iOS layer or a script that the
-job runs. No project has run a feature through the plugin itself yet. The rest of the plugin is in place and has tests.
-The team pilot has not run yet, so version 0.6.0 is not tested on a real feature.
-
-Each version gets a tag, such as `v0.6.0`, for a team to pin. On each push to `main`, the workflow
-`tag-release.yml` reads the version in `.claude-plugin/plugin.json`. If the tag does not exist, the
-workflow creates it. It never moves a tag that exists.
-
-## Contributing
-
-Propose a rule change as a pull request. Name the incident that it comes from, and add a lesson to
-[`lessons.md`](lessons.md). Prose follows plain Simple English: short sentences, active voice, and
-one word for one meaning.
-
-Run the tests before you push:
-
-```bash
-bash tests/run-all.sh
-```
-
-The test of the Flutter runner uses the `flutter` that `FLUTTER_BIN` names, or else the one on the
-`PATH`. Without either one, that test skips.
-
-## License
-
-[MIT](LICENSE)
