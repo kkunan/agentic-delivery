@@ -6,7 +6,7 @@
 ![Version](https://img.shields.io/badge/version-0.6.0-informational)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A63D2)
 ![Status](https://img.shields.io/badge/status-daily%20use%20%7C%20team%20pilot%20next-yellowgreen)
-![Platforms](https://img.shields.io/badge/platforms-Flutter%20%7C%20iOS%20%7C%20Go-lightgrey)
+![Platforms](https://img.shields.io/badge/platforms-Flutter%20%7C%20iOS%20%7C%20Go%20%7C%20Node-lightgrey)
 
 ### Do the part you love. Agents do the rest.
 
@@ -121,7 +121,8 @@ run it **every day** on iOS and Flutter work, and it has also built Go, Node, an
 | Flutter | Commands measured on real runs |
 | Native iOS | Built from the real project, tested in CI |
 | Go services | Tested in CI |
-| Anything else | No special commands yet, but the team and its rules still work, like on our Node and React tasks |
+| Node services and Next.js web apps | Commands and mutation runner measured on real runs |
+| Anything else | No special commands yet, but the team and its rules still work |
 
 > [!NOTE]
 > **Looking for pilot teams.** We use it every day, but no whole team has run it yet. Try it on
