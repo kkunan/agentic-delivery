@@ -66,11 +66,14 @@ and run `/feature` in Claude Code.
 ## Optional product skills
 
 The same marketplace holds a second plugin, `agentic-discovery`. It is separate, and the delivery
-plugin does not need it. It has two skills:
+plugin does not need it. It has three skills:
 
 - `agentic-discovery:public-writing` gives the rules for a page that people outside the agent sessions read.
 - `agentic-discovery:public-roadmap` builds a public roadmap page from a talk with the owner. It
   holds the questions, an HTML template, and three made-up samples.
+- `agentic-discovery:product-board` keeps a log of each read of the product numbers and the
+  decision that follows it, and shows both on one page. It holds the rules for a read and a board
+  with made-up data.
 
 To install it, add the marketplace as above, then run this command:
 
@@ -78,4 +81,4 @@ To install it, add the marketplace as above, then run this command:
 claude plugin install agentic-discovery@agentic-delivery
 ```
 
-The writing skill comes from two products, and the roadmap skill from one. No team used them yet.
+The writing skill comes from two products, and the roadmap skill from one. The board skill comes from the boards of two products. No team used them yet.

@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product Board</title>
+<style>
+:root {
+  --bg: #F6F8FB;
+  --surface: #FFFFFF;
+  --line: #E2E6EE;
+  --fg: #1A2233;
+  --muted: #5F6779;
+  --accent: #0055FF;
+  --accent-soft: #EAF3FF;
+  --ok: #0E8A57;
+  --ok-soft: #E6F7EE;
+  --warn: #B26A00;
+  --warn-soft: #FFF3DF;
+  --bar: #8DB4FF;
+  --loss: #C93A3F;
+  --display: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #070E1A; --surface: #0D1524; --line: #2B3445; --fg: #EFF2F7; --muted: #A3AABA;
+    --accent: #6FA8FF; --accent-soft: #0F2347; --ok: #3CC98C; --ok-soft: #0D2A1E;
+    --warn: #F0A93A; --warn-soft: #2E2210; --bar: #2F5DB3; --loss: #F07175;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #070E1A; --surface: #0D1524; --line: #2B3445; --fg: #EFF2F7; --muted: #A3AABA;
+  --accent: #6FA8FF; --accent-soft: #0F2347; --ok: #3CC98C; --ok-soft: #0D2A1E;
+  --warn: #F0A93A; --warn-soft: #2E2210; --bar: #2F5DB3; --loss: #F07175;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.55 var(--display); }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 40px; }
+h1, h2, h3 { margin: 0; line-height: 1.3; text-wrap: balance; }
+h1 { font-size: clamp(26px, 4vw, 36px); }
+h2 { font-size: 20px; }
+h3 { font-size: 16px; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.level { font: 500 12px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+section { display: grid; gap: 14px; }
+.counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 4px; }
+.tile .v { font: 700 30px/1.1 var(--display); font-variant-numeric: tabular-nums; }
+.tile .l { font-weight: 600; }
+.tile .n { font-size: 13px; color: var(--muted); }
+.steps { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 4px; }
+.step { display: grid; grid-template-columns: minmax(110px, 200px) minmax(0, 1fr) 56px; gap: 12px; align-items: center; }
+.step .name { font-weight: 600; font-size: 14px; }
+.step .track { height: 22px; border-radius: 6px; background: var(--accent-soft); overflow: hidden; }
+.step .fill { height: 100%; background: var(--bar); border-radius: 6px; }
+.step .num { text-align: right; font: 600 14px/1 var(--mono); }
+.drop { padding-left: min(212px, 34%); font-size: 13px; color: var(--muted); }
+.drop.big { color: var(--loss); font-weight: 600; }
+.group { display: grid; gap: 10px; }
+.row { background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--c, var(--line)); border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; }
+.row .top { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between; }
+.row dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; font-size: 14px; }
+.row dt { color: var(--muted); }
+.row dd { margin: 0; }
+.pill { font: 500 12px/1 var(--mono); border-radius: 999px; padding: 5px 10px; white-space: nowrap; color: var(--c); background: var(--c-soft); }
+.s-wait { --c: var(--warn); --c-soft: var(--warn-soft); }
+.s-open { --c: var(--accent); --c-soft: var(--accent-soft); }
+.s-done { --c: var(--ok); --c-soft: var(--ok-soft); }
+@media (max-width: 560px) {
+  .step { grid-template-columns: minmax(0, 1fr) 48px; }
+  .step .track { grid-column: 1 / -1; grid-row: 2; }
+  .drop { padding-left: 0; }
+  .row dl { grid-template-columns: minmax(0, 1fr); }
+  .row dt { margin-top: 6px; }
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <p class="level" id="period"></p>
+    <h1 id="title"></h1>
+    <p class="muted" id="updated"></p>
+  </header>
+  <section aria-labelledby="h-counts">
+    <h2 id="h-counts">The numbers</h2>
+    <div class="counts" id="counts"></div>
+  </section>
+  <section aria-labelledby="h-steps">
+    <h2 id="h-steps">Where people stop</h2>
+    <div class="steps" id="steps"></div>
+  </section>
+  <section aria-labelledby="h-log">
+    <h2 id="h-log">Reads and decisions</h2>
+    <div class="group" id="log"></div>
+  </section>
+</main>
+<script type="application/json" id="board-data">
+{
+  "meta": {
+    "product": "Pocket Goal",
+    "period": "1 to 19 October 2026",
+    "updated": "Read by the product owner on 20 October 2026. Production builds only, team devices removed."
+  },
+  "counts": [
+    { "label": "New installs", "value": 412, "note": "1 to 19 October" },
+    { "label": "Set a goal", "value": 300, "note": "of 412 new installs" },
+    { "label": "Linked a bank", "value": 137, "note": "of 300 who set a goal" },
+    { "label": "Moved money once", "value": 96, "note": "of 137 who linked a bank" }
+  ],
+  "steps": [
+    { "step": "Opened the app", "people": 412 },
+    { "step": "Set a goal", "people": 300 },
+    { "step": "Linked a bank", "people": 137 },
+    { "step": "Moved money once", "people": 96 },
+    { "step": "Moved money twice", "people": 58 }
+  ],
+  "log": [
+    {
+      "id": "D1",
+      "date": "2026-10-20",
+      "period": "1 to 19 October 2026",
+      "source": "Analytics funnel report, production builds, team devices removed",
+      "outside": "A money blog linked to the app on 9 October.",
+      "question": "Do we shorten the bank link step now?",
+      "evidence": "163 of 300 people who set a goal stopped at the bank link step. 70 of those 163 came from the blog link.",
+      "pick": "Wait. Read again on 3 November, without the blog visitors. If more than 40 percent still stop, write a ticket.",
+      "decider": "Product owner",
+      "status": "Decided",
+      "decision": "Product owner, 20 October: read again on 3 November."
+    },
+    {
+      "id": "D2",
+      "date": "2026-10-20",
+      "period": "1 to 19 October 2026",
+      "source": "Analytics events report, money_moved event, production builds",
+      "outside": "none",
+      "question": "Do we send a reminder two days after a goal gets no money?",
+      "evidence": "58 of 96 people who moved money once moved it again. Correction: the first read said 71 of 96, because it counted team devices.",
+      "pick": "Yes, as a two-week test. Read again on 17 November. Keep it if more than 70 of every 100 move money twice.",
+      "decider": "Product manager",
+      "status": "Waiting on Product manager",
+      "decision": ""
+    },
+    {
+      "id": "D3",
+      "date": "2026-10-20",
+      "period": "1 to 19 October 2026",
+      "source": "no data",
+      "outside": "none",
+      "question": "Do we let two people save toward one goal?",
+      "evidence": "no data. Three support messages asked for it, and the analytics cannot show the need.",
+      "pick": "Ask five users who set a goal before we decide. Bring the notes to the next read.",
+      "decider": "Product manager",
+      "status": "Open",
+      "decision": ""
+    }
+  ]
+}
+</script>
+<script>
+(function () {
+  var data = JSON.parse(document.getElementById("board-data").textContent);
+  var fmt = new Intl.NumberFormat();
+
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function header(meta) {
+    document.title = meta.product + " Board";
+    document.getElementById("title").textContent = meta.product + " board";
+    document.getElementById("period").textContent = meta.period;
+    document.getElementById("updated").textContent = meta.updated;
+  }
+
+  function counts(rows) {
+    var box = document.getElementById("counts");
+    rows.forEach(function (r) {
+      var tile = el("div", "tile");
+      tile.append(el("span", "v", fmt.format(r.value)), el("span", "l", r.label), el("span", "n", r.note));
+      box.append(tile);
+    });
+  }
+
+  function biggestLoss(rows) {
+    var at = -1, most = -1;
+    for (var i = 1; i < rows.length; i++) {
+      var lost = rows[i - 1].people - rows[i].people;
+      if (lost > most) { most = lost; at = i; }
+    }
+    return at;
+  }
+
+  function steps(rows) {
+    var box = document.getElementById("steps");
+    var top = rows.length ? rows[0].people : 0;
+    var big = biggestLoss(rows);
+    rows.forEach(function (r, i) {
+      if (i > 0) {
+        var lost = rows[i - 1].people - r.people;
+        var line = fmt.format(lost) + " of " + fmt.format(rows[i - 1].people) + " stopped here";
+        box.append(el("p", i === big ? "drop big" : "drop", i === big ? line + ", the biggest loss" : line));
+      }
+      var row = el("div", "step");
+      var track = el("div", "track");
+      var fill = el("div", "fill");
+      fill.style.width = (top ? Math.round(r.people / top * 100) : 0) + "%";
+      track.append(fill);
+      row.append(el("span", "name", r.step), track, el("span", "num", fmt.format(r.people)));
+      box.append(row);
+    });
+  }
+
+  function statusClass(status) {
+    if (status.indexOf("Waiting") === 0) return "s-wait";
+    if (status === "Decided") return "s-done";
+    return "s-open";
+  }
+
+  function rank(status) {
+    return { "s-wait": 0, "s-open": 1, "s-done": 2 }[statusClass(status)];
+  }
+
+  function entry(r) {
+    var card = el("article", "row " + statusClass(r.status));
+    var top = el("div", "top");
+    top.append(el("h3", "", r.id + ". " + r.question), el("span", "pill", r.status));
+    var dl = el("dl");
+    [["Numbers", r.evidence], ["Outside event", r.outside], ["Pick", r.pick], ["Decides", r.decider],
+     ["Decision", r.decision || "Not yet"], ["Source", r.source + ", " + r.period]].forEach(function (pair) {
+      dl.append(el("dt", "", pair[0]), el("dd", "", pair[1]));
+    });
+    card.append(top, dl);
+    return card;
+  }
+
+  function log(rows) {
+    var box = document.getElementById("log");
+    rows.slice().sort(function (a, b) { return rank(a.status) - rank(b.status); })
+      .forEach(function (r) { box.append(entry(r)); });
+  }
+
+  header(data.meta);
+  counts(data.counts);
+  steps(data.steps);
+  log(data.log);
+})();
+</script>
+</body>
+</html>
