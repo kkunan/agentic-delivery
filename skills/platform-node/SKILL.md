@@ -55,7 +55,7 @@ Use the cheapest tier that can prove the fact. These are the tiers, cheapest fir
 2. Tests against an in-memory database. Some repositories have them, for example with `mongodb-memory-server` started in a Jest global setup. The first run downloads a database binary, so it needs the network once and can take minutes.
 3. A test against a real dependency on a shared host. Do not build one as a side effect of a task. It is scheduled work with a ticket of its own.
 
-No test reaches a dev, UAT, or production host or database, because those hold shared or real data.
+No test reaches a dev, staging, or production host or database, because those hold shared or real data.
 
 ## Commands
 
@@ -124,7 +124,7 @@ A log line, an error string, and a response body never hold a request body, a to
 
 ## Manual checks for a service
 
-A service run has no manual checks, unless the service can start on this machine with local fakes. Never start a service with a dev, UAT, or production configuration. With no checks, the QA log ends with `tally: 0 checks, 0 run, 0 unrun, 0 waived`, and the ready check accepts it.
+A service run has no manual checks, unless the service can start on this machine with local fakes. Never start a service with a dev, staging, or production configuration. With no checks, the QA log ends with `tally: 0 checks, 0 run, 0 unrun, 0 waived`, and the ready check accepts it.
 
 ## Web apps
 
