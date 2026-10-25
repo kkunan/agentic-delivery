@@ -8,7 +8,7 @@ agents/                  implementer, reviewer, qa-reviewer
 skills/run-rules/        the rules that every agent follows
 skills/controller/       the rules for the session that runs the pipeline
 skills/product-owner/    the rules for an optional Product Owner session
-skills/platform-*/       one platform layer in each folder: flutter, ios, go
+skills/platform-*/       one platform layer in each folder: flutter, ios, go, node
 templates/               the project file template
 hooks/                   the start-up pointer and the retro reminder
 output-styles/lean.md    the optional lean output style
@@ -31,6 +31,7 @@ tests/                   a test file for each script
 | `platform-flutter` | The Flutter layer, with the commands for build and test | For a project with `platform: flutter`, step 0 of `/feature` loads it after the two above. Its commands were measured on Flutter 3.38.9 stable |
 | `platform-ios` | The iOS layer, SwiftUI first with UIKit notes | For a project with `platform: ios`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on Xcode 16.4 |
 | `platform-go` | The Go layer, for services with an HTTP API | For a project with `platform: go`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on a real Go toolchain |
+| `platform-node` | The Node layer, for TypeScript services and for Next.js or React web apps | For a project with `platform: node`, step 0 of `/feature` loads it after the two above. Its commands were measured on four real tickets |
 
 The plugin also has three agents. The project file names the one for each seat, and the defaults
 are these:
@@ -122,7 +123,8 @@ screenshots. Without a layer, the agents have the rules but no platform commands
 | Native iOS | iOS, SwiftUI first, with UIKit notes | Rules written. It has the mutation runner. A CI job runs its commands and the runner against a sample app on Xcode 16.4. No real feature used it yet. |
 | Native Android | Android | Not started |
 | Go | Services with an HTTP API | Rules written. It has the mutation runner. A CI job runs its commands and the runner on a real Go toolchain. No real feature used it yet. |
-| Web front ends | Browsers | Not started |
+| Node | TypeScript services such as NestJS, and Next.js or React web apps | Written from real runs on four tickets in October 2026, which measured its commands. It has the mutation runner. No CI job runs it yet. |
+| Other web front ends | Browsers | Not started |
 
 A platform layer is one skill in `skills/platform-<name>/`. To add one, follow the shape of the
 Flutter layer, and propose it as a pull request.
@@ -136,6 +138,6 @@ against a sample app. It runs on each pull request that changes the iOS layer or
 job runs. The rest of the plugin is in place and has tests. The maintainer runs features through
 the plugin every day on Flutter work, and also ran Node and React tasks with it. No whole team has run a pilot yet.
 
-Each version gets a tag, such as `v0.6.0`, for a team to pin. On each push to `main`, the workflow
+Each version gets a tag, such as `v0.7.0`, for a team to pin. On each push to `main`, the workflow
 `tag-release.yml` reads the version in `.claude-plugin/plugin.json`. If the tag does not exist, the
 workflow creates it. It never moves a tag that exists.
