@@ -43,8 +43,16 @@ The Agentic Coach session gave these rules for a new layer:
 
 These are our calls:
 
-8. The general agents of the plugin do the work, and they load the layer. There is no KMP-only
-   agent.
+8. The plugin ships two KMP agents, `agents/kmp-implementer.md` and `agents/kmp-reviewer.md`.
+   The owner asked for them on 2026-10-25. Each one loads `run-rules` and `platform-kmp`, follows
+   the general implementer or reviewer of the plugin in full, and adds the KMP rules and the
+   expert skills. A KMP project selects them with `implementer_agent:
+   agentic-delivery:kmp-implementer` and `reviewer_agent: agentic-delivery:kmp-reviewer`. The
+   defaults of the template stay the general agents.
+8a. The expert skills are the `kotlin-kmp-claude-agent-skills` collection by Mariano Miani,
+    Apache 2.0, at `https://github.com/mmiani/kotlin-kmp-claude-agent-skills`. Only its 15 skills
+    get installed, as user skills, from commit `939786cb13b49daacea7d5fb0a10877b6005e6be`. Its own
+    agents, hooks, command, and settings run a different pipeline, so they stay out.
 9. A new optional key `gradle_command` gives the command that runs Gradle. The default is
    `./gradlew`, because a KMP project carries its own Gradle wrapper. In the skill, `<gradle>`
    stands for this value. It runs through `bash -c` from the top of the worktree, as `go_command`
@@ -146,9 +154,9 @@ stalled, while the process uses the network.
 
 ### Expert skills
 
-The builder looks for an installable skill set for Kotlin, KMP, or Compose Multiplatform, in the
-same way that the Go layer names `cc-skills-golang`. If none exists, the section says so, and the
-agents follow the existing code of the repository.
+The section names the collection from decision 8a, in the same way that the Go layer names
+`cc-skills-golang`. It gives the install steps for the skills only, with the commit, and lists
+the skills for the implementer and for the reviewer, as the two KMP agents list them.
 
 ### Where this layer was used
 
@@ -181,7 +189,10 @@ also tries one other target, for example the iOS simulator tests, and records wh
 
 - The README platform table gets a KMP row, the platforms badge lists KMP, and the sources note
   gets one line.
-- `docs/inside.md` gets a row in the layer table and a line in the folder list.
+- `docs/inside.md` gets a row in the layer table and a line in the folder list. Its agents part
+  lists the two KMP agents, and says that a KMP project selects them in the project file.
+- `templates/agentic-delivery.md` says in its Agents section that a KMP project can name the two
+  KMP agents.
 - `templates/agentic-delivery.md` gets one more clause in the `platform` line and in the
   `mutation_runner` line, following the pattern of the Node layer.
 - The plugin version moves from 0.7.0 to 0.8.0 in the five places: the README badge, the pins in

@@ -244,9 +244,9 @@ description: "The Kotlin Multiplatform layer of an agentic-delivery run, for sha
 
 In this order: Project file keys (`gradle_command`, `java_home` if Task 2 needed it, `test_processes` and `view_globs` from Task 3), The rules file of the repository, Test tiers, Commands, Devices and claims, Screenshots, Logs and API contract, Manual checks, Stalled runs, Mutation tests, Expert skills, Where this layer was used. Copy and adapt each rule that the spec takes from the Go, Flutter, and Node layers. Give each command the mark "(measured: exit N, T seconds)" from the evidence. Leave a command without a mark only under the rule in Global Constraints, and state the error and the versions there. Name the versions that the runs used.
 
-- [ ] **Step 2: Search for an expert skill set**
+- [ ] **Step 2: Write the Expert skills section**
 
-Search for an installable skill set for Kotlin, KMP, or Compose Multiplatform. If one exists, name it with its install commands and the skills for the implementer and the reviewer, as the Go layer does. If none exists, the section says so.
+Name the `kotlin-kmp-claude-agent-skills` collection by Mariano Miani, Apache 2.0, from commit `939786cb13b49daacea7d5fb0a10877b6005e6be`. Give the install steps for its 15 skills only: clone the repository into an empty folder, check out that commit, and copy `skills/kotlin-*` into `~/.claude/skills/`. Say that its agents, hooks, command, and settings stay out, because they run a different pipeline. List the skills for the implementer and for the reviewer exactly as `agents/kmp-implementer.md` and `agents/kmp-reviewer.md` list them. Say that a KMP project selects those two agents with `implementer_agent` and `reviewer_agent`.
 
 - [ ] **Step 3: Make sure that the skill stands alone**
 
@@ -281,7 +281,8 @@ git commit -m "Add the Kotlin Multiplatform platform skill"
 - The version is `0.8.0` in the five places: the README badge, both pins in `docs/install.md`, `plugin.json`, `marketplace.json`, and `min_plugin_version`. Also change "version 0.7.0" in the README sources note to "version 0.8.0".
 - The platforms badge adds `KMP` after `Node`.
 - The README table gets a row for Kotlin Multiplatform apps, with its real state, for example "Commands and mutation runner measured on a sample project". The sources note gets one line about the sample run and its date.
-- `docs/inside.md` adds `kmp` to the folder line, a `platform-kmp` row in the layer table, and a KMP row in the platforms table, both in the style of the Node rows.
+- `docs/inside.md` adds `kmp` to the folder line, a `platform-kmp` row in the layer table, and a KMP row in the platforms table, both in the style of the Node rows. The folder line for `agents/` adds `kmp-implementer, kmp-reviewer`. The agents part changes "three agents" to "five agents" and lists `agentic-delivery:kmp-implementer` and `agentic-delivery:kmp-reviewer`, with one line that a KMP project selects them with `implementer_agent` and `reviewer_agent`.
+- The Agents section of `templates/agentic-delivery.md` (line 95) adds one sentence: a KMP project can set `implementer_agent: agentic-delivery:kmp-implementer` and `reviewer_agent: agentic-delivery:kmp-reviewer`.
 - The template `platform` line adds "and the value `kmp` loads the skill `platform-kmp`", and a sentence that the skill `platform-kmp` explains the optional key `gradle_command` and says what `test_processes` and `view_globs` hold. The `mutation_runner` line adds the KMP adapter `skills/platform-kmp/mutation-runner.sh`.
 
 - [ ] **Step 2: Make sure that no old version is left**
