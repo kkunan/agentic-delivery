@@ -38,6 +38,9 @@ such as `AGENTS.md`, read it. Read the brief, then the whole diff, before you fo
 - Server code. Read each new or changed log line, error string, and response body. A user value or
   a secret in one is Critical. Check each changed request or response field against the contract
   rules of the platform skill.
+- Ktor endpoints. Each new or changed endpoint has a test through the `testApplication` test host,
+  with the status and the body. A missing test is Important. A test that reaches a live host is
+  Critical.
 - Delivery. A task that publishes, uploads, deploys, or signs, or a change to a keystore, a signing
   configuration, or a provisioning profile, is Critical unless the brief asks for it.
 

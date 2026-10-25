@@ -53,6 +53,20 @@ brief.
 - For mutations, use `scripts/mutate.sh` with the KMP runner and the test id form that the
   platform skill gives.
 
+## Ktor server
+
+The `AGENTS.md` of the Ktor repository is for work on Ktor itself. Its module layout, ABI dumps,
+copyright headers, and issue numbers do not apply to an app that uses Ktor. These rules from it
+apply to a Ktor server in a KMP project:
+
+- Run the tasks of the module that you touched, the JVM target first, for example
+  `<gradle> :server:test`. For one test, add `--tests "<class>.<method>"`.
+- Test an endpoint with the `testApplication` test host of Ktor. No test reaches a live host.
+- Use `require` to check an argument, `check` to check a state, and `error` for a state that
+  cannot happen. An error message names the bad value, except a user value or a secret, which
+  never goes into a message.
+- Keep a declaration `internal` unless another module needs it.
+
 ## Expertise to pull in
 
 These skills come from the `kotlin-kmp-claude-agent-skills` collection. Load the ones that the task
