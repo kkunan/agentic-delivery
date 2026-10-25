@@ -3,7 +3,7 @@
 <img src="docs/assets/hero.svg" alt="Agentic Delivery. A Product Owner, engineers, and QA, all agents." width="100%">
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-0.6.0-informational)
+![Version](https://img.shields.io/badge/version-0.7.0-informational)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A63D2)
 ![Status](https://img.shields.io/badge/status-daily%20use%20%7C%20team%20pilot%20next-yellowgreen)
 ![Platforms](https://img.shields.io/badge/platforms-Flutter%20%7C%20iOS%20%7C%20Go%20%7C%20Node-lightgrey)
@@ -157,6 +157,7 @@ Ideas and fixes are welcome as pull requests. Run `bash tests/run-all.sh` first.
 - Daily use: the maintainer's projects and work, as of October 2026.
 - Flutter: two runs on Flutter 3.38.9 stable, recorded in the Flutter layer.
 - iOS and Go: the CI workflows in `.github/workflows/`.
-- No team pilot yet: no team ran a feature through version 0.6.0.
+- Node: four real tickets in October 2026, recorded in the Node layer.
+- No team pilot yet: no team ran a feature through version 0.7.0.
 
 </details>
