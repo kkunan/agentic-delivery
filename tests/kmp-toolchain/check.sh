@@ -4,7 +4,8 @@ here=$(cd "$(dirname "$0")" && pwd -P)
 . "$here/../lib.sh"
 top=$(cd "$here/../.." && pwd -P)
 [ $# -eq 1 ] || { echo "usage: tests/kmp-toolchain/check.sh <empty work folder>" >&2; exit 2; }
-jdk=${KMP_CHECK_JAVA_HOME:-/Users/kkunan/Library/Java/JavaVirtualMachines/jbr-17.0.9/Contents/Home}
+jdk=${KMP_CHECK_JAVA_HOME:-}
+[ -n "$jdk" ] || { echo "check: set KMP_CHECK_JAVA_HOME to an arm64 JDK 17 or later" >&2; exit 2; }
 chrome=${KMP_CHECK_CHROME:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}
 [ -x "$jdk/bin/java" ] || { echo "check: no java in $jdk; set KMP_CHECK_JAVA_HOME to an arm64 JDK 17 or later" >&2; exit 2; }
 "$jdk/bin/java" -XshowSettings:properties -version 2>&1 | grep -q 'os.arch = aarch64' || { echo "check: $jdk is not an arm64 JDK, and Kotlin/Native then skips the iOS simulator tests" >&2; exit 2; }
@@ -216,7 +217,7 @@ stop_server() {
 }
 
 cleanup() {
-    local d child
+    local d
     trap '' INT TERM
     stop_pid "$watch_pid" "time limit watchdog"
     stop_tree "$limit_pid" "command under the time limit"
@@ -226,9 +227,7 @@ cleanup() {
         bash "$claim" --device "web-$port" --worktree "$app" --release > /dev/null 2>&1
     fi
     for d in $(daemons); do
-        for child in $(pgrep -P "$d"); do
-            stop_pid "$child" "child of Gradle daemon $d: $(ps -o command= -p "$child" | grep -o 'KotlinCompileDaemon' || echo other)"
-        done
+        ps -o command= -p "$d" 2>/dev/null | grep -q 'GradleDaemon' || continue
         stop_pid "$d" "Gradle daemon of this check"
     done
     stop_tree "$sampler_pid" "process sampler"

@@ -53,6 +53,9 @@ top=$(git rev-parse --show-toplevel 2>/dev/null) || { say "REFUSED: the current 
 config_value() {
     local file
     file="$top/.claude/agentic-delivery.md"
+    if [ ! -f "$file" ]; then
+        file="$(dirname "$(git -C "$top" rev-parse --path-format=absolute --git-common-dir)")/.claude/agentic-delivery.md"
+    fi
     [ -f "$file" ] || return 0
     awk -v k="$1" '
         NR == 1 && $0 != "---" { exit }

@@ -117,6 +117,11 @@ run otherprefix :shared:jvmTest::trip.ClampTest.inside
 check "other prefix: no entry" "True " "$(entries otherprefix)"
 
 fresh
+report :shared:jvmTest '<testcase name="insideOther" classname="trip.ClampTest"/>'
+run nearname :shared:jvmTest::trip.ClampTest.inside
+check "near name: no entry" "True " "$(entries nearname)"
+
+fresh
 report :shared:jvmTest \
     '<testcase name="inside" classname="trip.ClampTest"/>' \
     '<testcase name="outside" classname="trip.ClampTest"><failure message="x"/></testcase>'

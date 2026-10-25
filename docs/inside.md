@@ -107,8 +107,8 @@ The tool says that its counts are estimates.
 | `feature` | about 30 | about 1.7k |
 
 Step 0 of `/feature` loads one platform skill, so each run pays its size on top of the table. By
-`wc -c`, the `platform-flutter` skill is 31,303 characters long, the `platform-ios` skill is
-25,228 characters long, and the `platform-kmp` skill is 51,923 characters long. Nobody measured any of
+`wc -c`, the `platform-flutter` skill is 31,357 characters long, the `platform-ios` skill is
+25,420 characters long, and the `platform-kmp` skill is 52,031 characters long. Nobody measured any of
 them with `claude plugin details`. The name and
 description of each one also add to the always-on figure.
 
@@ -130,7 +130,7 @@ screenshots. Without a layer, the agents have the rules but no platform commands
 | Native Android | Android | Not started |
 | Go | Services with an HTTP API | Rules written. It has the mutation runner. A CI job runs its commands and the runner on a real Go toolchain. No real feature used it yet. |
 | Node | TypeScript services such as NestJS, and Next.js or React web apps | Written from real runs on four tickets in October 2026, which measured its commands. It has the mutation runner. No CI job runs it yet. |
-| Kotlin Multiplatform | Shared Kotlin code, Compose Multiplatform apps on Wasm, Android, and iOS, and Ktor servers | Rules written. A sample app measured its commands on one Mac on 2026-10-25: the JVM, Android host, iOS simulator, and Wasm browser tests, the Wasm screen by pixels, and the Android emulator and iOS simulator screens. The mutation runner ran on real Gradle for the JVM, server, and iOS test tasks. Fixture tests cover the Android host and Wasm tasks. No CI job runs it, and no real project used it yet. |
+| Kotlin Multiplatform | Shared Kotlin code, Compose Multiplatform apps on Wasm, Android, and iOS, and Ktor servers | Rules written. A sample app measured its commands on one Mac on 2026-10-25: the JVM, Android host, iOS simulator, and Wasm browser tests, the Wasm screen by pixels, and the Android emulator and iOS simulator screens. The mutation runner ran on real Gradle for the JVM, server, and iOS test tasks. Fixture tests cover the iOS and Wasm tasks. No CI job runs it, and no real project used it yet. |
 | Other web front ends | Browsers | Not started |
 
 A platform layer is one skill in `skills/platform-<name>/`. To add one, follow the shape of the
