@@ -96,6 +96,21 @@ run suffix :shared:jvmTest::trip.ClampTest.inside
 check "target suffix: entry" "True :shared:jvmTest::trip.ClampTest.inside=passed" "$(entries suffix)"
 
 fresh
+report :shared:iosSimulatorArm64Test '<testcase name="inside[iosSimulatorArm64]" classname="iosSimulatorArm64Test.trip.ClampTest"/>'
+run ios :shared:iosSimulatorArm64Test::trip.ClampTest.inside
+check "ios: entry" "True :shared:iosSimulatorArm64Test::trip.ClampTest.inside=passed" "$(entries ios)"
+
+fresh
+report :shared:wasmJsBrowserTest '<testcase name="inside[wasmJs, browser, ChromeHeadless155.0.0.0, MacOS10.15.7]" classname="wasmJsBrowserTest.trip.ClampTest"/>'
+run wasm :shared:wasmJsBrowserTest::trip.ClampTest.inside
+check "wasm: entry" "True :shared:wasmJsBrowserTest::trip.ClampTest.inside=passed" "$(entries wasm)"
+
+fresh
+report :shared:jvmTest '<testcase name="inside" classname="otherTask.trip.ClampTest"/>'
+run otherprefix :shared:jvmTest::trip.ClampTest.inside
+check "other prefix: no entry" "True " "$(entries otherprefix)"
+
+fresh
 report :shared:jvmTest \
     '<testcase name="inside" classname="trip.ClampTest"/>' \
     '<testcase name="outside" classname="trip.ClampTest"><failure message="x"/></testcase>'

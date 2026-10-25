@@ -111,6 +111,7 @@ for i in range(0, len(args), 4):
     if compile_failed.search(text):
         compiled = False
         continue
+    prefix = task.split(":")[-1] + "."
     cases = []
     for path in sorted(glob.glob(os.path.join(folder, "TEST-*.xml"))):
         try:
@@ -125,8 +126,11 @@ for i in range(0, len(args), 4):
                 result = "skipped"
             else:
                 result = "passed"
-            full = case.get("classname", "") + "." + case.get("name", "")
-            cases.append((full, re.sub(r"\[[^\[\]]*\]$", "", full), result))
+            cls = case.get("classname", "")
+            if cls.startswith(prefix):
+                cls = cls[len(prefix):]
+            full = cls + "." + case.get("name", "")
+            cases.append((full, re.sub(r"\[[^\]]*\]$", "", full), result))
     if code != 0 and not cases and "No tests found for given includes" not in text:
         print("no report, no compile failure and no missing-test line for %s, exit %d" % (task, code))
         sys.exit(3)
