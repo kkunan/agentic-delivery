@@ -10,7 +10,7 @@ For a team, pin the plugin to a release tag. Run these two commands at the root 
 repository:
 
 ```bash
-claude plugin marketplace add 'kkunan/agentic-delivery#v0.7.0' --scope project
+claude plugin marketplace add 'kkunan/agentic-delivery#v0.8.0' --scope project
 ```
 
 ```bash
@@ -24,7 +24,7 @@ team gets the same version:
 {
   "extraKnownMarketplaces": {
     "agentic-delivery": {
-      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.7.0" }
+      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.8.0" }
     }
   },
   "enabledPlugins": { "agentic-delivery@agentic-delivery": true }

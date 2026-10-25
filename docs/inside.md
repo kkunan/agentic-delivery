@@ -4,11 +4,11 @@ This page lists the parts of the plugin, what each one costs in tokens, and the 
 
 ```text
 commands/feature.md      the pipeline, started with /feature
-agents/                  implementer, reviewer, qa-reviewer
+agents/                  implementer, reviewer, qa-reviewer, kmp-implementer, kmp-reviewer
 skills/run-rules/        the rules that every agent follows
 skills/controller/       the rules for the session that runs the pipeline
 skills/product-owner/    the rules for an optional Product Owner session
-skills/platform-*/       one platform layer in each folder: flutter, ios, go, node
+skills/platform-*/       one platform layer in each folder: flutter, ios, go, node, kmp
 templates/               the project file template
 hooks/                   the start-up pointer and the retro reminder
 output-styles/lean.md    the optional lean output style
@@ -32,13 +32,18 @@ tests/                   a test file for each script
 | `platform-ios` | The iOS layer, SwiftUI first with UIKit notes | For a project with `platform: ios`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on Xcode 16.4 |
 | `platform-go` | The Go layer, for services with an HTTP API | For a project with `platform: go`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on a real Go toolchain |
 | `platform-node` | The Node layer, for TypeScript services and for Next.js or React web apps | For a project with `platform: node`, step 0 of `/feature` loads it after the two above. Its commands were measured on four real tickets |
+| `platform-kmp` | The Kotlin Multiplatform layer, for shared Kotlin code, Compose Multiplatform apps, and Ktor servers | For a project with `platform: kmp`, step 0 of `/feature` loads it after the two above. Its commands were measured on a sample project |
 
-The plugin also has three agents. The project file names the one for each seat, and the defaults
+The plugin also has five agents. The project file names the one for each seat, and the defaults
 are these:
 
 - `agentic-delivery:implementer` does one coding task from a brief.
 - `agentic-delivery:reviewer` reviews the diff of one task, and the plan.
 - `agentic-delivery:qa-reviewer` judges a spec or a plan for testability.
+- `agentic-delivery:kmp-implementer` does one coding task in a Kotlin Multiplatform project.
+- `agentic-delivery:kmp-reviewer` reviews the diff of one task in a Kotlin Multiplatform project.
+
+A KMP project selects the two KMP agents with `implementer_agent` and `reviewer_agent`.
 
 To use an agent of your team for a seat, set `implementer_agent`, `reviewer_agent`, or `qa_agent`
 in the project file. A name that does not exist stops the run, with no fallback.
@@ -124,6 +129,7 @@ screenshots. Without a layer, the agents have the rules but no platform commands
 | Native Android | Android | Not started |
 | Go | Services with an HTTP API | Rules written. It has the mutation runner. A CI job runs its commands and the runner on a real Go toolchain. No real feature used it yet. |
 | Node | TypeScript services such as NestJS, and Next.js or React web apps | Written from real runs on four tickets in October 2026, which measured its commands. It has the mutation runner. No CI job runs it yet. |
+| Kotlin Multiplatform | Shared Kotlin code, Compose Multiplatform apps on Wasm, Android, and iOS, and Ktor servers | Rules written. A sample app measured its commands on one Mac on 2026-10-25: the JVM, Android host, iOS simulator, and Wasm browser tests, the Wasm screen by pixels, and the Android emulator and iOS simulator screens. The mutation runner ran on real Gradle for the JVM, server, and iOS test tasks. Fixture tests cover the Android host and Wasm tasks. No CI job runs it, and no real project used it yet. |
 | Other web front ends | Browsers | Not started |
 
 A platform layer is one skill in `skills/platform-<name>/`. To add one, follow the shape of the
@@ -138,6 +144,6 @@ against a sample app. It runs on each pull request that changes the iOS layer or
 job runs. The rest of the plugin is in place and has tests. The maintainer runs features through
 the plugin every day on Flutter work, and also ran Node and React tasks with it. No whole team has run a pilot yet.
 
-Each version gets a tag, such as `v0.7.0`, for a team to pin. On each push to `main`, the workflow
+Each version gets a tag, such as `v0.8.0`, for a team to pin. On each push to `main`, the workflow
 `tag-release.yml` reads the version in `.claude-plugin/plugin.json`. If the tag does not exist, the
 workflow creates it. It never moves a tag that exists.
