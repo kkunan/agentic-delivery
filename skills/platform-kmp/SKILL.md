@@ -11,7 +11,7 @@ In this skill, `scripts/...` means the `scripts` folder of the plugin, not a fol
 
 ## How to read the commands
 
-One run of the small sample `tests/kmp-sample` of this plugin measured each command in this skill. It ran on the Mac of the owner on 2026-10-25, with these versions:
+The small sample `tests/kmp-sample` of this plugin measured each command that carries a mark. The runs were on the Mac of the owner on 2026-10-25, with these versions:
 
 - Kotlin 2.4.21, Compose Multiplatform 1.12.2, Android Gradle plugin (AGP) 9.3.1, Gradle 9.7.0, and Ktor 3.6.0. The sample pins them in its version catalog.
 - JetBrains Runtime 17.0.9 on arm64 as the JDK, on macOS 26.6.2 on arm64.
@@ -38,7 +38,7 @@ Create the `logs`, `results`, and `screens` folders in the ledger folder before 
 
 - `platform` is `kmp`. `mutation_runner` keeps its default, `scripts/mutation-runner.sh`.
 - `gradle_command` is the command that runs Gradle. The default is `./gradlew`, because a KMP project carries its own Gradle wrapper. The value runs through `bash -c` from the top of the worktree. On a Mac with a default JDK that is wrong for Gradle, it carries the JDK, for example `env JAVA_HOME=<java_home> ./gradlew`. The mutation runner reads only this key. So the JDK must be inside this value, or the runner uses the wrong one.
-- `java_home` is required. It is the path of an arm64 JDK, version 17 or later. The measured Mac had a default JDK 19 on x86_64. With that JDK, Kotlin/Native chose the `macos_x64` host, and `:shared:iosSimulatorArm64Test` printed `SKIPPED` and `is disabled ... cannot run on the current host (macos-x86_64)`. Gradle still ended with `BUILD SUCCESSFUL` and exit 0. The probe ran `:shared:jvmTest :shared:iosSimulatorArm64Test --rerun-tasks` (measured: exit 0, 139 seconds). So a wrong JDK can skip the iOS tests with no failure. Agents read `java_home` and copy the path into `gradle_command` and into the shell that runs `xcodebuild`. No script reads the key.
+- `java_home` is required. It is the path of an arm64 JDK, version 17 or later. On the measured Mac, a run with `JAVA_HOME` empty used the default JDK, which is an x86_64 JDK. The Gradle log said `current host is X64`. Kotlin/Native then chose the `macos_x64` host, and `:shared:iosSimulatorArm64Test` printed `SKIPPED` and `is disabled ... cannot run on the current host (macos-x86_64)`. Gradle still ended with `BUILD SUCCESSFUL` and exit 0. The probe ran `:shared:jvmTest :shared:iosSimulatorArm64Test --rerun-tasks` (measured: exit 0, 139 seconds). So a wrong JDK can skip the iOS tests with no failure. Agents read `java_home` and copy the path into `gradle_command` and into the command line of `xcodebuild`. No script reads the key.
 - `test_processes` is `java,node,webpack,xcodebuild`. `java` runs the Gradle client, the Gradle daemon, and the Kotlin compile daemon. `node` appeared in the window of the Wasm browser tests. `webpack` runs the dev server of a web serve, and `node` does not match it. `xcodebuild` runs the iOS app build. The Stalled runs section gives the detail. Do not add `Google Chrome`, because the Chrome of the developer has the same name.
 - `view_globs` lists the files of the screens. For the layout of the sample, it is `composeApp/src/**`. Add the folders of any other module that holds a screen. A shared logic module has no screen.
 - `implementer_agent` is `agentic-delivery:kmp-implementer`, and `reviewer_agent` is `agentic-delivery:kmp-reviewer`. They load this skill. A project that keeps the general agents can leave both keys at their defaults.
@@ -85,6 +85,7 @@ Run each command from the top of the worktree, in the background mode of the she
 - A test report is at `<module>/build/test-results/<task name>/TEST-*.xml`. A command that must prove that tests ran reads it: it counts `tests`, `failures`, `errors`, and `skipped`. Exit 0 alone proves nothing, as the JDK rule above shows.
 - A check of the iOS tests also fails on these lines in the Gradle log: `> Task :shared:iosSimulatorArm64Test SKIPPED`, `> Task :shared:iosSimulatorArm64Test NO-SOURCE`, and any line with `is disabled`. The check in `tests/kmp-toolchain/check.sh` uses `grep -E '^> Task :shared:iosSimulatorArm64Test (SKIPPED|NO-SOURCE)|is disabled'` on the log, and it expects `tests=2 failed=0 skipped=0` in the report.
 - The word `SKIPPED` is not a failure by itself. A task with nothing to do prints it, for example `:shared:checkKotlinGradlePluginConfigurationErrors`. In the Xcode build, `embedAndSignAppleFrameworkForXcode` printed `SKIPPED` and the framework still linked. A check looks for the line of one named task.
+- A separate `export` does not persist between the tool calls of an agent. Put each environment variable on the same command line, as `env <NAME>=<value> <command>`. The rules below do this.
 - Never run `./gradlew --stop`. It stops every daemon of that Gradle version for the user, and daemons of other tickets die with it. Stop a process only by its own process id, as `run-rules` says. See the next section.
 - Never run a task that publishes, uploads, deploys, signs, or installs on a real device.
 
@@ -92,8 +93,8 @@ Run each command from the top of the worktree, in the background mode of the she
 
 The Gradle client, the Gradle daemon, and the Kotlin compile daemon all run as `java`. A daemon outlives the command that started it.
 
-- Measured technique, a private daemon registry: before the first Gradle command, run `export GRADLE_OPTS="-Dorg.gradle.daemon.registry.base=<folder>"`, with a folder that only this run uses. Gradle then registers its daemons in `<folder>/<gradle version>/`, in files named `daemon-<pid>.out.log`. The daemons of this run do not reuse the idle daemon of another ticket, and other tickets do not reuse them. At the end of the run, read the process ids from those file names. For each id, stop the child processes first (`pgrep -P <daemon pid>` lists the Kotlin compile daemon), then the daemon, with `kill <pid>`. The check `tests/kmp-toolchain/check.sh` ran all its Gradle commands this way and ended with no Gradle or Kotlin daemon left (measured: exit 0, 38 checks passed, 0 failed).
-- Without a private registry, stop only a daemon that your own run started. List the Gradle processes before your first Gradle command and after your last one. A process that existed before your first command is not yours.
+- Measured technique, a private daemon registry: put `env GRADLE_OPTS=-Dorg.gradle.daemon.registry.base=<folder>` in front of every Gradle command, as in `env GRADLE_OPTS=-Dorg.gradle.daemon.registry.base=<folder> <gradle> :shared:jvmTest --console=plain`. Use a folder that only this run uses. Put it in front of the `scripts/mutate.sh` call too, because the runner inherits the environment. Gradle then registers its daemons in `<folder>/<gradle version>/`, in files named `daemon-<pid>.out.log`. The daemons of this run do not reuse the idle daemon of another ticket, and other tickets do not reuse them. At the end of the run, read the process ids from those file names. For each id, stop the child processes first (`pgrep -P <daemon pid>` lists the Kotlin compile daemon), then the daemon, with `kill <pid>`. The check `tests/kmp-toolchain/check.sh` set the variable once for all its Gradle commands and ended with no Gradle or Kotlin daemon left (measured: exit 0, 38 checks passed, 0 failed). The one-line form was not measured on its own.
+- Without a private registry, never stop a Gradle daemon. Another worktree can start a daemon during your run. A daemon ends on its idle timeout. Stopping a daemon needs the private registry.
 - Open concern: the Kotlin compile daemon is shared. In a measured run, the Gradle daemon of one build used the Kotlin compile daemon that another build had started. So stopping a Kotlin compile daemon can hit a concurrent build. The effect was not measured.
 
 ### Build and test
@@ -115,6 +116,26 @@ These commands ran in the sample, with `env JAVA_HOME=<JBR 17> ./gradlew` as `<g
 
 Structure that AGP 9 forces, and that the sample uses: a shared module applies `com.android.kotlin.multiplatform.library`, and its Android test task is `:shared:testAndroidHostTest`. The Android app is a separate module, `androidApp`, with the plugin `com.android.application`. The KMP Gradle plugin is not compatible with `com.android.application` and `com.android.library` in one module under AGP 9. The older `androidTarget` and `testDebugUnitTest` names do not apply here.
 
+### When QA runs the suite again
+
+After the base merge, QA looks for a change since the last suite run, as `run-rules`, Checks, says. These paths count:
+
+- Source: Kotlin files, and the resource folders under `src`.
+- Build files: the `.kts` files, `gradle/libs.versions.toml`, `gradle.properties`, `gradle/wrapper`, the Android manifests, and the files in `webpack.config.d`.
+- The Xcode project and the Swift files in `iosApp`.
+
+Run this command in the worktree of the run, from the top of the Gradle build:
+
+```
+git diff --name-only <last-suite-commit> HEAD -- '*.kt' '*.kts' 'gradle/libs.versions.toml' 'gradle.properties' 'gradle/wrapper' 'iosApp' '*/AndroidManifest.xml' '*/webpack.config.d/*' '*/src/*/resources/*' > <log> 2>&1
+```
+
+Take `<last-suite-commit>` from the ledger entry of the last suite run. Commit the merge first, because `git diff` between two commits does not see a file that is not committed.
+
+- A line with a path means a change. Then QA runs the suite again. On a copy of the sample, a change to a Kotlin file and to `README.md` listed only the Kotlin file (measured: exit 0, 0 seconds). A second change to nine files of the other kinds listed all nine.
+- An empty log with exit 0 means no change. Then QA cites the last run.
+- Any other exit status means that the command did not answer, for example a commit that does not exist. That case gave exit 128 and `fatal: bad object` (measured: exit 128, 0 seconds). Then QA runs the suite again, so that the check fails closed.
+
 ### Ktor server
 
 - Test an endpoint with `testApplication`, and run the JVM server tests first: `<gradle> :server:test`. For one test, add `--tests "<class>.<method>"`. A test name in backticks with spaces works with the runner (measured, see the Mutation tests section).
@@ -127,7 +148,7 @@ Structure that AGP 9 forces, and that the sample uses: a shared module applies `
 The device kinds are the browser for the Wasm target, the Android emulator, and the iOS simulator. A ticket creates its own emulator and simulator and deletes them at the end. Two tickets on one device install over each other, as `run-rules` says. `run-rules` also says who holds a device. This section gives the commands.
 
 - Put the slug in the name of each device that you create, for example `<slug>-android` and `<slug>-ios`. Then a list of devices shows which ticket owns each one.
-- Pass the full id to every tool, never a name.
+- Pass the full id to every tool that takes an id: `adb`, `ANDROID_SERIAL`, `simctl`, and the claim script. The tools `avdmanager` and `emulator` take the name of the virtual device, which holds the slug.
 - Never pass `all` to a `simctl` command. It reaches the devices with a signed-in session and the devices of other tickets.
 - `<android-sdk>` is the Android SDK folder, `$HOME/Library/Android/sdk` on the measured Mac. `adb` is at `<android-sdk>/platform-tools/adb`, `avdmanager` at `<android-sdk>/cmdline-tools/latest/bin/avdmanager`, and `emulator` at `<android-sdk>/emulator/emulator`.
 
@@ -173,13 +194,15 @@ The Kotlin Gradle plugin reads the port from this file only. It has no Gradle op
 
 The tools `avdmanager` and `emulator` take the name of the virtual device. The tools `adb` and Gradle take the id, which is `emulator-<port>`. The name holds the slug, so it cannot resolve to the device of another ticket.
 
+- The Android Gradle plugin needs the path of the Android SDK. It comes from `ANDROID_HOME`, or from `sdk.dir` in `local.properties`. The sample has no `local.properties`, and the check script does not set `ANDROID_HOME`. The measured runs got the path from the environment of the shell. That source is not measured.
+
 - Create: `echo no | env JAVA_HOME=<java_home> <android-sdk>/cmdline-tools/latest/bin/avdmanager create avd -n <slug>-android -k "system-images;android-35;google_apis;arm64-v8a" -d pixel_8 > <log> 2>&1` (measured: exit 0, 1 second). The `echo no` answers the question about a custom hardware profile. The tool also prints many lines `Error: Could not load devices from .../devices.xml` for old images, and it still ends with exit 0. The error lines are noise. Exit 0 is the result.
 - Claim `emulator-<port>` with the port from the next step.
-- Boot, detached and headless: `<android-sdk>/emulator/emulator -avd <slug>-android -port <port> -no-window -no-audio -no-boot-anim -no-snapshot-save -gpu swiftshader_indirect > <log> 2>&1 &`. Write its process id, from `$!`, in the ledger. Use an even port that no other ticket uses, because the port sets the id (the measured run used 5580). Headless `-no-window` worked, and screenshots through `exec-out screencap` need no window (measured: `sys.boot_completed` was `1` 33 seconds after the launch).
+- Boot, detached and headless: `<android-sdk>/emulator/emulator -avd <slug>-android -port <port> -no-window -no-audio -no-boot-anim -no-snapshot-save -gpu swiftshader_indirect > <log> 2>&1 &`. Write its process id, from `$!`, in the ledger. Use an even port from 5554 to 5584 that no other ticket uses. The next port must also be free. The port sets the id, and `adb` does not see a port outside that range (the measured run used 5580). Headless `-no-window` worked, and screenshots through `exec-out screencap` need no window (measured: `sys.boot_completed` was `1` 33 seconds after the launch).
 - Wait in a background loop on `<android-sdk>/platform-tools/adb -s emulator-<port> shell getprop sys.boot_completed` until it prints `1`. Do not install before that.
 - Install: `env ANDROID_SERIAL=emulator-<port> JAVA_HOME=<java_home> ./gradlew :androidApp:installDebug --console=plain > <log> 2>&1` (measured: exit 0, 27 seconds, with warm caches). With `gradle_command`, put `ANDROID_SERIAL=emulator-<port>` in front of the command. Always set `ANDROID_SERIAL`. Without it, `installDebug` installs on every connected device, including a real phone. The log said `Installed on 1 device.`
 - Start: `adb -s emulator-<port> shell am start -W -n <applicationId>/<activity class> > <log> 2>&1` (measured: exit 0, 6 seconds, `LaunchState: COLD`). The component takes the full class name. In the sample, the application id is `trip.sample` and the class is `trip.androidapp.MainActivity`, because the class sits under the namespace of the module.
-- At the end: release the claim, then `adb -s emulator-<port> emu kill > <log> 2>&1` (measured: exit 0, 0 seconds, and the emulator process ended within 2 seconds), then `avdmanager delete avd -n <slug>-android > <log> 2>&1` (measured: exit 0, 3 seconds, and the log said `AVD '<slug>-android' deleted.`).
+- At the end: release the claim, then `adb -s emulator-<port> emu kill > <log> 2>&1` (measured: exit 0, 0 seconds, and the emulator process ended within 2 seconds), then `env JAVA_HOME=<java_home> <android-sdk>/cmdline-tools/latest/bin/avdmanager delete avd -n <slug>-android > <log> 2>&1` (measured: the log said `AVD '<slug>-android' deleted.`, 3 seconds).
 
 The measured image has API 35 and no Google Play. Only this image was measured.
 
@@ -189,11 +212,11 @@ The measured image has API 35 and no Google Play. Only this image was measured.
 - Create: `xcrun simctl create <slug>-ios com.apple.CoreSimulator.SimDeviceType.iPhone-17 com.apple.CoreSimulator.SimRuntime.iOS-27-0 > <log> 2>&1` (measured: exit 0, 1 second). The log holds one line, the new id. Write it in the ledger. An app built with the iOS 27.1 SDK ran on this 27.0 simulator.
 - Claim the id.
 - Boot and wait: `xcrun simctl boot <simulator-id> && xcrun simctl bootstatus <simulator-id> -b > <log> 2>&1` (measured: exit 0, 57 seconds, with three simulators of other tickets booted). The log ends with `Finished`.
-- Build the app. The Xcode build phase of the sample calls `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode`. The Gradle in that phase uses the `JAVA_HOME` of the shell that runs `xcodebuild`. Export an arm64 JDK in that shell first: `export JAVA_HOME=<java_home>`. Then, from the `iosApp` folder: `xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Debug -destination 'id=<simulator-id>' -derivedDataPath <build-dir> build > <log> 2>&1` (measured: exit 0, 68 seconds, and the log ends with `** BUILD SUCCEEDED **`). Use a `<build-dir>` that your run creates.
+- Build the app. The Xcode build phase of the sample calls `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode`. The Gradle in that phase uses the `JAVA_HOME` of the process that runs `xcodebuild`. Put an arm64 JDK on the same command line: `cd iosApp && env JAVA_HOME=<java_home> xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Debug -destination 'id=<simulator-id>' -derivedDataPath <build-dir> build > <log> 2>&1` (measured: exit 0, 68 seconds, and the log ends with `** BUILD SUCCEEDED **`). The measured run exported the variable and ran `xcodebuild` on one line. Use a `<build-dir>` that your run creates.
 - Three warnings in that build log are harmless. One is an `ld: warning`: an object file of `ComposeApp` was built for iOS simulator 18.5 and linked at 17.0, which is the deployment target. The second is the note that the `Compile Kotlin Framework` phase runs on every build. The third is a note that metadata extraction was skipped. Do not read `SKIPPED` of `embedAndSignAppleFrameworkForXcode` in the inner Gradle log as a failure. Read the end of the `xcodebuild` log.
 - Install from the path that the build printed, not from a search: `xcrun simctl install <simulator-id> <build-dir>/Build/Products/Debug-iphonesimulator/iosApp.app > <log> 2>&1` (measured: exit 0, 13 seconds).
 - Start: `xcrun simctl launch <simulator-id> <bundle-id> > <log> 2>&1` (measured: exit 0, 4 seconds). The bundle id of the sample is `trip.sample`.
-- At the end: release the claim, then `xcrun simctl shutdown <simulator-id> > <log> 2>&1` (measured: exit 0, 4 seconds), then `xcrun simctl delete <simulator-id> > <log> 2>&1` (measured: exit 0, 1 second). A list of devices with `xcrun simctl list devices` then shows no device with your slug.
+- At the end: release the claim, then `xcrun simctl shutdown <simulator-id> > <log> 2>&1` (measured: exit 0, 4 seconds), then `xcrun simctl delete <simulator-id> > <log> 2>&1` (measured: 1 second, and `xcrun simctl list devices` then showed no device with the slug).
 
 The screen check uses this simulator. The task `:shared:iosSimulatorArm64Test` ran in the measurements without a simulator that the run had created.
 
@@ -311,7 +334,7 @@ The runner reads `gradle_command` from the project file, and then it calls `<gra
 
 The verdicts:
 
-- A passing test gives `passed`, and a failing test gives `failed`, so the verdict is `killed`.
+- A passing test gives `passed`, so the verdict is `survived`. A failing test gives `failed`, so the verdict is `killed`.
 - An ignored test gives `skipped`, so the verdict is `error`.
 - A module that does not compile gives `compiled: false`, so the verdict is `did-not-compile`. The runner finds it in the line `> Task ...compile...Kotlin... FAILED` of the log.
 - A test id that matches no test gives no entry. `scripts/mutate.sh` then refuses the run at the baseline, before any mutation: exit 2, `the baseline did not pass on the unmodified tree`, and `<id>: no test ran` (measured: exit 2, 3 seconds). It is a refusal and not an `error` verdict, because the baseline runs on the unmodified tree first.
