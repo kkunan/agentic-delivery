@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- spec: final review, follow-up 14: a class in the package test, run by the task :server:test, keeps its full classname in the report -->
+<testsuite name="test.PingTest" tests="1">
+<testcase name="ping" classname="test.PingTest" time="0.1"/>
+</testsuite>

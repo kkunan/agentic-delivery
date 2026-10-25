@@ -126,11 +126,13 @@ for i in range(0, len(args), 4):
                 result = "skipped"
             else:
                 result = "passed"
-            cls = case.get("classname", "")
-            if cls.startswith(prefix):
-                cls = cls[len(prefix):]
-            full = cls + "." + case.get("name", "")
-            cases.append((full, re.sub(r"\[[^\]]*\]$", "", full), result))
+            raw = case.get("classname", "")
+            name = case.get("name", "")
+            names = [raw]
+            if raw.startswith(prefix):
+                names.append(raw[len(prefix):])
+            full = [cls + "." + name for cls in names]
+            cases.append((full + [re.sub(r"\[[^\]]*\]$", "", f) for f in full], result))
     if code != 0 and not cases and "No tests found for given includes" not in text:
         print("no report, no compile failure and no missing-test line for %s, exit %d" % (task, code))
         sys.exit(3)
@@ -138,8 +140,8 @@ for i in range(0, len(args), 4):
         if tid.split("::", 1)[0] != task:
             continue
         flt = tid.split("::", 1)[1]
-        for full, bare, result in cases:
-            if flt in (full, bare):
+        for candidates, result in cases:
+            if flt in candidates:
                 tests.append({"id": tid, "result": result})
 json.dump({"compiled": compiled, "tests": tests}, open(out, "w"))
 '

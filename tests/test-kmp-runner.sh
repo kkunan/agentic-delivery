@@ -5,6 +5,7 @@ here=$(cd "$(dirname "$0")" && pwd -P)
 top=$(cd "$here/.." && pwd -P)
 runner="$top/skills/platform-kmp/mutation-runner.sh"
 fake="$here/fixtures/kmp/fake-gradle.sh"
+fixtures="$here/fixtures/kmp"
 
 unset GRADLE_BIN
 work=$(cd "$(mktemp -d)" && pwd -P)
@@ -104,6 +105,11 @@ fresh
 report :shared:wasmJsBrowserTest '<testcase name="inside[wasmJs, browser, ChromeHeadless155.0.0.0, MacOS10.15.7]" classname="wasmJsBrowserTest.trip.ClampTest"/>'
 run wasm :shared:wasmJsBrowserTest::trip.ClampTest.inside
 check "wasm: entry" "True :shared:wasmJsBrowserTest::trip.ClampTest.inside=passed" "$(entries wasm)"
+
+fresh
+cp "$fixtures/task-name-package.xml" "$FAKE_GRADLE_DIR/$(key :server:test).xml"
+run taskpkg :server:test::test.PingTest.ping
+check "package named like the task: entry" "True :server:test::test.PingTest.ping=passed" "$(entries taskpkg)"
 
 fresh
 report :shared:jvmTest '<testcase name="inside" classname="otherTask.trip.ClampTest"/>'
