@@ -25,6 +25,8 @@ port=""
 server_pid=""
 listeners=""
 sampler_pid=""
+limit_pid=""
+watch_pid=""
 profiles=()
 
 start=$(date +%s)
@@ -42,16 +44,18 @@ note() {
 }
 
 limit() {
-    local seconds=$1 dir=$2 pid watch rc
+    local seconds=$1 dir=$2 rc
     shift 2
     (cd "$dir" && exec "$@") &
-    pid=$!
-    perl -e 'sleep $ARGV[0]; print STDERR "TIME LIMIT: $ARGV[0] s passed; stopping $ARGV[2]\n"; kill "TERM", $ARGV[1]' "$seconds" "$pid" "$1" &
-    watch=$!
-    wait "$pid"
+    limit_pid=$!
+    perl -e 'sleep $ARGV[0]; print STDERR "TIME LIMIT: $ARGV[0] s passed; stopping $ARGV[2]\n"; kill "TERM", $ARGV[1]' "$seconds" "$limit_pid" "$1" &
+    watch_pid=$!
+    wait "$limit_pid"
     rc=$?
-    kill "$watch" 2>/dev/null
-    wait "$watch" 2>/dev/null
+    kill "$watch_pid" 2>/dev/null
+    wait "$watch_pid" 2>/dev/null
+    limit_pid=""
+    watch_pid=""
     return "$rc"
 }
 
@@ -164,6 +168,7 @@ daemons() {
 
 stop_pid() {
     local pid=$1 why=$2 i
+    [ -n "$pid" ] || return 0
     ps -p "$pid" > /dev/null 2>&1 || return 0
     printf '%s %s %s\n' "$pid" "$(ps -o comm= -p "$pid")" "$why" >> "$ev/stopped-processes.log"
     kill "$pid" 2>/dev/null
@@ -172,6 +177,23 @@ stop_pid() {
         sleep 1
     done
     kill -9 "$pid" 2>/dev/null
+}
+
+descendants() {
+    local child
+    for child in $(pgrep -P "$1"); do
+        descendants "$child"
+        echo "$child"
+    done
+}
+
+stop_tree() {
+    local pid=$1 why=$2 child
+    [ -n "$pid" ] || return 0
+    for child in $(descendants "$pid"); do
+        stop_pid "$child" "under $pid ($why)"
+    done
+    stop_pid "$pid" "$why"
 }
 
 stop_chrome() {
@@ -186,7 +208,7 @@ stop_chrome() {
 stop_server() {
     local pid
     [ -n "$server_pid" ] || return 0
-    stop_pid "$server_pid" "Gradle client of the web run task"
+    stop_tree "$server_pid" "Gradle client of the web run task"
     for pid in $listeners; do
         stop_pid "$pid" "web server left over after its Gradle client stopped"
     done
@@ -195,6 +217,9 @@ stop_server() {
 
 cleanup() {
     local d child
+    trap '' INT TERM
+    stop_pid "$watch_pid" "time limit watchdog"
+    stop_tree "$limit_pid" "command under the time limit"
     stop_server
     stop_chrome
     if [ -n "$port" ]; then
@@ -206,9 +231,11 @@ cleanup() {
         done
         stop_pid "$d" "Gradle daemon of this check"
     done
-    [ -n "$sampler_pid" ] && kill "$sampler_pid" 2>/dev/null
+    stop_tree "$sampler_pid" "process sampler"
 }
 trap cleanup EXIT
+trap 'printf "\nstopped by a signal\n"; exit 130' INT
+trap 'printf "\nstopped by a signal\n"; exit 143' TERM
 
 # ── The sample ────────────────────────────────────────────────────────────
 
@@ -340,7 +367,8 @@ measure runner-ios 1800 "mutation-runner.sh --out runner-ios.json --log runner-i
     "$runner" --out "$ev/runner-ios.json" --log "$ev/runner-ios.runner.log" -- ":shared:iosSimulatorArm64Test::trip.ClampTest.inside"
 rc=$?
 keep_results runner-ios shared/build/test-results/iosSimulatorArm64Test
-note "iOS runner: exit $rc, entry $(entry "$ev/runner-ios.json" ":shared:iosSimulatorArm64Test::trip.ClampTest.inside")"
+ios_entry=$(entry "$ev/runner-ios.json" ":shared:iosSimulatorArm64Test::trip.ClampTest.inside")
+note "iOS runner: exit $rc, entry $ios_entry, expected passed: $([ "$rc" -eq 0 ] && [ "$ios_entry" = passed ] && echo met || echo NOT met)"
 note "iOS cases that ran with --tests trip.ClampTest.inside: $(results "$app/shared/build/test-results/iosSimulatorArm64Test" names)"
 
 # ── 5. Serving the web app ────────────────────────────────────────────────
