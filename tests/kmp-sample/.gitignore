@@ -3,3 +3,4 @@ build/
 .kotlin/
 local.properties
 !gradle/wrapper/gradle-wrapper.jar
+xcuserdata/

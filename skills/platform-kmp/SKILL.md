@@ -93,9 +93,9 @@ Run each command from the top of the worktree, in the background mode of the she
 
 The Gradle client, the Gradle daemon, and the Kotlin compile daemon all run as `java`. A daemon outlives the command that started it.
 
-- Measured technique, a private daemon registry: put `env GRADLE_OPTS="${GRADLE_OPTS:+$GRADLE_OPTS }-Dorg.gradle.daemon.registry.base=<folder>"` in front of every Gradle command, as in `env GRADLE_OPTS="${GRADLE_OPTS:+$GRADLE_OPTS }-Dorg.gradle.daemon.registry.base=<folder>" <gradle> :shared:jvmTest --console=plain`. The form appends to the `GRADLE_OPTS` that the user already has, and it does not replace it. Use a folder that only this run uses, with no space in its path, because the options split at spaces. Put it in front of the `scripts/mutate.sh` call too, because the runner inherits the environment. Gradle then registers its daemons in `<folder>/<gradle version>/`, in files named `daemon-<pid>.out.log`. The daemons of this run do not reuse the idle daemon of another ticket, and other tickets do not reuse them. At the end of the run, read the process ids from those file names. For each id, stop the child processes first (`pgrep -P <daemon pid>` lists the Kotlin compile daemon), then the daemon, with `kill <pid>`. The check `tests/kmp-toolchain/check.sh` set the variable once for all its Gradle commands and ended with no Gradle or Kotlin daemon left (measured: exit 0, 38 checks passed, 0 failed). The one-line form was not measured on its own.
+- Measured technique, a private daemon registry: put `env GRADLE_OPTS="${GRADLE_OPTS:+$GRADLE_OPTS }-Dorg.gradle.daemon.registry.base=<folder>"` in front of every Gradle command, as in `env GRADLE_OPTS="${GRADLE_OPTS:+$GRADLE_OPTS }-Dorg.gradle.daemon.registry.base=<folder>" <gradle> :shared:jvmTest --console=plain`. The form appends to the `GRADLE_OPTS` that the user already has, and it does not replace it. Use a folder that only this run uses, with no space in its path, because the options split at spaces. Put it in front of the `scripts/mutate.sh` call too, because the runner inherits the environment. Gradle then registers its daemons in `<folder>/<gradle version>/`, in files named `daemon-<pid>.out.log`. The daemons of this run do not reuse the idle daemon of another ticket, and other tickets do not reuse them. At the end of the run, stop only the Gradle daemons of the registry, and nothing else. Read the process ids from those file names. A file stays after its daemon exits, and the system can give the same id to another process later. So before each `kill <pid>`, run `ps -o command= -p <pid>`. Stop the process only if the command holds `GradleDaemon`. If `ps` prints nothing or another command, skip the id. The Gradle 9.7.0 folder holds the class `org.gradle.launcher.daemon.bootstrap.GradleDaemon`, but no log of this layer kept the command line of a daemon, so this check of the command was not measured. The check `tests/kmp-toolchain/check.sh` measured the registry: it set the variable once for all its Gradle commands and ended with no Gradle or Kotlin daemon left (measured: exit 0, 38 checks passed, 0 failed). The rule of this skill is narrower than that script, because the script also stops the child processes of each daemon, which include the Kotlin compile daemon. The narrower rule was not measured. The one-line form was not measured on its own.
 - Without a private registry, never stop a Gradle daemon. Another worktree can start a daemon during your run. A daemon ends on its idle timeout. Stopping a daemon needs the private registry.
-- Open concern: the Kotlin compile daemon is shared. In a measured run, the Gradle daemon of one build used the Kotlin compile daemon that another build had started. So stopping a Kotlin compile daemon can hit a concurrent build. The effect was not measured.
+- Never stop the Kotlin compile daemon. It is shared. In a measured run, the Gradle daemon of one build used the Kotlin compile daemon that another build had started, so a stop can kill the compile of a concurrent ticket. The compile daemon ends on its own idle timeout.
 
 ### Build and test
 
@@ -121,19 +121,19 @@ Structure that AGP 9 forces, and that the sample uses: a shared module applies `
 After the base merge, QA looks for a change since the last suite run, as `run-rules`, Checks, says. These paths count:
 
 - Source and resources: every Kotlin file, and every file under a `src` folder. That covers the source sets, `resources`, `composeResources`, `res`, `assets`, and the Android manifests. It also covers a `src` folder at the top.
-- Build files: the `.kts` files, `gradle/libs.versions.toml`, `gradle.properties`, `gradle/wrapper`, and the files in `webpack.config.d`.
+- Build files: the `.kts` and `.gradle` files, the `.toml` files of the top `gradle` folder, every `gradle.properties`, `gradle/wrapper`, the ProGuard files (`.pro`), and the files in `webpack.config.d`, at the top and in a module. A version catalog in another folder is not covered. A file whose name ends in `gradle.properties` also counts.
 - Every file in the `iosApp` folder, which holds the Xcode project and the Swift files.
 
 Run this command in the worktree of the run, from the top of the Gradle build:
 
 ```
-git diff --name-only <last-suite-commit> HEAD -- '*.kt' '*.kts' 'gradle/libs.versions.toml' 'gradle.properties' 'gradle/wrapper' 'iosApp' 'src' '*/src/*' '*/webpack.config.d/*' > <log> 2>&1
+git diff --name-only <last-suite-commit> HEAD -- '*.kt' '*.kts' '*.gradle' '*.pro' '*gradle.properties' 'gradle/*.toml' 'gradle/wrapper' 'iosApp' 'src' '*/src/*' 'webpack.config.d' '*/webpack.config.d/*' > <log> 2>&1
 ```
 
 Take `<last-suite-commit>` from the ledger entry of the last suite run. Commit the merge first, because `git diff` between two commits does not see a file that is not committed.
 
-- A line with a path means a change. Then QA runs the suite again. On a copy of the sample, a change to a Kotlin file and to `README.md` listed only the Kotlin file (measured: exit 0, 0 seconds). A second change touched files in `composeResources`, `res`, `assets`, and `resources`, an Android manifest, and a top `src` file. The command listed all six and left out `README.md` (measured: exit 0, 0 seconds).
-- An empty log with exit 0 means no change. Then QA cites the last run.
+- A line with a path means a change. Then QA runs the suite again. The runs below used this command on a copy of the sample. A change to a Kotlin file and to `README.md` listed only the Kotlin file (measured: exit 0, 0 seconds). A second change touched files in `composeResources`, `res`, `assets`, and `resources`, an Android manifest, and a top `src` file. The command listed all six and left out `README.md` (measured: exit 0, 0 seconds). A third change touched a nested `build.gradle`, a nested `gradle.properties`, a `.toml` file in the top `gradle` folder, a ProGuard file, a file in a top `webpack.config.d` folder, and `README.md`. The command listed the first five and left out `README.md` (measured: exit 0, 0 seconds).
+- An empty log with exit 0 means no change. Then QA cites the last run (measured: a range from `HEAD` to `HEAD` gave an empty log, exit 0, 0 seconds).
 - Any other exit status means that the command did not answer, for example a commit that does not exist. That case gave exit 128 and `fatal: bad object` (measured: exit 128, 0 seconds). Then QA runs the suite again, so that the check fails closed.
 
 ### Ktor server
@@ -174,6 +174,8 @@ Release the claim before you delete the device or stop the emulator. A later emu
 
 The web server port gets a claim, `web-<web-port>`. Pick a port that nothing listens on, with `lsof -nP -iTCP:<port> -sTCP:LISTEN`. The default port of the dev server is 8080, and another program held it on the measured Mac. The dev server also opens a browser tab by default. That is a tab in the browser of the developer.
 
+The Wasm browser tests, `:shared:wasmJsBrowserTest`, need no claim. Two pairs of builds ran them at the same time, and all four builds ended with exit 0 and `BUILD SUCCESSFUL`. The pair started together took 50 seconds each. The pair started 8 seconds apart took 79 and 80 seconds (measured: exit 0 in 50, 50, 79, and 80 seconds). The data does not show which port the tests used.
+
 So a serve needs one file in the Compose module, `composeApp/webpack.config.d/serve.js`, with this content:
 
 ```
@@ -187,7 +189,7 @@ The Kotlin Gradle plugin reads the port from this file only. It has no Gradle op
 
 - Serve, detached, with its own log: `<gradle> :composeApp:wasmJsBrowserProductionRun --console=plain > <log> 2>&1 &`. Write the process id from `$!` in the ledger (measured: the log printed `[webpack-dev-server] Loopback: http://localhost:<web-port>/` after 36 seconds, and `webpack 5.108.1 compiled with 3 warnings` after 36 seconds, and `curl` gave status 200). The task never ends by itself. After webpack compiles, the log stops growing, so never pass this log to the stall watch with `--log`.
 - The server that listens on the port is a process named `webpack`, a child of the Gradle daemon. `pgrep -x webpack` matches it. `pgrep -x node` does not.
-- Stop it after the capture: `kill <pid>`, with the id from `$!` (measured: the process ended, the `webpack` listener ended with it, and the port was free). If the listener stays, find it with `lsof -nP -t -iTCP:<port> -sTCP:LISTEN` and stop it by that id. Never stop it by name.
+- Stop it after the capture: `kill <pid>`, with the id from `$!` (measured: the process ended, the `webpack` listener ended with it, and the port was free). If the listener stays, find it with `lsof -nP -t -iTCP:<port> -sTCP:LISTEN`. Before you stop that id, run `ps -o comm=,ppid= -p <pid>`. Stop it only if the name is `webpack` and the parent id is the id of a Gradle daemon of this run, which is a file `daemon-<parent id>.out.log` in the private registry. Another program can listen on the port, and it is not yours to stop. In the measured serve, the listener was `webpack` and its parent was a daemon of the registry of the run (measured: the listener was `webpack`, and its parent id matched a file `daemon-<id>.out.log` of the registry). Never stop it by name.
 - Then release the claim.
 
 ### Android emulator
@@ -200,7 +202,7 @@ The tools `avdmanager` and `emulator` take the name of the virtual device. The t
 - Claim `emulator-<port>` with the port from the next step.
 - Boot, detached and headless: `<android-sdk>/emulator/emulator -avd <slug>-android -port <port> -no-window -no-audio -no-boot-anim -no-snapshot-save -gpu swiftshader_indirect > <log> 2>&1 &`. Write its process id, from `$!`, in the ledger. Use an even port from 5554 to 5584 that no other ticket uses. The next port must also be free. The port sets the id. Keep to this range as a rule. The range was not measured here (the measured run used 5580). Headless `-no-window` worked, and screenshots through `exec-out screencap` need no window (measured: `sys.boot_completed` was `1` 33 seconds after the launch).
 - Wait in a background loop on `<android-sdk>/platform-tools/adb -s emulator-<port> shell getprop sys.boot_completed` until it prints `1`. Do not install before that.
-- Install: `env ANDROID_SERIAL=emulator-<port> JAVA_HOME=<java_home> ./gradlew :androidApp:installDebug --console=plain > <log> 2>&1` (measured: exit 0, 27 seconds, with warm caches). With `gradle_command`, put `ANDROID_SERIAL=emulator-<port>` in front of the command. Always set `ANDROID_SERIAL`. Without it, `installDebug` installs on every connected device, including a real phone. The log said `Installed on 1 device.`
+- Install: `env ANDROID_SERIAL=emulator-<port> JAVA_HOME=<java_home> GRADLE_OPTS="${GRADLE_OPTS:+$GRADLE_OPTS }-Dorg.gradle.daemon.registry.base=<folder>" ./gradlew :androidApp:installDebug --console=plain > <log> 2>&1` (measured: exit 0, 27 seconds, with warm caches). The measured run did not carry the `GRADLE_OPTS` part, so this form was not measured on its own. With `gradle_command`, put `ANDROID_SERIAL=emulator-<port>` in front of the command. Always set `ANDROID_SERIAL`. Without it, `installDebug` installs on every connected device, including a real phone. The log said `Installed on 1 device.`
 - Start: `adb -s emulator-<port> shell am start -W -n <applicationId>/<activity class> > <log> 2>&1` (measured: exit 0, 6 seconds, `LaunchState: COLD`). The component takes the full class name. In the sample, the application id is `trip.sample` and the class is `trip.androidapp.MainActivity`, because the class sits under the namespace of the module.
 - At the end: release the claim, then `adb -s emulator-<port> emu kill > <log> 2>&1` (measured: exit 0, 0 seconds, and the emulator process ended within 2 seconds), then `env JAVA_HOME=<java_home> <android-sdk>/cmdline-tools/latest/bin/avdmanager delete avd -n <slug>-android > <log> 2>&1` (measured: the log said `AVD '<slug>-android' deleted.`, 3 seconds).
 
@@ -211,8 +213,8 @@ The measured image has API 35 and no Google Play. Only this image was measured.
 - List the runtimes with their device types: `xcrun simctl list runtimes -j > <log> 2>&1`. Read `supportedDeviceTypes` for the runtime before you pick a pair. The `-j` form of this command has no log in the evidence, so it carries no mark. The runtime iOS 27.1 listed only the device type `iPhone Duo` on the measured Mac. `xcrun simctl create <slug>-ios com.apple.CoreSimulator.SimDeviceType.iPhone-17 com.apple.CoreSimulator.SimRuntime.iOS-27-1` stopped with `Incompatible device` (measured: exit 147, 0 seconds).
 - Create: `xcrun simctl create <slug>-ios com.apple.CoreSimulator.SimDeviceType.iPhone-17 com.apple.CoreSimulator.SimRuntime.iOS-27-0 > <log> 2>&1` (measured: exit 0, 1 second). The log holds one line, the new id. Write it in the ledger. An app built with the iOS 27.1 SDK ran on this 27.0 simulator.
 - Claim the id.
-- Boot and wait: `xcrun simctl boot <simulator-id> && xcrun simctl bootstatus <simulator-id> -b > <log> 2>&1` (measured: exit 0, 57 seconds, with three simulators of other tickets booted). The log ends with `Finished`.
-- Build the app. The Xcode build phase of the sample calls `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode`. The Gradle in that phase uses the `JAVA_HOME` of the process that runs `xcodebuild`. Put an arm64 JDK on the same command line: `cd iosApp && env JAVA_HOME=<java_home> xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Debug -destination 'id=<simulator-id>' -derivedDataPath <build-dir> build > <log> 2>&1` (measured: exit 0, 68 seconds, and the log ends with `** BUILD SUCCEEDED **`). The measured run exported the variable and ran `xcodebuild` on one line. Use a `<build-dir>` that your run creates.
+- Boot and wait: `{ xcrun simctl boot <simulator-id> && xcrun simctl bootstatus <simulator-id> -b; } > <log> 2>&1` (measured: exit 0, 57 seconds, with three simulators of other tickets booted). The braces send the output of the boot step to the log too, so a boot error is not lost. The measured run ran the two steps in this order. The log ends with `Finished`.
+- Build the app. The Xcode build phase of the sample calls `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode`. The Gradle in that phase uses the `JAVA_HOME` of the process that runs `xcodebuild`. Put an arm64 JDK and the registry options on the same command line: `cd iosApp && env JAVA_HOME=<java_home> GRADLE_OPTS="${GRADLE_OPTS:+$GRADLE_OPTS }-Dorg.gradle.daemon.registry.base=<folder>" xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Debug -destination 'id=<simulator-id>' -derivedDataPath <build-dir> build > <log> 2>&1` (measured: exit 0, 68 seconds, and the log ends with `** BUILD SUCCEEDED **`). The measured run exported the variable and ran `xcodebuild` on one line. A separate `xcodebuild` run with `GRADLE_OPTS` exported registered the daemon of the Xcode phase in the private registry (measured: exit 0, 41 seconds). That run used the destination `generic/platform=iOS Simulator` and the plain form of the variable, so this exact command was not measured on its own. Use a `<build-dir>` that your run creates.
 - Three warnings in that build log are harmless. One is an `ld: warning`: an object file of `ComposeApp` was built for iOS simulator 18.5 and linked at 17.0, which is the deployment target. The second is the note that the `Compile Kotlin Framework` phase runs on every build. The third is a note that metadata extraction was skipped. Do not read `SKIPPED` of `embedAndSignAppleFrameworkForXcode` in the inner Gradle log as a failure. Read the end of the `xcodebuild` log.
 - Install from the path that the build printed, not from a search: `xcrun simctl install <simulator-id> <build-dir>/Build/Products/Debug-iphonesimulator/iosApp.app > <log> 2>&1` (measured: exit 0, 13 seconds).
 - Start: `xcrun simctl launch <simulator-id> <bundle-id> > <log> 2>&1` (measured: exit 0, 4 seconds). The bundle id of the sample is `trip.sample`.
@@ -222,7 +224,7 @@ The screen check uses this simulator. The task `:shared:iosSimulatorArm64Test` r
 
 ### Count, not size
 
-Count device clones. Do not measure their disk size, as the Diagnosis section of `run-rules` says. After the delete, `ls ~/.android/avd` listed only the other AVDs (measured).
+Count device clones, with `xcrun simctl list devices` and `<android-sdk>/cmdline-tools/latest/bin/avdmanager list avd -c`. Do not measure their disk size, as the Diagnosis section of `run-rules` says. After the delete, `ls ~/.android/avd` listed only the other AVDs (measured).
 
 ## Screenshots
 
@@ -275,7 +277,7 @@ API contract:
 
 ## Manual checks
 
-- A server run has no manual checks, unless the repository can start the server with fakes on this machine. Then each check is one request, with its expected status and body. With no checks, the QA log ends with `tally: 0 checks, 0 run, 0 unrun, 0 waived`, and the ready check accepts it.
+- A server run has no manual checks, unless the repository can start the server with fakes on this machine. Never start the server with a development, staging, or production configuration, because that reaches real data and real hosts. Then each check is one request, with its expected status and body. With no checks, the QA log ends with `tally: 0 checks, 0 run, 0 unrun, 0 waived`, and the ready check accepts it.
 - A web screen check serves the app as the Web section says, and it names the page, the fixture, and the expected pixel result. The screen is a canvas. So the expected result is a color at a place in the frame, or a count of pixels of one color. It is never a text. It names the value on a correct tree and the value on the defect that it excludes. A run never signs in to an account.
 - A check on an emulator or a simulator names the device kind, the screen, and the same kind of pixel result.
 
@@ -306,7 +308,7 @@ What a quiet log looks like, and what is not a stall:
 
 The remedies come in this order. Apply them only after the processor total and the log size stay frozen for the budget of the stall watch. The controller skill gives that budget:
 
-1. Clean the device clones. Count the devices first. Then shut down and delete each device of a finished ticket that the list printed and that no claim holds.
+1. Clean the device clones. Count the devices first, with `xcrun simctl list devices` for simulators and `<android-sdk>/cmdline-tools/latest/bin/avdmanager list avd -c` for emulators. Then shut down and delete each device of a finished ticket that the list printed and that no claim holds.
 2. Kill and relaunch. Kill only the process ids of your own run, with `kill <pid>`. Run the same command again with a new log file. A hung process does not recover, and the new log keeps the evidence of the dead run.
 3. Make sure that the device still runs. For a simulator, `xcrun simctl list devices` must show `(Booted)` on the line of the id. For an emulator, `adb -s emulator-<port> get-state` must print `device`. Do not use `bootstatus` here, because it waits and on a stopped device it never returns. These two checks were not run in the measurements of this layer.
 
@@ -323,7 +325,7 @@ No run of the watch on a KMP build was measured. Read the log of the watch for a
 
 ## Mutation tests
 
-`scripts/mutate.sh` runs the tests through a platform runner, as its usage text says. The KMP runner of this plugin is `skills/platform-kmp/mutation-runner.sh`. Copy it into the project as `scripts/mutation-runner.sh`, and commit it. That path is the default of the `mutation_runner` key. Run `scripts/mutate.sh` from the top of the worktree, where `gradlew` is, with a clean tree, as its usage text says.
+`scripts/mutate.sh` runs the tests through a platform runner, as its usage text says. The KMP runner of this plugin is `skills/platform-kmp/mutation-runner.sh`. Copy it into the project as `scripts/mutation-runner.sh`, and commit it. That path is the default of the `mutation_runner` key. Run `scripts/mutate.sh` from the top of the worktree, where `gradlew` is, with a clean tree, as its usage text says. The runner takes the top of the git repository as the Gradle root. So a project with `gradlew` in a subfolder gets no test entry, and the baseline refuses the run.
 
 A test id has the form `<Gradle task path>::<class>.<method>`. The class name is fully qualified. For example: `:shared:jvmTest::trip.ClampTest.inside`. A name in backticks works with its spaces, for example `:server:test::trip.ServerTest.health answers ok for a plain request` (measured: the baseline of the runner ended with exit 0 in 6 seconds. The name went to Gradle as one `--tests` argument, and the result file gave `passed`).
 
@@ -367,7 +369,7 @@ fun clamp(v: Int, lo: Int, hi: Int): Int {
 ]
 ```
 
-The command: `scripts/mutate.sh --manifest <manifest> --out <ledger>/results/mutate --runner scripts/mutation-runner.sh > <log> 2>&1` (measured: exit 1, 14 seconds). The baseline passed. The first mutation gave `survived`, because no test goes above the range. Add a test with a value above the range, and run the mutation again. The verdict is then `killed`. The second gave `killed`, and the third gave `did-not-compile`. The tracked files were unchanged afterwards.
+The command: `scripts/mutate.sh --manifest <manifest> --out <ledger>/results/mutate --runner scripts/mutation-runner.sh > <log> 2>&1` (measured: exit 1, 14 seconds). The baseline passed. The first mutation gave `survived`, because no test goes above the range. The second gave `killed`, and the third gave `did-not-compile`. The tracked files were unchanged afterwards. To kill the first mutation, add a test with a value above the range, and run the mutation again. The verdict is then `killed`.
 
 A mutation of `commonMain` code that is checked through `:shared:jvmTest` proves the tests of the JVM target only. A mutation checked through the iOS task or the Wasm task proves the tests of that target.
 
@@ -379,9 +381,9 @@ The skills below come from the `kotlin-kmp-claude-agent-skills` collection by Ma
 
 1. Clone the repository into an empty folder.
 2. Check out the commit: `git -C <folder> checkout 939786cb13b49daacea7d5fb0a10877b6005e6be`.
-3. Copy the skills: `cp -R <folder>/skills/kotlin-* ~/.claude/skills/`.
+3. Copy the skills: `mkdir -p ~/.claude/skills && cp -R <folder>/skills/kotlin-* ~/.claude/skills/`.
 
-Install nothing else from the collection. Its agents, hooks, command, and settings stay out, because they run a different pipeline.
+The owner of the machine installs the skills before a run. An agent never installs them. Install nothing else from the collection. Its agents, hooks, command, and settings stay out, because they run a different pipeline.
 
 A KMP project selects the two agents of this plugin with `implementer_agent` and `reviewer_agent`. They load this skill and list the expert skills below. If the task is in the territory of a skill, load the skill. If a skill conflicts with the project, its rules file, or the agent file, the project wins. Say in the report that you diverged. If a skill is not installed, say so and continue without it.
 
@@ -431,6 +433,6 @@ Not measured:
 - The `:server:run` task and a manual run of the server.
 - The stall watch on a KMP build, and the device checks of remedy 3.
 - Android system images other than API 35, and iOS runtimes other than 27.0.
-- The effect of stopping a shared Kotlin compile daemon on a concurrent build.
+- The stop of the Gradle daemons of the private registry with the `ps` check, and the effect of stopping a shared Kotlin compile daemon on a concurrent build. The skill never stops that daemon.
 
 Nothing in the must and must-try lists of the design was blocked by an outside tool.
