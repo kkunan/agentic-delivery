@@ -122,7 +122,7 @@ run it **every day** on iOS and Flutter work, and it has also built Go, Node, an
 | Native iOS | Built from the real project, tested in CI |
 | Go services | Tested in CI |
 | Node services and Next.js web apps | Commands and mutation runner measured on real runs |
-| Kotlin Multiplatform apps | Commands measured on a sample project. The mutation runner ran on real Gradle for the JVM, server, and iOS test tasks. No real project used it yet |
+| Kotlin Multiplatform apps | Commands measured on a sample project. The mutation runner ran on real Gradle for the JVM, server, and iOS test tasks. Not measured: the stall watch with KMP, the runner and the `--tests` filter on the Android host and Wasm tasks, and the Chrome fallbacks. The skill lists the rest. No real project used it yet |
 | Anything else | No special commands yet, but the team and its rules still work |
 
 > [!NOTE]

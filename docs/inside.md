@@ -32,7 +32,7 @@ tests/                   a test file for each script
 | `platform-ios` | The iOS layer, SwiftUI first with UIKit notes | For a project with `platform: ios`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on Xcode 16.4 |
 | `platform-go` | The Go layer, for services with an HTTP API | For a project with `platform: go`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on a real Go toolchain |
 | `platform-node` | The Node layer, for TypeScript services and for Next.js or React web apps | For a project with `platform: node`, step 0 of `/feature` loads it after the two above. Its commands were measured on four real tickets |
-| `platform-kmp` | The Kotlin Multiplatform layer, for shared Kotlin code, Compose Multiplatform apps, and Ktor servers | For a project with `platform: kmp`, step 0 of `/feature` loads it after the two above. Its commands were measured on a sample project |
+| `platform-kmp` | The Kotlin Multiplatform layer, for shared Kotlin code, Compose Multiplatform apps, and Ktor servers | For a project with `platform: kmp`, step 0 of `/feature` loads it after the two above. Its commands were measured on a sample project. Not measured: the stall watch with KMP, the runner and the `--tests` filter on the Android host and Wasm tasks, and the Chrome fallbacks. The skill lists the rest. |
 
 The plugin also has five agents. The project file names the one for each seat, and the defaults
 are these:
@@ -40,10 +40,10 @@ are these:
 - `agentic-delivery:implementer` does one coding task from a brief.
 - `agentic-delivery:reviewer` reviews the diff of one task, and the plan.
 - `agentic-delivery:qa-reviewer` judges a spec or a plan for testability.
-- `agentic-delivery:kmp-implementer` does one coding task in a Kotlin Multiplatform project.
-- `agentic-delivery:kmp-reviewer` reviews the diff of one task in a Kotlin Multiplatform project.
 
-A KMP project selects the two KMP agents with `implementer_agent` and `reviewer_agent`.
+The other two agents are not defaults. A KMP project selects them with `implementer_agent` and
+`reviewer_agent`. `agentic-delivery:kmp-implementer` does one coding task in a Kotlin Multiplatform
+project, and `agentic-delivery:kmp-reviewer` reviews the diff of one task there.
 
 To use an agent of your team for a seat, set `implementer_agent`, `reviewer_agent`, or `qa_agent`
 in the project file. A name that does not exist stops the run, with no fallback.
@@ -107,8 +107,9 @@ The tool says that its counts are estimates.
 | `feature` | about 30 | about 1.7k |
 
 Step 0 of `/feature` loads one platform skill, so each run pays its size on top of the table. By
-`wc -c`, the `platform-flutter` skill is 31,303 characters long, and the `platform-ios` skill is
-25,228 characters long. Nobody measured either one with `claude plugin details`. The name and
+`wc -c`, the `platform-flutter` skill is 31,303 characters long, the `platform-ios` skill is
+25,228 characters long, and the `platform-kmp` skill is 51,923 characters long. Nobody measured any of
+them with `claude plugin details`. The name and
 description of each one also add to the always-on figure.
 
 The tool does not count hook output. The start-up hook adds its pointer to a session in a project
