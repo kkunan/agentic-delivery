@@ -93,7 +93,7 @@ Run each command from the top of the worktree, in the background mode of the she
 
 The Gradle client, the Gradle daemon, and the Kotlin compile daemon all run as `java`. A daemon outlives the command that started it.
 
-- Measured technique, a private daemon registry: put `env GRADLE_OPTS=-Dorg.gradle.daemon.registry.base=<folder>` in front of every Gradle command, as in `env GRADLE_OPTS=-Dorg.gradle.daemon.registry.base=<folder> <gradle> :shared:jvmTest --console=plain`. Use a folder that only this run uses. Put it in front of the `scripts/mutate.sh` call too, because the runner inherits the environment. Gradle then registers its daemons in `<folder>/<gradle version>/`, in files named `daemon-<pid>.out.log`. The daemons of this run do not reuse the idle daemon of another ticket, and other tickets do not reuse them. At the end of the run, read the process ids from those file names. For each id, stop the child processes first (`pgrep -P <daemon pid>` lists the Kotlin compile daemon), then the daemon, with `kill <pid>`. The check `tests/kmp-toolchain/check.sh` set the variable once for all its Gradle commands and ended with no Gradle or Kotlin daemon left (measured: exit 0, 38 checks passed, 0 failed). The one-line form was not measured on its own.
+- Measured technique, a private daemon registry: put `env GRADLE_OPTS="${GRADLE_OPTS:+$GRADLE_OPTS }-Dorg.gradle.daemon.registry.base=<folder>"` in front of every Gradle command, as in `env GRADLE_OPTS="${GRADLE_OPTS:+$GRADLE_OPTS }-Dorg.gradle.daemon.registry.base=<folder>" <gradle> :shared:jvmTest --console=plain`. The form appends to the `GRADLE_OPTS` that the user already has, and it does not replace it. Use a folder that only this run uses, with no space in its path, because the options split at spaces. Put it in front of the `scripts/mutate.sh` call too, because the runner inherits the environment. Gradle then registers its daemons in `<folder>/<gradle version>/`, in files named `daemon-<pid>.out.log`. The daemons of this run do not reuse the idle daemon of another ticket, and other tickets do not reuse them. At the end of the run, read the process ids from those file names. For each id, stop the child processes first (`pgrep -P <daemon pid>` lists the Kotlin compile daemon), then the daemon, with `kill <pid>`. The check `tests/kmp-toolchain/check.sh` set the variable once for all its Gradle commands and ended with no Gradle or Kotlin daemon left (measured: exit 0, 38 checks passed, 0 failed). The one-line form was not measured on its own.
 - Without a private registry, never stop a Gradle daemon. Another worktree can start a daemon during your run. A daemon ends on its idle timeout. Stopping a daemon needs the private registry.
 - Open concern: the Kotlin compile daemon is shared. In a measured run, the Gradle daemon of one build used the Kotlin compile daemon that another build had started. So stopping a Kotlin compile daemon can hit a concurrent build. The effect was not measured.
 
@@ -120,19 +120,19 @@ Structure that AGP 9 forces, and that the sample uses: a shared module applies `
 
 After the base merge, QA looks for a change since the last suite run, as `run-rules`, Checks, says. These paths count:
 
-- Source: Kotlin files, and the resource folders under `src`.
-- Build files: the `.kts` files, `gradle/libs.versions.toml`, `gradle.properties`, `gradle/wrapper`, the Android manifests, and the files in `webpack.config.d`.
-- The Xcode project and the Swift files in `iosApp`.
+- Source and resources: every Kotlin file, and every file under a `src` folder. That covers the source sets, `resources`, `composeResources`, `res`, `assets`, and the Android manifests. It also covers a `src` folder at the top.
+- Build files: the `.kts` files, `gradle/libs.versions.toml`, `gradle.properties`, `gradle/wrapper`, and the files in `webpack.config.d`.
+- Every file in the `iosApp` folder, which holds the Xcode project and the Swift files.
 
 Run this command in the worktree of the run, from the top of the Gradle build:
 
 ```
-git diff --name-only <last-suite-commit> HEAD -- '*.kt' '*.kts' 'gradle/libs.versions.toml' 'gradle.properties' 'gradle/wrapper' 'iosApp' '*/AndroidManifest.xml' '*/webpack.config.d/*' '*/src/*/resources/*' > <log> 2>&1
+git diff --name-only <last-suite-commit> HEAD -- '*.kt' '*.kts' 'gradle/libs.versions.toml' 'gradle.properties' 'gradle/wrapper' 'iosApp' 'src' '*/src/*' '*/webpack.config.d/*' > <log> 2>&1
 ```
 
 Take `<last-suite-commit>` from the ledger entry of the last suite run. Commit the merge first, because `git diff` between two commits does not see a file that is not committed.
 
-- A line with a path means a change. Then QA runs the suite again. On a copy of the sample, a change to a Kotlin file and to `README.md` listed only the Kotlin file (measured: exit 0, 0 seconds). A second change to nine files of the other kinds listed all nine.
+- A line with a path means a change. Then QA runs the suite again. On a copy of the sample, a change to a Kotlin file and to `README.md` listed only the Kotlin file (measured: exit 0, 0 seconds). A second change touched files in `composeResources`, `res`, `assets`, and `resources`, an Android manifest, and a top `src` file. The command listed all six and left out `README.md` (measured: exit 0, 0 seconds).
 - An empty log with exit 0 means no change. Then QA cites the last run.
 - Any other exit status means that the command did not answer, for example a commit that does not exist. That case gave exit 128 and `fatal: bad object` (measured: exit 128, 0 seconds). Then QA runs the suite again, so that the check fails closed.
 
@@ -194,11 +194,11 @@ The Kotlin Gradle plugin reads the port from this file only. It has no Gradle op
 
 The tools `avdmanager` and `emulator` take the name of the virtual device. The tools `adb` and Gradle take the id, which is `emulator-<port>`. The name holds the slug, so it cannot resolve to the device of another ticket.
 
-- The Android Gradle plugin needs the path of the Android SDK. It comes from `ANDROID_HOME`, or from `sdk.dir` in `local.properties`. The sample has no `local.properties`, and the check script does not set `ANDROID_HOME`. The measured runs got the path from the environment of the shell. That source is not measured.
+- The Android Gradle plugin needs the path of the Android SDK. It comes from `ANDROID_HOME`, or from `sdk.dir` in `local.properties`. The sample has no `local.properties`, and the check script does not set `ANDROID_HOME`. So the measured runs relied on the shell environment of the session. The measurements do not show which variable the plugin read.
 
 - Create: `echo no | env JAVA_HOME=<java_home> <android-sdk>/cmdline-tools/latest/bin/avdmanager create avd -n <slug>-android -k "system-images;android-35;google_apis;arm64-v8a" -d pixel_8 > <log> 2>&1` (measured: exit 0, 1 second). The `echo no` answers the question about a custom hardware profile. The tool also prints many lines `Error: Could not load devices from .../devices.xml` for old images, and it still ends with exit 0. The error lines are noise. Exit 0 is the result.
 - Claim `emulator-<port>` with the port from the next step.
-- Boot, detached and headless: `<android-sdk>/emulator/emulator -avd <slug>-android -port <port> -no-window -no-audio -no-boot-anim -no-snapshot-save -gpu swiftshader_indirect > <log> 2>&1 &`. Write its process id, from `$!`, in the ledger. Use an even port from 5554 to 5584 that no other ticket uses. The next port must also be free. The port sets the id, and `adb` does not see a port outside that range (the measured run used 5580). Headless `-no-window` worked, and screenshots through `exec-out screencap` need no window (measured: `sys.boot_completed` was `1` 33 seconds after the launch).
+- Boot, detached and headless: `<android-sdk>/emulator/emulator -avd <slug>-android -port <port> -no-window -no-audio -no-boot-anim -no-snapshot-save -gpu swiftshader_indirect > <log> 2>&1 &`. Write its process id, from `$!`, in the ledger. Use an even port from 5554 to 5584 that no other ticket uses. The next port must also be free. The port sets the id. Keep to this range as a rule. The range was not measured here (the measured run used 5580). Headless `-no-window` worked, and screenshots through `exec-out screencap` need no window (measured: `sys.boot_completed` was `1` 33 seconds after the launch).
 - Wait in a background loop on `<android-sdk>/platform-tools/adb -s emulator-<port> shell getprop sys.boot_completed` until it prints `1`. Do not install before that.
 - Install: `env ANDROID_SERIAL=emulator-<port> JAVA_HOME=<java_home> ./gradlew :androidApp:installDebug --console=plain > <log> 2>&1` (measured: exit 0, 27 seconds, with warm caches). With `gradle_command`, put `ANDROID_SERIAL=emulator-<port>` in front of the command. Always set `ANDROID_SERIAL`. Without it, `installDebug` installs on every connected device, including a real phone. The log said `Installed on 1 device.`
 - Start: `adb -s emulator-<port> shell am start -W -n <applicationId>/<activity class> > <log> 2>&1` (measured: exit 0, 6 seconds, `LaunchState: COLD`). The component takes the full class name. In the sample, the application id is `trip.sample` and the class is `trip.androidapp.MainActivity`, because the class sits under the namespace of the module.
