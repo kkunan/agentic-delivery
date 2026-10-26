@@ -3,7 +3,7 @@
 <img src="docs/assets/hero.svg" alt="Agentic Delivery. A Product Owner, engineers, and QA, all agents." width="100%">
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Version](https://img.shields.io/badge/version-0.8.0-informational)
+![Version](https://img.shields.io/badge/version-0.9.0-informational)
 ![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A63D2)
 ![Status](https://img.shields.io/badge/status-daily%20use%20%7C%20team%20pilot%20next-yellowgreen)
 ![Platforms](https://img.shields.io/badge/platforms-Flutter%20%7C%20iOS%20%7C%20Go%20%7C%20Node%20%7C%20KMP-lightgrey)
@@ -48,6 +48,7 @@ So we gave the agent **a team**.
 
 Turns "add a profile page" into a **real ticket**: the goal, who it's for, and how you'll know it's
 done. Keeps the backlog in order, plans sprints, and brings you **its best pick** instead of a list of questions.
+It comes in the second plugin, `agentic-discovery`, so a product person can **use it alone** with a team of people.
 
 </td>
 <td width="33%" valign="top">
@@ -160,6 +161,6 @@ Ideas and fixes are welcome as pull requests. Run `bash tests/run-all.sh` first.
 - iOS and Go: the CI workflows in `.github/workflows/`.
 - Node: four real tickets in October 2026, recorded in the Node layer.
 - Kotlin Multiplatform: one sample app run on one Mac on 2026-10-25, recorded in the KMP layer. It covers the JVM, Android host, iOS simulator, and Wasm browser tests, and the Android emulator and iOS simulator screens.
-- No team pilot yet: no team ran a feature through version 0.8.0.
+- No team pilot yet: no team ran a feature through version 0.9.0.
 
 </details>

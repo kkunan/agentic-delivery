@@ -1,6 +1,6 @@
 ---
 platform:
-min_plugin_version: 0.8.0
+min_plugin_version: 0.9.0
 base_branch:
 release_branch:
 branch_prefix:
@@ -51,7 +51,7 @@ Copy this file to `.claude/agentic-delivery.md` in your repository. The lines be
 - `comment_prefix` is optional, and it is empty by default. The run posts some comments with the account of a person: the trail comment on the ticket, the replies and notes on the pull request, and the comments on a wiki page. A reader sees the name of that person on each comment and thinks that the person wrote it. If `comment_prefix` has a value, the run starts each of these comments with the value on its own line, then a blank line. For example, `comment_prefix: Claude said:` shows that the run wrote the comment. The prefix does not go in the description of the pull request or in a commit message. If the key is empty or missing, the run adds no prefix. The one exception is a reply to a review comment on the pull request, which starts with `Claude said:`, as the skill `controller` says in the section Tracker and pull request.
 - `mutation_runner` is the path from the top of the repository to an executable that follows the runner contract of `scripts/mutate.sh`. The Flutter adapter of the plugin is `skills/platform-flutter/mutation-runner.sh`, the iOS adapter is `skills/platform-ios/mutation-runner.sh`, the Go adapter is `skills/platform-go/mutation-runner.sh`, the Node adapter is `skills/platform-node/mutation-runner.sh`, and the KMP adapter is `skills/platform-kmp/mutation-runner.sh`. The path of a plugin install differs on each machine. So copy the file for your platform to `scripts/mutation-runner.sh` in your repository, which is the value in this file, and commit it.
 - `implementer_agent`, `reviewer_agent`, and `qa_agent` name the agent for each seat. See the Agents section.
-- `po` names the Product Owner, as a session id or a person's name. It is optional. If it is empty, the team has no Product Owner, and the run works as it does without one. The Product Owner session loads the skill `product-owner`.
+- `po` names the Product Owner, as a session id or a person's name. It is optional. If it is empty, the team has no Product Owner, and the run works as it does without one. The Product Owner session loads the skill `agentic-discovery:product-owner`, from the second plugin of this marketplace. The guide `docs/install.md` says how to install it.
 - `delivery_mode` is `flow` or `sprint`. In flow mode, the Product Owner sends the next ready ticket to the lead when a team is free. In sprint mode, the team plans a batch of tickets at a fixed time.
 - `po_grooming` sets when the Product Owner grooms the backlog by itself: `events`, `daily`, or `events,daily`. The events are a new ticket and a ship. The Product Owner also grooms whenever the gate owner asks.
 - `po_authority` sets what the Product Owner changes in the tracker without the gate owner's yes. Its value is `backlog`, `next-up`, or `all-but-done`. The skill `product-owner` defines each value.
