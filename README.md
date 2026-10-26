@@ -30,6 +30,8 @@ Whoever you are on the team, you can now **build the whole product**, right insi
   claude plugin install agentic-delivery@agentic-delivery
   ```
 
+  Or paste **one prompt for your role**: [developer, Product Owner, Product Manager, and more](docs/get-started.md).
+
 ## Why we built it
 
 AI can write code fast. But a feature takes more than code, and you know how it goes. The ticket
@@ -144,9 +146,12 @@ claude plugin install agentic-delivery@agentic-delivery
 Copy `templates/agentic-delivery.md` to `.claude/agentic-delivery.md`, fill in the blanks, and run
 `/feature`. Setting it up for a team? See the [install guide](docs/install.md).
 
+Prefer one prompt? [Get started by role](docs/get-started.md) has a paste-in prompt for a developer,
+a Product Owner, a Product Manager, and anyone who writes for readers outside the team.
+
 ## Want the details?
 
-[Install](docs/install.md) · [Project setup](docs/setup.md) · [How it runs](docs/how-it-runs.md) ·
+[Get started by role](docs/get-started.md) · [Install](docs/install.md) · [Project setup](docs/setup.md) · [How it runs](docs/how-it-runs.md) ·
 [What's inside](docs/inside.md) · [Lessons behind each rule](lessons.md)
 
 Ideas and fixes are welcome as pull requests. Run `bash tests/run-all.sh` first.
