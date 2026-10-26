@@ -6,7 +6,7 @@ This page gives the steps of a run in detail, and what each role does. The [READ
 
 ### 1. Pick the work
 
-This step is optional. It runs only if the project file names a Product Owner.
+This step is optional. It runs only if the project file names a Product Owner. The Product Owner session needs the second plugin of the marketplace, `agentic-discovery`.
 
 ```mermaid
 flowchart LR

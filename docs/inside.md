@@ -7,7 +7,6 @@ commands/feature.md      the pipeline, started with /feature
 agents/                  implementer, reviewer, qa-reviewer, kmp-implementer, kmp-reviewer
 skills/run-rules/        the rules that every agent follows
 skills/controller/       the rules for the session that runs the pipeline
-skills/product-owner/    the rules for an optional Product Owner session
 skills/platform-*/       one platform layer in each folder: flutter, ios, go, node, kmp
 templates/               the project file template
 hooks/                   the start-up pointer and the retro reminder
@@ -26,8 +25,6 @@ tests/                   a test file for each script
 | `/feature` (listed as `agentic-delivery:feature`) | The command that runs the pipeline | You run it |
 | `agentic-delivery:controller` | The rules that only the controller follows: dispatch, review seats, estimates, stall watch, tracker steps, ship, merge, report, and retro | Step 0 of `/feature`, and again after a compaction |
 | `agentic-delivery:run-rules` | The rules that every agent follows | Step 0 of `/feature`, and at the start of every dispatched task and review |
-| `agentic-delivery:product-owner` | The rules for an optional Product Owner session: ready ticket, grooming, sprint planning, and replan | The Product Owner session loads it at start, and again after a compaction |
-| `agentic-delivery:product-manager` | The optional Product Manager scope: decision memos, evidence, and privacy | With `po_scope: product`, the Product Owner session loads it after `product-owner` |
 | `platform-flutter` | The Flutter layer, with the commands for build and test | For a project with `platform: flutter`, step 0 of `/feature` loads it after the two above. Its commands were measured on Flutter 3.38.9 stable |
 | `platform-ios` | The iOS layer, SwiftUI first with UIKit notes | For a project with `platform: ios`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on Xcode 16.4 |
 | `platform-go` | The Go layer, for services with an HTTP API | For a project with `platform: go`, step 0 of `/feature` loads it after the two above. A CI job runs its commands on a real Go toolchain |
@@ -145,6 +142,6 @@ against a sample app. It runs on each pull request that changes the iOS layer or
 job runs. The rest of the plugin is in place and has tests. The maintainer runs features through
 the plugin every day on Flutter work, and also ran Node and React tasks with it. No whole team has run a pilot yet.
 
-Each version gets a tag, such as `v0.8.0`, for a team to pin. On each push to `main`, the workflow
+Each version gets a tag, such as `v0.9.0`, for a team to pin. On each push to `main`, the workflow
 `tag-release.yml` reads the version in `.claude-plugin/plugin.json`. If the tag does not exist, the
 workflow creates it. It never moves a tag that exists.

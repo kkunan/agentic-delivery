@@ -10,7 +10,7 @@ For a team, pin the plugin to a release tag. Run these two commands at the root 
 repository:
 
 ```bash
-claude plugin marketplace add 'kkunan/agentic-delivery#v0.8.0' --scope project
+claude plugin marketplace add 'kkunan/agentic-delivery#v0.9.0' --scope project
 ```
 
 ```bash
@@ -24,7 +24,7 @@ team gets the same version:
 {
   "extraKnownMarketplaces": {
     "agentic-delivery": {
-      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.8.0" }
+      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.9.0" }
     }
   },
   "enabledPlugins": { "agentic-delivery@agentic-delivery": true }
@@ -66,7 +66,7 @@ and run `/feature` in Claude Code.
 ## Optional product skills
 
 The same marketplace holds a second plugin, `agentic-discovery`. It is separate, and the delivery
-plugin does not need it. It has three skills:
+plugin does not need it. It has five skills:
 
 - `agentic-discovery:public-writing` gives the rules for a page that people outside the agent sessions read.
 - `agentic-discovery:public-roadmap` builds a public roadmap page from a talk with the owner. It
@@ -74,6 +74,14 @@ plugin does not need it. It has three skills:
 - `agentic-discovery:product-board` keeps a log of each read of the product numbers and the
   decision that follows it, and shows both on one page. It holds the rules for a read and a board
   with made-up data.
+- `agentic-discovery:product-owner` gives the rules for a Product Owner session: ready tickets,
+  grooming, sprint planning, and replan.
+- `agentic-discovery:product-manager` adds decision memos with evidence to the Product Owner.
+
+A Product Owner session of the delivery plugin needs this plugin. A team of people can also use
+the Product Owner alone, with no delivery plugin. Copy `templates/agentic-discovery.md` from this
+plugin to `.claude/agentic-discovery.md`, and fill in the blanks. Ready tickets then go to the
+person that the key `lead` names.
 
 To install it, add the marketplace as above, then run this command:
 
@@ -81,4 +89,4 @@ To install it, add the marketplace as above, then run this command:
 claude plugin install agentic-discovery@agentic-delivery
 ```
 
-The writing skill comes from two products, and the roadmap skill from one. The board skill comes from the boards of two products. No team used them yet.
+The writing skill comes from two products, and the roadmap skill from one. The board skill comes from the boards of two products. The Product Owner skills come from the Product Owner of one product, and the mode for a team of people ran only on a fixture. No team used them yet.
