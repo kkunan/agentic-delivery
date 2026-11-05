@@ -5,7 +5,7 @@
 Copy this one prompt, and paste it into a new Claude Code session. It asks about your work, picks the section that fits, and follows that section with you.
 
 ```text
-Help me set up the agentic-delivery plugin. I do not know which setup I need. Run: curl -fsSL https://raw.githubusercontent.com/kkunan/agentic-delivery/main/docs/get-started.md. Ask me one plain question at a time to find the section that fits my work, for example whether I write code and whether agents or people build my tickets. Explain each technical word in plain words. If I do not use code tools and agents build my tickets, pick the section for a Product Owner who does not use code tools, in any folder. For another section, look at the current folder, and see whether .claude/agentic-delivery.md is in it. If that section needs a different folder, tell me how to start a session there, and stop. Otherwise tell me which section you picked, and follow its prompt.
+Help me set up the agentic-delivery plugin. I do not know which setup I need. Run: curl -fsSL https://raw.githubusercontent.com/kkunan/agentic-delivery/main/docs/get-started.md. Ask me one plain question at a time to find the section that fits my work, for example whether I write code and whether agents or people build my tickets. Explain each technical word in plain words. If I do not write code, pick the section for anyone who does not write code, in any folder. For another section, look at the current folder, and see whether .claude/agentic-delivery.md is in it. If that section needs a different folder, tell me how to start a session there, and stop. Otherwise tell me which section you picked, and follow its prompt.
 ```
 
 ## Know your role
@@ -13,6 +13,26 @@ Help me set up the agentic-delivery plugin. I do not know which setup I need. Ru
 Each section below holds one prompt. Copy it, paste it into a new Claude Code session, and answer the questions that it asks. Each prompt installs what the role needs and fills in the project file with you. Each prompt ends with a restart, because Claude Code loads a new plugin only when a session starts.
 
 The prompts install the newest version for a try. To pin a version for a team, see the [install guide](install.md).
+
+## Anyone who does not write code
+
+This section is for you if you do not write code, for example a designer, a tester, a manager, an operations lead, or a founder. You do not need to know what a repository is. The session does the technical steps, and you answer questions in plain words. You can start the session in any folder.
+
+To change an existing product, a developer must first set up the project. The run builds the app on your computer, so your computer needs the build tools of the project. The prompt finds out if they are missing. A developer reviews and merges the work, unless the project file names you as the person who says merge.
+
+```text
+Help me start with agentic-delivery. I do not write code, so do the technical steps for me. Explain each step in plain words. Before each approval request, say in one sentence what it does. Never ask me to paste a password or a key into this chat. Run: curl -fsSL https://raw.githubusercontent.com/kkunan/agentic-delivery/main/docs/get-started.md. Then ask me what I want to do, and follow the matching item:
+
+- I decide what the team builds. Follow the prompt in the section Product Owner who does not use code tools.
+- I want a page for readers outside the team, for example a roadmap or an update. Follow the prompt in the section Anyone who writes for readers outside the team.
+- I want agents to change an existing product, for example build my design or fix a problem. Do these steps:
+  1. Follow steps 1 to 6 of the prompt in the section Product Owner who does not use code tools.
+  2. Install the plugin. Run: claude plugin install agentic-delivery@agentic-delivery, after: claude plugin marketplace add kkunan/agentic-delivery
+  3. Read the platform key in .claude/agentic-delivery.md, and find out which build tools that platform needs. If a tool is missing, name it, and give me one sentence to send to the developer. Do not start a large install unless I say yes.
+  4. Tell me who says merge, from the project file. If the file does not name me, say that a developer reviews and merges my work.
+  5. Tell me to open the project folder in a new Claude Code session. In that session, I will say /feature, and then what I want in my own words.
+- I have an idea and no project yet. Tell me that this guide has no setup for this case yet. Give me one sentence to send to a developer, to ask them to create the project and set up agentic-delivery.
+```
 
 ## Developer or tech lead
 
