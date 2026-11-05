@@ -27,7 +27,7 @@ Help me start with agentic-delivery. I do not write code, so do the technical st
 - I want a page for readers outside the team, for example a roadmap or an update. Follow the prompt in the section Anyone who writes for readers outside the team.
 - I want agents to change an existing product, for example build my design or fix a problem. Do these steps:
   1. Follow steps 1 to 6 of the prompt in the section Product Owner who does not use code tools.
-  2. Install the plugin. Run: claude plugin install agentic-delivery@agentic-delivery, after: claude plugin marketplace add kkunan/agentic-delivery
+  2. Install the plugin. Run: claude plugin marketplace add kkunan/agentic-delivery, then: claude plugin install agentic-delivery@agentic-delivery. Then run: claude plugin list. If superpowers is not in the list, run: claude plugin install superpowers@claude-plugins-official
   3. Read the platform key in .claude/agentic-delivery.md, and find out which build tools that platform needs. If a tool is missing, name it, and give me one sentence to send to the developer. Do not start a large install unless I say yes.
   4. Tell me who says merge, from the project file. If the file does not name me, say that a developer reviews and merges my work.
   5. Tell me to open the project folder in a new Claude Code session. In that session, I will say /feature, and then what I want in my own words.
@@ -111,6 +111,35 @@ Add decision memos to my Product Owner. Do these steps in order:
 3. Ask me one question at a time to fill in the section Product Manager: the person who decides, each evidence source and how to read it, and the strategy document if one exists. Set po_scope: product.
 4. Show me the changed lines, and write them after I say yes.
 5. Tell me to restart Claude Code here. After the restart, I will say: Load the product-owner skill and prepare a memo for my next decision.
+```
+
+## QA
+
+You set the bar for done, and the QA reviewer agent finds each check in a plan that cannot fail. It needs no build tools. A developer must first set up the project. Start the session at the root of the repository.
+
+```text
+Set me up as the QA person of the agent team in this repository. Do these steps in order:
+
+1. Read .claude/agentic-delivery.md. If it is missing, stop and tell me to ask a developer to set up the plugin first.
+2. Install the plugin. Run: claude plugin marketplace add kkunan/agentic-delivery, then: claude plugin install agentic-delivery@agentic-delivery
+3. Read the sections Devices and Accounts. If one is empty, ask me one question at a time to fill it in. Never write a password or a key in the file. Write only the place to find it.
+4. Show me the changed lines, and write them after I say yes. Do not commit them.
+5. Tell me to restart Claude Code here, so that the plugin loads. After the restart, I will say: Use the agentic-delivery:qa-reviewer agent to review this plan, for the platform in the project file. Then I will give the plan, the spec, or the ticket.
+```
+
+## Engineering manager
+
+You own the budget and who signs off. Each run writes a retro with its estimated and actual cost, and this prompt puts the retros into one table. It installs nothing. Start the session at the root of the repository.
+
+```text
+Set me up as the engineering manager of the agent team in this repository. Do these steps in order:
+
+1. Read .claude/agentic-delivery.md. If it is missing, stop and tell me to ask a developer to set up the plugin first. To learn what each key means, run: curl -fsSL https://raw.githubusercontent.com/kkunan/agentic-delivery/main/templates/agentic-delivery.md
+2. Find the retros in the retros folder inside the folder that docs_dir names. If docs is private, that folder can be on the computer of a developer. If it is not here, ask me for a folder that holds a copy.
+3. Make one table with one row for each retro: the date, the ticket, the size, the tokens, and the human touches, each with its estimate and its actual. Copy each number from the retro. If a retro has no number, leave the cell empty and say so. Do not estimate a number.
+4. Ask me one question at a time who approves plans, who says merge, and who decides process changes. Write each answer in the section of the project file that the template names.
+5. Show me the changed lines, and write them after I say yes. Do not commit them.
+6. Tell me that I can ask this session for the cost table again at any time.
 ```
 
 ## Anyone who writes for readers outside the team
