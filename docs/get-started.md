@@ -1,5 +1,15 @@
 # Get started by role
 
+## Not sure which one to copy
+
+Copy this one prompt, and paste it into a new Claude Code session. It asks about your work, picks the section that fits, and follows that section with you.
+
+```text
+Help me set up the agentic-delivery plugin. I do not know which setup I need. Run: curl -fsSL https://raw.githubusercontent.com/kkunan/agentic-delivery/main/docs/get-started.md. Ask me one plain question at a time to find the section that fits my work, for example whether I write code and whether agents or people build my tickets. Explain each technical word in plain words. Look at the current folder, and see whether .claude/agentic-delivery.md is in it. If the section needs a different folder, tell me how to start a session there, and stop. Otherwise tell me which section you picked, and follow its prompt.
+```
+
+## Know your role
+
 Each section below holds one prompt. Copy it, paste it into a new Claude Code session, and answer the questions that it asks. Each prompt installs what the role needs and fills in the project file with you. Each prompt ends with a restart, because Claude Code loads a new plugin only when a session starts.
 
 The prompts install the newest version for a try. To pin a version for a team, see the [install guide](install.md).
@@ -34,16 +44,17 @@ Set me up with the Product Owner from the agentic-discovery plugin. I am a produ
 
 ## Product Owner for the agent team
 
-The agent team builds your tickets with `/feature`, and the repository already has `.claude/agentic-delivery.md`. Start the session at the root of that repository.
+The agent team builds your tickets with `/feature`, and the repository already has `.claude/agentic-delivery.md`. Start the session at the root of that repository. The prompt asks one question and uses the recommended value for each other setting. You can change a setting later if you ask the session.
 
 ```text
-Set me up as the Product Owner of the agent team in this repository. Do these steps in order:
+Set me up as the Product Owner of the agent team in this repository, with the recommended settings. Do these steps in order:
 
 1. Install the product plugin. Run: claude plugin marketplace add kkunan/agentic-delivery, then: claude plugin install agentic-discovery@agentic-delivery
 2. Read .claude/agentic-delivery.md. If it is missing, stop and tell me to set up the delivery plugin first.
-3. Ask me one question at a time to fill in the keys po, delivery_mode, po_grooming, po_authority, and po_scope, and the section Product Owner. Explain each one in plain words. Ask me what to call this session, and put that name in po. Use po_authority: backlog unless I say otherwise.
-4. Show me the changed lines, and write them after I say yes. Do not commit them.
-5. Tell me to restart Claude Code here, so that the plugin loads. After the restart, I will say: Load the product-owner skill and groom the backlog.
+3. Set these keys: po: Product Owner, delivery_mode: flow, po_grooming: events, po_authority: backlog, po_scope: tickets.
+4. Ask me one question: which date or customer promise must the backlog order follow? If I have none, write that the backlog follows user value against size. Write the answer in the section Product Owner, and write there that each open question stays on its ticket.
+5. Show me the changed lines, with one plain sentence that explains each setting. Write them after I say yes. Do not commit them.
+6. Tell me to rename this session to Product Owner and restart Claude Code here. After the restart, I will say: Load the product-owner skill and groom the backlog.
 ```
 
 ## Product Manager
