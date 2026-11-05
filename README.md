@@ -31,6 +31,7 @@ Whoever you are on the team, you can now **build the whole product**, right insi
   ```
 
   Or paste **one prompt for your role**: [developer, Product Owner, Product Manager, and more](docs/get-started.md).
+  Not sure which one? [Copy the prompt that asks you](docs/get-started.md#not-sure-which-one-to-copy).
 
 ## Why we built it
 
@@ -147,7 +148,8 @@ Copy `templates/agentic-delivery.md` to `.claude/agentic-delivery.md`, fill in t
 `/feature`. Setting it up for a team? See the [install guide](docs/install.md).
 
 Prefer one prompt? [Get started by role](docs/get-started.md) has a paste-in prompt for a developer,
-a Product Owner, a Product Manager, and anyone who writes for readers outside the team.
+a Product Owner, a Product Manager, and anyone who writes for readers outside the team. If you are not sure
+which one fits, its first prompt asks you.
 
 ## Want the details?
 
