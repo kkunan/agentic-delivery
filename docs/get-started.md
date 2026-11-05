@@ -5,7 +5,7 @@
 Copy this one prompt, and paste it into a new Claude Code session. It asks about your work, picks the section that fits, and follows that section with you.
 
 ```text
-Help me set up the agentic-delivery plugin. I do not know which setup I need. Run: curl -fsSL https://raw.githubusercontent.com/kkunan/agentic-delivery/main/docs/get-started.md. Ask me one plain question at a time to find the section that fits my work, for example whether I write code and whether agents or people build my tickets. Explain each technical word in plain words. Look at the current folder, and see whether .claude/agentic-delivery.md is in it. If the section needs a different folder, tell me how to start a session there, and stop. Otherwise tell me which section you picked, and follow its prompt.
+Help me set up the agentic-delivery plugin. I do not know which setup I need. Run: curl -fsSL https://raw.githubusercontent.com/kkunan/agentic-delivery/main/docs/get-started.md. Ask me one plain question at a time to find the section that fits my work, for example whether I write code and whether agents or people build my tickets. Explain each technical word in plain words. If I do not use code tools and agents build my tickets, pick the section for a Product Owner who does not use code tools, in any folder. For another section, look at the current folder, and see whether .claude/agentic-delivery.md is in it. If that section needs a different folder, tell me how to start a session there, and stop. Otherwise tell me which section you picked, and follow its prompt.
 ```
 
 ## Know your role
@@ -44,7 +44,7 @@ Set me up with the Product Owner from the agentic-discovery plugin. I am a produ
 
 ## Product Owner for the agent team
 
-The agent team builds your tickets with `/feature`, and the repository already has `.claude/agentic-delivery.md`. Start the session at the root of that repository. The prompt asks one question and uses the recommended value for each other setting. You can change a setting later if you ask the session.
+The agent team builds your tickets with `/feature`, and the repository already has `.claude/agentic-delivery.md`. Start the session at the root of that repository. The prompt asks one question and uses the recommended value for each other setting. You can change a setting later if you ask the session. If you do not use code tools, use the next section.
 
 ```text
 Set me up as the Product Owner of the agent team in this repository, with the recommended settings. Do these steps in order:
@@ -55,6 +55,28 @@ Set me up as the Product Owner of the agent team in this repository, with the re
 4. Ask me one question: which date or customer promise must the backlog order follow? If I have none, write that the backlog follows user value against size. Write the answer in the section Product Owner, and write there that each open question stays on its ticket.
 5. Show me the changed lines, with one plain sentence that explains each setting. Write them after I say yes. Do not commit them.
 6. Tell me to rename this session to Product Owner and restart Claude Code here. After the restart, I will say: Load the product-owner skill and groom the backlog.
+```
+
+## Product Owner who does not use code tools
+
+The agent team builds your tickets, and a developer already set up the project. You need only the link to the project page that you open in your browser. You can start the session in any folder.
+
+A developer can add that link to the prompt before they send it to you. On a company GitLab server, browser sign-in needs an OAuth application (a sign-in entry on the server). An administrator makes one for all users, as the [GitLab CLI authentication page](https://docs.gitlab.com/cli/authentication/) says. The developer can add its client ID to the prompt too.
+
+```text
+Set me up as the Product Owner of our agent team. I do not use code tools, so do the technical steps for me. Explain each step in plain words. Before each approval request, say in one sentence what it does. Never ask me to paste a password or a key into this chat. Do these steps in order:
+
+1. Ask me for the link to the project page that I open in my browser. Read the host name from the link. If you cannot tell whether the host is GitHub or GitLab, ask me.
+2. Make sure that git is installed, and that the tool for the host is installed: gh for GitHub, glab for GitLab. If a tool is missing, run: brew install gh, or: brew install glab. If Homebrew is missing or an install asks for my password, tell me what to do, and wait.
+3. Sign me in through my browser, and tell me what to approve. Show me each code that the command prints. For GitHub, run: gh auth login --hostname <host> --web --git-protocol https, then: gh auth setup-git --hostname <host>. For gitlab.com, run: glab auth login --hostname gitlab.com --web --git-protocol https --setup-git-credential-helper. For another GitLab server, I need a client ID from the administrator. If I have it, run: glab config set client_id <CLIENT_ID> --host <host>, then the glab command above with that host. If I do not have it, give me one sentence to send to the developer, and stop.
+4. If a sign-in command waits for me to type, give me the exact command to run in the Terminal app, and wait.
+5. Copy the project into ~/Documents/<project name>. If that folder exists and its origin is this project, use it. If it holds something else, stop and tell me.
+6. Read .claude/agentic-delivery.md in that folder. If it is missing, give me one sentence to send to the developer, and stop. If its tracker needs a connector that this session does not have, tell me how to add it.
+7. Install the product plugin. Run: claude plugin marketplace add kkunan/agentic-delivery, then: claude plugin install agentic-discovery@agentic-delivery
+8. In that file, set these keys: po: Product Owner, delivery_mode: flow, po_grooming: events, po_authority: backlog, po_scope: tickets.
+9. Ask me one question: which date or customer promise must the backlog order follow? If I have none, write that the backlog follows user value against size. Write the answer in the section Product Owner, and write there that each open question stays on its ticket.
+10. Show me the changed lines, with one plain sentence that explains each setting. Write them after I say yes. Do not commit or push.
+11. Tell me to open ~/Documents/<project name> in a new Claude Code session, and to name that session Product Owner. In that session, I will say: Load the product-owner skill and groom the backlog.
 ```
 
 ## Product Manager
