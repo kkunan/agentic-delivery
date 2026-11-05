@@ -30,7 +30,7 @@ Whoever you are on the team, you can now **build the whole product**, right insi
   claude plugin install agentic-delivery@agentic-delivery
   ```
 
-  Or paste **one prompt for your role**: [developer, Product Owner, Product Manager, and more](docs/get-started.md).
+  Or paste **one prompt for your role**: [for people who write code and people who do not](docs/get-started.md).
   Not sure which one? [Copy the prompt that asks you](docs/get-started.md#not-sure-which-one-to-copy).
 
 ## Why we built it
@@ -147,8 +147,8 @@ claude plugin install agentic-delivery@agentic-delivery
 Copy `templates/agentic-delivery.md` to `.claude/agentic-delivery.md`, fill in the blanks, and run
 `/feature`. Setting it up for a team? See the [install guide](docs/install.md).
 
-Prefer one prompt? [Get started by role](docs/get-started.md) has a paste-in prompt for a developer,
-a Product Owner, a Product Manager, and anyone who writes for readers outside the team. If you are not sure
+Prefer one prompt? [Get started by role](docs/get-started.md) has a paste-in prompt for anyone who does not
+write code, a developer, a Product Owner, a Product Manager, and anyone who writes for readers outside the team. If you are not sure
 which one fits, its first prompt asks you.
 
 ## Want the details?

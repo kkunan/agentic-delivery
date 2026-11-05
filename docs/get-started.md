@@ -5,7 +5,7 @@
 Copy this one prompt, and paste it into a new Claude Code session. It asks about your work, picks the section that fits, and follows that section with you.
 
 ```text
-Help me set up the agentic-delivery plugin. I do not know which setup I need. Run: curl -fsSL https://raw.githubusercontent.com/kkunan/agentic-delivery/main/docs/get-started.md. Ask me one plain question at a time to find the section that fits my work, for example whether I write code and whether agents or people build my tickets. Explain each technical word in plain words. If I do not use code tools and agents build my tickets, pick the section for a Product Owner who does not use code tools, in any folder. For another section, look at the current folder, and see whether .claude/agentic-delivery.md is in it. If that section needs a different folder, tell me how to start a session there, and stop. Otherwise tell me which section you picked, and follow its prompt.
+Help me set up the agentic-delivery plugin. I do not know which setup I need. Run: curl -fsSL https://raw.githubusercontent.com/kkunan/agentic-delivery/main/docs/get-started.md. Ask me one plain question at a time to find the section that fits my work, for example whether I write code and whether agents or people build my tickets. Explain each technical word in plain words. If I do not write code, pick the section for anyone who does not write code, in any folder. For another section, look at the current folder, and see whether .claude/agentic-delivery.md is in it. If that section needs a different folder, tell me how to start a session there, and stop. Otherwise tell me which section you picked, and follow its prompt.
 ```
 
 ## Know your role
@@ -13,6 +13,26 @@ Help me set up the agentic-delivery plugin. I do not know which setup I need. Ru
 Each section below holds one prompt. Copy it, paste it into a new Claude Code session, and answer the questions that it asks. Each prompt installs what the role needs and fills in the project file with you. Each prompt ends with a restart, because Claude Code loads a new plugin only when a session starts.
 
 The prompts install the newest version for a try. To pin a version for a team, see the [install guide](install.md).
+
+## Anyone who does not write code
+
+This section is for you if you do not write code, for example a designer, a tester, a manager, an operations lead, or a founder. You do not need to know what a repository is. The session does the technical steps, and you answer questions in plain words. You can start the session in any folder.
+
+To change an existing product, a developer must first set up the project. The run builds the app on your computer, so your computer needs the build tools of the project. The prompt finds out if they are missing. A developer reviews and merges the work, unless the project file names you as the person who says merge.
+
+```text
+Help me start with agentic-delivery. I do not write code, so do the technical steps for me. Explain each step in plain words. Before each approval request, say in one sentence what it does. Never ask me to paste a password or a key into this chat. Run: curl -fsSL https://raw.githubusercontent.com/kkunan/agentic-delivery/main/docs/get-started.md. Then ask me what I want to do, and follow the matching item:
+
+- I decide what the team builds. Follow the prompt in the section Product Owner who does not use code tools.
+- I want a page for readers outside the team, for example a roadmap or an update. Follow the prompt in the section Anyone who writes for readers outside the team.
+- I want agents to change an existing product, for example build my design or fix a problem. Do these steps:
+  1. Follow steps 1 to 6 of the prompt in the section Product Owner who does not use code tools.
+  2. Install the plugin. Run: claude plugin marketplace add kkunan/agentic-delivery, then: claude plugin install agentic-delivery@agentic-delivery. Then run: claude plugin list. If superpowers is not in the list, run: claude plugin install superpowers@claude-plugins-official
+  3. Read the platform key in .claude/agentic-delivery.md, and find out which build tools that platform needs. If a tool is missing, name it, and give me one sentence to send to the developer. Do not start a large install unless I say yes.
+  4. Tell me who says merge, from the project file. If the file does not name me, say that a developer reviews and merges my work.
+  5. Tell me to open the project folder in a new Claude Code session. In that session, I will say /feature, and then what I want in my own words.
+- I have an idea and no project yet. Tell me that this guide has no setup for this case yet. Give me one sentence to send to a developer, to ask them to create the project and set up agentic-delivery.
+```
 
 ## Developer or tech lead
 
@@ -91,6 +111,35 @@ Add decision memos to my Product Owner. Do these steps in order:
 3. Ask me one question at a time to fill in the section Product Manager: the person who decides, each evidence source and how to read it, and the strategy document if one exists. Set po_scope: product.
 4. Show me the changed lines, and write them after I say yes.
 5. Tell me to restart Claude Code here. After the restart, I will say: Load the product-owner skill and prepare a memo for my next decision.
+```
+
+## QA
+
+You set the bar for done, and the QA reviewer agent finds each check in a plan that cannot fail. It needs no build tools. A developer must first set up the project. Start the session at the root of the repository.
+
+```text
+Set me up as the QA person of the agent team in this repository. Do these steps in order:
+
+1. Read .claude/agentic-delivery.md. If it is missing, stop and tell me to ask a developer to set up the plugin first.
+2. Install the plugin. Run: claude plugin marketplace add kkunan/agentic-delivery, then: claude plugin install agentic-delivery@agentic-delivery
+3. Read the sections Devices and Accounts. If one is empty, ask me one question at a time to fill it in. Never write a password or a key in the file. Write only the place to find it.
+4. Show me the changed lines, and write them after I say yes. Do not commit them.
+5. Tell me to restart Claude Code here, so that the plugin loads. After the restart, I will say: Use the agentic-delivery:qa-reviewer agent to review this plan, for the platform in the project file. Then I will give the plan, the spec, or the ticket.
+```
+
+## Engineering manager
+
+You own the budget and who signs off. Each run writes a retro with its estimated and actual cost, and this prompt puts the retros into one table. It installs nothing. Start the session at the root of the repository.
+
+```text
+Set me up as the engineering manager of the agent team in this repository. Do these steps in order:
+
+1. Read .claude/agentic-delivery.md. If it is missing, stop and tell me to ask a developer to set up the plugin first. To learn what each key means, run: curl -fsSL https://raw.githubusercontent.com/kkunan/agentic-delivery/main/templates/agentic-delivery.md
+2. Find the retros in the retros folder inside the folder that docs_dir names. If docs is private, that folder can be on the computer of a developer. If it is not here, ask me for a folder that holds a copy.
+3. Make one table with one row for each retro: the date, the ticket, the size, the tokens, and the human touches, each with its estimate and its actual. Copy each number from the retro. If a retro has no number, leave the cell empty and say so. Do not estimate a number.
+4. Ask me one question at a time who approves plans, who says merge, and who decides process changes. Write each answer in the section of the project file that the template names.
+5. Show me the changed lines, and write them after I say yes. Do not commit them.
+6. Tell me that I can ask this session for the cost table again at any time.
 ```
 
 ## Anyone who writes for readers outside the team
