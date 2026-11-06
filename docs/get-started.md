@@ -31,7 +31,28 @@ Help me start with agentic-delivery. I do not write code, so do the technical st
   3. Read the platform key in .claude/agentic-delivery.md, and find out which build tools that platform needs. If a tool is missing, name it, and give me one sentence to send to the developer. Do not start a large install unless I say yes.
   4. Tell me who says merge, from the project file. If the file does not name me, say that a developer reviews and merges my work.
   5. Tell me to open the project folder in a new Claude Code session. In that session, I will say /feature, and then what I want in my own words.
-- I have an idea and no project yet. Tell me that this guide has no setup for this case yet. Give me one sentence to send to a developer, to ask them to create the project and set up agentic-delivery.
+- I have an idea and no project yet. Follow the prompt in the section Solo builder.
+```
+
+## Solo builder
+
+You have an idea and no project. The session creates a private project on your GitHub account and sets up the agent team. You need a GitHub account. The prompt recommends a web app, because a web app needs no phone tools. You can start the session in any folder. We ran these steps one time on a small web app, with an agent in place of the person.
+
+```text
+Help me build my idea with agentic-delivery. I have no project yet, and I may not write code, so do the technical steps for me. Explain each step in plain words. Before each approval request, say in one sentence what it does. Never ask me to paste a password or a key into this chat. Do these steps in order:
+
+1. Ask me what I want to build and who it is for. Recommend a web app. If my idea needs a phone app, tell me that this prompt covers only a web app, and give me one sentence to send to a developer. Then stop.
+2. Ask me for a short project name in lowercase letters and hyphens. If ~/Documents/<name> exists, ask me for another name.
+3. Make sure that git, gh, and node are installed. If a tool is missing, run: brew install git, brew install gh, or: brew install node. If Homebrew is missing or an install asks for my password, tell me what to do, and wait.
+4. Run: gh auth status. If I am not signed in, run: gh auth login --hostname github.com --web --git-protocol https. Show me each code that the command prints, and tell me what to approve. Then run: gh auth setup-git --hostname github.com. If a command waits for me to type, give me the exact command to run in the Terminal app, and wait.
+5. In ~/Documents, run: npx create-next-app@latest <name> --ts --app --tailwind --eslint --use-npm --no-agent-feedback --yes
+6. In that folder, add Jest in a jest.config.mjs file that uses next/jest. Also add jest-environment-jsdom, @testing-library/react, @testing-library/dom, and @testing-library/jest-dom. Add one test beside app/page.tsx, and add the script "test": "jest". Run: npm test. If the test fails, fix the setup before you continue.
+7. Commit on the branch main. Run: gh repo create <name> --private --source . --remote origin --push
+8. Run: mkdir -p .claude && curl -fsSL https://raw.githubusercontent.com/kkunan/agentic-delivery/main/templates/agentic-delivery.md -o .claude/agentic-delivery.md
+9. In that file, set these keys: platform: node, base_branch: main, release_branch: main, branch_prefix: feature/, protected_branches: main, docs: repo, docs_dir: docs/features, view_globs: app/**,components/**, test_processes: node, screenshot_branch: screenshots, forge: github, tracker: none.
+10. Replace the text of the body sections with my facts. I own the gate and say merge. The project has no tracker and no test accounts. The tests use Chrome. No device is protected. Delete the sections Keys, Docs publishing, Product Owner, and Product Manager. Commit the file on main, and push it. If git says that it ignores the file, run: git add -f .claude/agentic-delivery.md
+11. Install the plugin. Run: claude plugin marketplace add kkunan/agentic-delivery, then: claude plugin install agentic-delivery@agentic-delivery. Then run: claude plugin list. If superpowers is not in the list, run: claude plugin install superpowers@claude-plugins-official
+12. Tell me to open ~/Documents/<name> in a new Claude Code session. In that session, I will say /feature, and then the first small thing that I want in my own words. Tell me that the session shows me a plan, that it waits for my yes, and that it merges only when I say merge.
 ```
 
 ## Developer or tech lead
