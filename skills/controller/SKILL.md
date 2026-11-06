@@ -279,7 +279,7 @@ Stay in this scope and go no further: that one ticket, its status only, and the 
 
 On GitHub and GitLab, a closing keyword in the pull request body closes the issue at merge. So name the issue with `Refs #123` on GitHub and `Related to #123` on GitLab. Never use a closing keyword such as `Closes`, `Fixes`, `Resolves`, or, on GitLab, `Implements`. If the section Tracker steps says that the team closes the issue at merge, use a closing keyword.
 
-Before you open the pull request, read the description template of the forge, and fill it in. Keep its headings and its checklist. Tick a box only for a step that the run really did. Leave a box empty for a step that the run did not do, for example a manual test on a device. If the forge has no template, write a plain description.
+Each pull request and merge request follows the template of its repository, including one that is not part of a run. Before you open the pull request, read the description template of the forge, and fill it in. Keep its headings and its checklist. Tick a box only for a step that the run really did. Leave a box empty for a step that the run did not do, for example a manual test on a device. If the forge has no template, write a plain description.
 
 - GitHub: the template is `pull_request_template.md`, or a file in a `PULL_REQUEST_TEMPLATE` folder. Each one can be at the top of the repository, in `.github/`, or in `docs/`.
 - GitLab: the default template can be in the project settings, and not in the repository. Read it with `glab api projects/<path>`, where `<path>` is the URL-encoded path of the project, and take the field `merge_requests_template`. If that field is empty, use `.gitlab/merge_request_templates/Default.md`. If that folder holds other templates and no default, ask the developer which one to use.
@@ -350,6 +350,7 @@ The last plan task is always "ship", and these are its steps. They are a dispatc
 - The ledger has cost lines for `spec`, `plan`, `final`, and at least one task. A lite ledger has `build` and `final` instead.
 - The QA tally line reads all run, or each waived check has a waiver line from the gate owner.
 - The pull request body is a real description.
+- The pull request body holds each heading of the repository template. If a folder holds more than one template, the body must match one of them.
 - If the branch touches a file that matches `view_globs`, the body links screenshots on the screenshot branch. On GitLab, images uploaded to the merge request also count.
 
 The screenshot proof is a URL in the body that contains `/<screenshot_branch>/`. On GitLab, a link that contains `/uploads/<hash>/`, the form that GitLab gives an uploaded image, is also proof. If a view file changed but no screen changed, the body has a line that reads `No screen changed.` and the ready check accepts it. It skips the screenshot proof on a branch that changes no view. Run it from the checkout that holds the ledger. It reads the pull request through `gh` on GitHub and the merge request through `glab` on GitLab.

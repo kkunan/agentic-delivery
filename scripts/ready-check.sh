@@ -225,6 +225,82 @@ else
     fi
 fi
 
+# ── description template of the forge ──────────────────────────────────
+template_headings() {
+    tr -d '\r' | awk '
+        /^[[:space:]]*(```|~~~)/ { fence = !fence; next }
+        fence { next }
+        /<!--/ && !/-->/ { comment = 1; next }
+        /-->/ { comment = 0; next }
+        comment { next }
+        /^##*[ \t]/ { sub(/[ \t]+$/, ""); print }
+    '
+}
+
+absent_headings() {
+    local wanted clean heading
+    wanted=$(printf '%s\n' "$1" | template_headings)
+    [ -n "$wanted" ] || return 0
+    clean=$(printf '%s\n' "$2" | tr -d '\r' | sed 's/[[:space:]]*$//')
+    while IFS= read -r heading; do
+        printf '%s\n' "$clean" | grep -Fxq -- "$heading" || printf '%s; ' "$heading"
+    done <<< "$wanted"
+}
+
+settings_template() {
+    local origin_url project
+    origin_url=$(git config --get remote.origin.url 2>/dev/null)
+    case "$origin_url" in
+        *://*) project=${origin_url#*://}; project=${project#*/} ;;
+        *) project=${origin_url#*:} ;;
+    esac
+    project=${project%.git}
+    glab api "projects/${project//\//%2F}" 2>/dev/null | jq -r '.merge_requests_template // ""' 2>/dev/null
+}
+
+template_paths() {
+    local files defaults
+    files=$(git ls-tree -r --name-only "$base" 2>/dev/null)
+    if [ "$forge" = gitlab ]; then
+        defaults=$(printf '%s\n' "$files" | grep -Fx '.gitlab/merge_request_templates/Default.md')
+        if [ -n "$defaults" ]; then
+            printf '%s\n' "$defaults"
+        else
+            printf '%s\n' "$files" | grep -E '^\.gitlab/merge_request_templates/[^/]+\.md$'
+        fi
+    else
+        printf '%s\n' "$files" | grep -iE '^(\.github/|docs/)?pull_request_template(\.md|/[^/]+\.md)$'
+    fi
+}
+
+check_template() {
+    local body=$1 text="" paths path absent first=""
+    [ "$forge" = gitlab ] && text=$(settings_template)
+    if [ -n "$text" ]; then
+        absent=$(absent_headings "$text" "$body")
+        if [ -z "$absent" ]; then
+            report pass "$pr_word follows the template"
+        else
+            report fail "$pr_word follows the template" "the project settings template needs: $absent"
+        fi
+        return
+    fi
+    paths=$(template_paths)
+    if [ -z "$paths" ]; then
+        report pass "$pr_word has no template"
+        return
+    fi
+    while IFS= read -r path; do
+        absent=$(absent_headings "$(git show "$base:$path" 2>/dev/null)" "$body")
+        if [ -z "$absent" ]; then
+            report pass "$pr_word follows the template"
+            return
+        fi
+        [ -n "$first" ] || first="$path needs: $absent"
+    done <<< "$paths"
+    report fail "$pr_word follows the template" "$first"
+}
+
 # ── 6. pull request or merge request ──────────────────────────────────────
 if [ "${READY_CHECK_SKIP_PR:-}" = 1 ]; then
     printf 'SKIP  %s description rewritten\n      READY_CHECK_SKIP_PR=1\n' "$pr_word"
@@ -238,6 +314,7 @@ else
     else
         report pass "$pr_word description rewritten"
     fi
+    check_template "$body"
     IFS=',' read -r -a view_patterns <<< "$view_globs"
     views=0
     while read -r changed; do

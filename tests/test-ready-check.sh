@@ -35,6 +35,10 @@ build() {
         awk -v f="$T_FORGE" 'NR == 2 { print "forge: " f } { print }' "$repo/.claude/agentic-delivery.md" > "$repo/.claude/tmp.md"
         mv "$repo/.claude/tmp.md" "$repo/.claude/agentic-delivery.md"
     fi
+    if [ -n "${T_TEMPLATE_PATH:-}" ]; then
+        mkdir -p "$repo/$(dirname "$T_TEMPLATE_PATH")"
+        printf '%b' "$T_TEMPLATE_TEXT" > "$repo/$T_TEMPLATE_PATH"
+    fi
     printf 'start\n' > "$repo/README.txt"
     git_in add -A
     git_in commit -q -m "start"
@@ -56,6 +60,10 @@ STUB
     cat > "$root/bin/glab" <<'STUB'
 #!/bin/bash
 printf '%s\n' "$*" >> "$(dirname "$0")/glab-calls"
+if [ "$1" = api ]; then
+    jq -n --arg t "$(cat "$(dirname "$0")/mr-template" 2>/dev/null)" '{merge_requests_template:$t}'
+    exit 0
+fi
 [ -f "$(dirname "$0")/no-mr" ] && { echo 'no open merge request available for "feature/demo"' >&2; exit 1; }
 body=$(printf 'x%.0s' $(seq 1 250))
 [ -f "$(dirname "$0")/body-extra" ] && body=$(printf '%s\n%s' "$body" "$(cat "$(dirname "$0")/body-extra")")
@@ -494,6 +502,83 @@ cleanup
 T_SHOTS= build
 run
 check "empty screenshot_branch with view globs: exit 3" 3 "$rc"
+cleanup
+
+# ── The description template of the forge ───────────────────────────
+T_TEMPLATE_PATH=.github/pull_request_template.md T_TEMPLATE_TEXT='## Summary\n\ntext\n\n## Test plan\n- [ ] run\n' build
+run_with_pr
+check "template, no headings in the body: exit 1" 1 "$rc"
+check "template, no headings in the body: fails" yes "$(has 'FAIL  PR follows the template')"
+check "template, no headings in the body: names the heading" yes "$(has '## Test plan')"
+printf '## Summary\nx\n' > "$root/bin/body-extra"
+run_with_pr
+check "template, one heading absent: exit 1" 1 "$rc"
+check "template, one heading absent: names only that heading" no "$(has '## Summary;')"
+printf '## Summary\nx\n## Test plan\n- [x] run\n' > "$root/bin/body-extra"
+run_with_pr
+check "template, all headings: exit 0" 0 "$rc"
+check "template, all headings: passes" yes "$(has 'PASS  PR follows the template')"
+printf '## Summary\r\nx\r\n## Test plan  \r\n' > "$root/bin/body-extra"
+run_with_pr
+check "template, carriage returns and trailing spaces: exit 0" 0 "$rc"
+printf 'see ## Summary and ## Test plan\n' > "$root/bin/body-extra"
+run_with_pr
+check "template, heading text inside a line: exit 1" 1 "$rc"
+cleanup
+
+T_TEMPLATE_PATH=.github/PULL_REQUEST_TEMPLATE.md T_TEMPLATE_TEXT='## Upper\n' build
+run_with_pr
+check "template in capitals: exit 1" 1 "$rc"
+check "template in capitals: names the heading" yes "$(has '## Upper')"
+cleanup
+
+T_TEMPLATE_PATH=pull_request_template.md T_TEMPLATE_TEXT='<!--\n## In a comment\n-->\n```\n## In a fence\n```\n## Real\n' build
+printf '## Real\n' > "$root/bin/body-extra"
+run_with_pr
+check "template, comment and fence are not headings: exit 0" 0 "$rc"
+cleanup
+
+T_TEMPLATE_PATH=.github/PULL_REQUEST_TEMPLATE/one.md T_TEMPLATE_TEXT='## One\n' build
+git_in checkout -q develop
+printf '## Two\n' > "$repo/.github/PULL_REQUEST_TEMPLATE/two.md"
+git_in add -A
+git_in commit -q -m "second template"
+git_in push -q origin develop
+git_in checkout -q feature/demo
+git_in merge -q --no-edit develop
+git_in push -q origin feature/demo
+write_ledger "$(git_in log --first-parent develop..HEAD --format=%h | tr '\n' ' ')"
+run_with_pr
+check "two templates, neither matched: exit 1" 1 "$rc"
+printf '## Two\n' > "$root/bin/body-extra"
+run_with_pr
+check "two templates, one matched: exit 0" 0 "$rc"
+cleanup
+
+build
+run_with_pr
+check "no template: exit 0" 0 "$rc"
+check "no template: says so" yes "$(has 'PASS  PR has no template')"
+cleanup
+
+T_FORGE=gitlab build
+printf '## From settings\n' > "$root/bin/mr-template"
+run_with_pr
+check "gitlab, settings template: asks the API" yes "$(grep -q '^api projects/' "$root/bin/glab-calls" && echo yes || echo no)"
+check "gitlab, settings template: exit 1" 1 "$rc"
+check "gitlab, settings template: fails" yes "$(has 'FAIL  MR follows the template')"
+printf '## From settings\n' > "$root/bin/body-extra"
+run_with_pr
+check "gitlab, settings template: exit 0 with the heading" 0 "$rc"
+cleanup
+
+T_FORGE=gitlab T_TEMPLATE_PATH=.gitlab/merge_request_templates/Default.md T_TEMPLATE_TEXT='## From file\n/assign_reviewer @x\n' build
+run_with_pr
+check "gitlab, file template: exit 1" 1 "$rc"
+check "gitlab, file template: names the heading" yes "$(has '## From file')"
+printf '## From file\n' > "$root/bin/body-extra"
+run_with_pr
+check "gitlab, file template: exit 0 with the heading" 0 "$rc"
 cleanup
 
 finish

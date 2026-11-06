@@ -142,6 +142,6 @@ against a sample app. It runs on each pull request that changes the iOS layer or
 job runs. The rest of the plugin is in place and has tests. The maintainer runs features through
 the plugin every day on Flutter work, and also ran Node and React tasks with it. No whole team has run a pilot yet.
 
-Each version gets a tag, such as `v0.9.0`, for a team to pin. On each push to `main`, the workflow
+Each version gets a tag, such as `v0.10.0`, for a team to pin. On each push to `main`, the workflow
 `tag-release.yml` reads the version in `.claude-plugin/plugin.json`. If the tag does not exist, the
 workflow creates it. It never moves a tag that exists.
