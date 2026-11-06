@@ -34,7 +34,7 @@ You can do these things without asking:
 
 - Commit after each completed task.
 - Push to the current feature branch at the times that `push_policy` in the project file names. The name of the branch starts with `branch_prefix`. With `each-task`, which is the default, push after each commit. With `mr-and-ship`, push at the start of the pull request and at ship. After the pull request is ready, push one time for each fix wave. The section Pushes of the `controller` skill gives the full rule. (lesson: build-per-push)
-- Open a draft pull request against `base_branch`. Rewrite its description as the plan progresses.
+- Open a draft pull request against `base_branch`. Rewrite its description as the plan progresses. Each pull request description follows the template of the repository.
 - Build and test with the commands that the platform skill names, create and boot test devices, and take screenshots.
 - Dispatch implementer and reviewer subagents.
 - Write briefs, reports, ledgers, and review diffs in the ledger folder.
