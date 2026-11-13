@@ -8,7 +8,7 @@ agents/                  implementer, reviewer, qa-reviewer, kmp-implementer, km
 skills/run-rules/        the rules that every agent follows
 skills/controller/       the rules for the session that runs the pipeline
 skills/platform-*/       one platform layer in each folder: flutter, ios, go, node, kmp
-templates/               the project file template
+templates/               the project file template, and the test cases page of a run
 hooks/                   the start-up pointer and the retro reminder
 output-styles/lean.md    the optional lean output style
 lessons.md               the story behind each rule
@@ -142,6 +142,6 @@ against a sample app. It runs on each pull request that changes the iOS layer or
 job runs. The rest of the plugin is in place and has tests. The maintainer runs features through
 the plugin every day on Flutter work, and also ran Node and React tasks with it. No whole team has run a pilot yet.
 
-Each version gets a tag, such as `v0.10.0`, for a team to pin. On each push to `main`, the workflow
+Each version gets a tag, such as `v0.11.0`, for a team to pin. On each push to `main`, the workflow
 `tag-release.yml` reads the version in `.claude-plugin/plugin.json`. If the tag does not exist, the
 workflow creates it. It never moves a tag that exists.
