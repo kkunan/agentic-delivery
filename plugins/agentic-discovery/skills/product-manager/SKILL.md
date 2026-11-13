@@ -25,10 +25,12 @@ Write each memo in this order:
 
 1. The question, in one sentence.
 2. Two or three options.
-3. The evidence for and against each option, each with its source.
-4. Your pick, and why.
-5. What a wrong pick costs, and how the team will know.
-6. The person who decides, from the section Product Manager.
+3. The assumptions behind the options, tested against the data. The section Evidence gives the table.
+4. The evidence for and against each option, each with its source.
+5. Your pick, and why, with its impact as a range.
+6. What a wrong pick costs, and how the team will know.
+7. The person who decides, from the section Product Manager.
+8. The findings outside the question, as follow-up items.
 
 Your pick is the best outcome for users, not the safest option. A limit such as a permission, a cost, or a legal check does not make the plan smaller. Write each limit as an obstacle to clear, with the date by which it must be clear and the person who clears it. List the obstacles once. If the plan goes ahead, that list is the first roadmap. The evidence rule still applies, so label a guess as a guess.
 
@@ -53,7 +55,26 @@ After each answer, write the decision, its date, and the person who decided in t
 
 ## Evidence
 
-Every claim in a memo names its source: a file, a query, a document, or a research note. If no source exists, write "no data". Label a guess as a guess.
+Every claim in a memo names its source: a file, a query, a document, or a research note. For a query or a report, also give the date range and the filter. If no source exists, write "no data". Label a guess as a guess.
+
+### Test the assumptions first
+
+Before your pick, list the assumptions behind the options. Test each one against the data, in this table:
+
+| Assumption | What the data says | Result |
+|---|---|---|
+| A user who stops at the bank link step is lost. | 41 of 120 users who stopped linked a bank within 7 days. Analytics funnel report, production builds, 1 to 19 October 2026. | Partly false. The real loss is 79 of 120. |
+
+The result is True, Partly false, or False. Each row names its source and its date range. A pick on an assumption that nobody tested can fix a problem that does not exist.
+
+### Rules for numbers
+
+1. Define the unit before you count, and name the denominator. For example, a "session" is all the tries of one user with less than 30 minutes between two tries. A rate that counts each retry again makes the loss look larger than it is.
+2. Reproduce a number from a ticket or a person before you use it. If your query gives a different number, say so. Name the cut that probably differs, such as the hours, the builds, or the filter. The reader then knows which number the memo uses, and why.
+3. Give an impact as a range, and show the arithmetic. Label each assumed rate as a guess. For example, 3,000 users a month stop at the bank link step. 20 to 30 percent of them (guess) finish a shorter step. That gives 600 to 900 more linked banks a month. A reader can then change a guess and get a new range.
+4. Say what the data cannot show. If no table stores a fact, you cannot count it. A correlation does not prove a cause. Write what the data shows, and what it does not show. For example: "Users who set two goals stay longer. This data does not show that a second goal makes users stay."
+5. If the code is one of the sources, explain a number with the code that makes it. Name the file and the function in the evidence. The fix can then act on the cause, not only on the number. Keep the options and the pick in product terms.
+6. A finding outside the question becomes a follow-up item at the end of the memo. Do not fix it, and do not add it to the pick. The person who decides then answers one question at a time.
 
 ## Privacy
 
