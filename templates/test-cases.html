@@ -1,0 +1,372 @@
+<!doctype html>
+<!--
+  Test cases page. A template of the agentic-delivery plugin.
+
+  The page shows each test case of a run: the step, the expected result, the screenshots,
+  and the result. A reviewer or the gate owner can read the proof in one minute.
+  The content below is a made-up sample for a savings app. Replace all of it.
+
+  How to fill it:
+  - Copy this file into the ledger folder of the run, for example <ledger>/test-cases.html.
+  - Write one row in All cases for each test case id in qa-session-log.md. Use the same id.
+  - Take the result of each row from the log: Pass, Fail, Waived, or Not run. The pill classes
+    are pass, fail, waived, and notrun. A waived row names the waiver line in progress.md.
+  - Copy the tally line of the log into the header, as it is.
+  - Take the screenshot paths from the screens folder of the ledger, for example
+    screens/t-1-goal.png. The href of the link and the src of the image can name the same file.
+    The sample uses small inline SVG placeholders, so that the template has no image files.
+  - Keep phone numbers and other personal data out of every screenshot.
+  - A run with no rules table has no Rules under test section. A run with no sketches has no
+    Screens section. Remove those sections.
+
+  The page stays a record for people. The ready check reads only qa-session-log.md and its
+  tally line.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Round-Up Test Cases</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column. The cases table is wide on a desktop and stacks into one card for each case on a phone. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --fg: #16202c;
+  --muted: #5a6676;
+  --line: #dde2e9;
+  --accent: #1f5fd1;
+  --accent-soft: #e6eefc;
+  --pass: #17794a;
+  --pass-soft: #e2f4ea;
+  --fail: #b42318;
+  --fail-soft: #fde8e6;
+  --none: #6b7482;
+  --none-soft: #eef0f3;
+  --warn: #9a5b00;
+  --warn-soft: #fbf0dc;
+  --font-display: "Instrument Sans", system-ui, sans-serif;
+  --font-body: "Instrument Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141b; --surface: #161d27; --fg: #e6ebf2; --muted: #9aa6b6; --line: #273242;
+    --accent: #7aa7ff; --accent-soft: #1b2a44; --pass: #5fd39a; --pass-soft: #133325;
+    --fail: #ff8a80; --fail-soft: #3b1714;
+    --none: #9aa3b0; --none-soft: #1f2732; --warn: #f0b45a; --warn-soft: #3a2b12;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141b; --surface: #161d27; --fg: #e6ebf2; --muted: #9aa6b6; --line: #273242;
+  --accent: #7aa7ff; --accent-soft: #1b2a44; --pass: #5fd39a; --pass-soft: #133325;
+  --fail: #ff8a80; --fail-soft: #3b1714;
+  --none: #9aa3b0; --none-soft: #1f2732; --warn: #f0b45a; --warn-soft: #3a2b12;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { overflow-x: clip; }
+body {
+  margin: 0;
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 64px;
+}
+main { max-width: 1000px; margin: 0 auto; display: grid; gap: 36px; }
+header { display: grid; gap: 10px; }
+.eyebrow { font: 600 12px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 700 34px/1.15 var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h2 { font: 600 20px/1.25 var(--font-display); margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 70ch; }
+.lead { color: var(--muted); font-size: 16px; }
+section { display: grid; gap: 12px; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 70ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { font: 500 12px/1 var(--font-mono); padding: 6px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.tag.tally { background: var(--surface); color: var(--fg); border: 1px solid var(--line); }
+code { font-family: var(--font-mono); font-size: 13px; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 10px; }
+.defs { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+.defs dt { font-weight: 600; }
+.defs dd { margin: 0; color: var(--muted); min-width: 0; }
+
+/* Pills: the rules table uses sent and none. The Result column uses pass, fail, waived, and notrun. */
+.pill { display: inline-block; font: 600 12px/1 var(--font-mono); padding: 5px 8px; border-radius: 6px; white-space: nowrap; }
+.pill.sent, .pill.pass { background: var(--pass-soft); color: var(--pass); }
+.pill.none, .pill.notrun { background: var(--none-soft); color: var(--none); }
+.pill.fail { background: var(--fail-soft); color: var(--fail); }
+.pill.waived { background: var(--warn-soft); color: var(--warn); }
+
+.rules { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.rules th, .rules td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.rules thead th { font: 600 11px/1.2 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+.rules tbody tr:last-child th, .rules tbody tr:last-child td { border-bottom: 0; }
+.rules tbody th { font-weight: 600; }
+.screen-link { font: 600 12px/1 var(--font-mono); padding: 5px 8px; border-radius: 6px; white-space: nowrap; background: var(--accent-soft); color: var(--accent); text-decoration: none; display: inline-block; }
+.screen-link:hover, .screen-link:focus-visible { text-decoration: underline; }
+
+.wide { margin-inline: calc(50% - 50vw + max(16px, env(safe-area-inset-left, 0px))); }
+.wide > h2, .wide > p { max-width: 1000px; width: 100%; margin-inline: auto; }
+.scroll { overflow-x: auto; min-width: 0; }
+.cases { width: 100%; min-width: 1100px; table-layout: fixed; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); }
+.cases th, .cases td { text-align: left; vertical-align: top; padding: 10px 12px; border: 1px solid var(--line); overflow-wrap: anywhere; }
+.cases tbody tr:nth-child(even) { background: var(--bg); }
+.cases thead th { font: 600 11px/1.2 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+.cases .id { font: 600 13px/1.4 var(--font-mono); color: var(--accent); white-space: nowrap; }
+.cases td.flow { font-weight: 500; }
+.result { display: grid; gap: 4px; justify-items: start; }
+.note { font-size: 13px; color: var(--muted); display: block; }
+
+.shots { display: flex; flex-wrap: wrap; gap: 6px; }
+.shots a { display: block; line-height: 0; }
+.shots img { width: 52px; height: auto; border: 1px solid var(--line); border-radius: 6px; display: block; background: #fff; }
+.shots a:hover img, .shots a:focus-visible img, .shot-link.is-open img { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Screenshot panel: opens on the right, and the page still scrolls under it. */
+.lightbox { position: fixed; top: 0; right: 0; bottom: 0; z-index: 50; width: min(340px, 92vw); background: var(--surface); border-left: 1px solid var(--line); box-shadow: -8px 0 24px rgba(10, 16, 24, .18); display: flex; flex-direction: column; gap: 10px; padding: calc(12px + env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) 14px; overflow-y: auto; }
+.lightbox[hidden] { display: none !important; }
+.lightbox .lb-bar { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; font-size: 14px; font-weight: 600; }
+.lightbox .lb-stage { display: flex; justify-content: center; }
+.lightbox img { width: auto; max-width: 100%; max-height: calc(100vh - 150px); height: auto; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.lightbox button { font: 600 13px/1 var(--font-body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; cursor: pointer; flex: none; }
+.lightbox button:hover, .lightbox button:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+.lightbox button:disabled { opacity: .45; cursor: default; border-color: var(--line); color: var(--fg); }
+.lightbox .lb-nav { display: flex; justify-content: space-between; gap: 10px; }
+
+/* Screens: low-fi sketches that show the content and the order, not the final look. */
+figure { margin: 0; }
+.screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 20px; }
+.screen-item { display: grid; gap: 8px; justify-items: center; align-content: start; min-width: 0; }
+.screen-item figcaption { text-align: center; font-size: 13px; color: var(--muted); max-width: 200px; }
+.screen-item figcaption b { display: block; color: var(--fg); font-size: 14px; }
+.phone { width: 180px; max-width: 100%; aspect-ratio: 9 / 18.5; border: 2px solid var(--fg); border-radius: 22px; background: var(--surface); position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 8px; padding: 18px 12px 12px; font-size: 9px; line-height: 1.3; }
+.phone .title { font-weight: 700; font-size: 11px; }
+.phone .big { font: 700 20px/1 var(--font-display); }
+.phone .track { height: 8px; border-radius: 4px; background: var(--none-soft); overflow: hidden; }
+.phone .fill { height: 100%; background: var(--accent); }
+.phone .row { display: flex; justify-content: space-between; gap: 6px; color: var(--muted); }
+.phone .row b { color: var(--fg); }
+.phone .bar { height: 7px; border-radius: 3px; background: var(--line); }
+.phone .bar.short { width: 60%; }
+.phone .banner { background: var(--accent-soft); border-radius: 6px; padding: 6px 7px; display: grid; gap: 2px; }
+.phone .banner.warn { background: var(--warn-soft); }
+.phone .banner b { color: var(--fg); }
+.phone .banner span { color: var(--muted); }
+.phone .spacer { flex: 1; }
+.phone .btn { border: 1px solid var(--line); border-radius: 6px; text-align: center; padding: 5px; color: var(--muted); }
+.phone .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 600; }
+.phone .scrim { position: absolute; inset: 0; background: rgba(10, 16, 24, .45); display: grid; place-items: center; padding: 12px; }
+.phone .dialog { background: var(--surface); border-radius: 10px; padding: 10px; display: grid; gap: 6px; width: 100%; text-align: center; }
+.phone .dialog b { font-size: 10px; }
+.phone .dialog span { color: var(--muted); }
+
+footer { color: var(--muted); font-size: 13px; display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 18px; }
+
+@media (max-width: 700px) {
+  h1 { font-size: 28px; }
+  .defs { grid-template-columns: 1fr; }
+  .defs dd { margin-bottom: 6px; }
+  /* Each case becomes one card. The data-label of each cell names its column. */
+  .wide { margin-inline: 0; }
+  .cases { min-width: 0; border: 0; background: none; }
+  .cases colgroup, .cases thead { display: none; }
+  .cases, .cases tbody, .cases tr, .cases th, .cases td { display: block; width: 100%; }
+  .cases tbody { display: grid; gap: 12px; }
+  .cases tbody tr, .cases tbody tr:nth-child(even) { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .cases th, .cases td { border: 0; border-bottom: 1px solid var(--line); }
+  .cases tr > :last-child { border-bottom: 0; }
+  .cases th.id { background: var(--bg); }
+  .cases td::before { content: attr(data-label); display: block; margin-bottom: 4px; font: 600 11px/1.2 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="eyebrow">Sample · end-to-end round</span>
+    <h1>Round-Up Test Cases</h1>
+    <p class="lead">The cases we ran on the iPhone simulator before the round-up branch merges. Pocket Goal is a made-up savings app. With round-ups on, each card payment rounds up to the next whole dollar, and the difference goes to a savings goal. Each case names what we do, what the user must see, and the result. Five cases pass, one fails, and the gate owner waived one.</p>
+    <div class="meta">
+      <span class="tag tally">tally: 7 checks, 6 run, 0 unrun, 1 waived</span>
+      <span class="tag">app 2.4.0 (41)</span>
+      <span class="tag">iOS simulator</span>
+      <span class="tag">staging API</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="setup">
+    <h2 id="setup">Setup</h2>
+    <div class="panel">
+      <dl class="defs">
+        <dt>App</dt><dd>Debug build 2.4.0 (41) from the feature branch, on the iPhone 16 simulator.</dd>
+        <dt>Backend</dt><dd>The staging API. A card stub sends the card payments, and a test clock moves the time.</dd>
+        <dt>Account</dt><dd>A test account with one goal, "Holiday fund", target 200.00, balance 500.00.</dd>
+        <dt>Proof</dt><dd>A screenshot of each step, the push log of the staging API, and the email log for the receipt.</dd>
+      </dl>
+      <p>A <strong>round-up</strong> is the difference between a card payment and the next whole dollar. A payment of 3.40 gives a round-up of 0.60.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="rules">
+    <h2 id="rules">Rules under test</h2>
+    <div class="scroll">
+      <table class="rules">
+        <thead><tr><th scope="col">Event</th><th scope="col">Push</th><th scope="col">Banner</th><th scope="col">Screen</th><th scope="col">Email</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Card payment, round-ups on</th><td><span class="pill none">None</span></td><td><span class="pill sent">Round-up added</span></td><td><a class="screen-link" href="#screen-a">A · Goal</a></td><td><span class="pill none">None</span></td></tr>
+          <tr><th scope="row">Card payment, whole dollar</th><td><span class="pill none">None</span></td><td><span class="pill none">None</span></td><td><a class="screen-link" href="#screen-a">A · Goal</a></td><td><span class="pill none">None</span></td></tr>
+          <tr><th scope="row">Sunday 18:00</th><td><span class="pill sent">Weekly total, once</span></td><td><span class="pill none">None</span></td><td><a class="screen-link" href="#screen-b">B · Week</a></td><td><span class="pill none">None</span></td></tr>
+          <tr><th scope="row">Goal reached</th><td><span class="pill sent">Goal reached, once</span></td><td><span class="pill none">None</span></td><td><a class="screen-link" href="#screen-c">C · Reached</a></td><td><span class="pill sent">Receipt, once</span></td></tr>
+          <tr><th scope="row">Balance below 20.00</th><td><span class="pill none">None</span></td><td><span class="pill sent">Paused, once</span></td><td><a class="screen-link" href="#screen-d">D · Paused</a></td><td><span class="pill none">None</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The app never sends more than one push for one event.</p>
+  </section>
+
+  <section aria-labelledby="screens">
+    <h2 id="screens">Screens</h2>
+    <p>Low-fi sketches of what the user sees. They show the content and the order, not the final look.</p>
+    <div class="screens">
+      <figure class="screen-item" id="screen-a">
+        <div class="phone" role="img" aria-label="Goal screen: goal name, saved total, progress bar, round-up banner, and the round-ups switch">
+          <div class="title">Holiday fund</div>
+          <div class="big">120.60</div>
+          <div class="track"><div class="fill" style="width: 60%"></div></div>
+          <div class="row"><span>Target</span><b>200.00</b></div>
+          <div class="banner"><b>Round-up added: 0.60</b><span>From your payment of 3.40</span></div>
+          <div class="spacer"></div>
+          <div class="row"><span>Round-ups</span><b>On</b></div>
+          <div class="btn">Add money</div>
+        </div>
+        <figcaption><b>A · Goal</b>The banner shows once for each round-up.</figcaption>
+      </figure>
+
+      <figure class="screen-item" id="screen-b">
+        <div class="phone" role="img" aria-label="Weekly summary screen: total of the week and one row for each day">
+          <div class="title">This week</div>
+          <div class="big">4.10</div>
+          <div class="row"><span>Mon</span><b>0.60</b></div>
+          <div class="row"><span>Wed</span><b>1.75</b></div>
+          <div class="row"><span>Fri</span><b>1.75</b></div>
+          <div class="bar"></div><div class="bar short"></div>
+          <div class="spacer"></div>
+          <div class="btn">Back to goal</div>
+        </div>
+        <figcaption><b>B · Week</b>Opens from the weekly push.</figcaption>
+      </figure>
+
+      <figure class="screen-item" id="screen-c">
+        <div class="phone" role="img" aria-label="Goal reached popup over the goal screen">
+          <div class="title">Holiday fund</div>
+          <div class="big">200.00</div>
+          <div class="track"><div class="fill" style="width: 100%"></div></div>
+          <div class="bar"></div><div class="bar short"></div>
+          <div class="scrim"><div class="dialog"><b>You reached your goal</b><span>Holiday fund: 200.00 saved</span><div class="btn primary">OK</div></div></div>
+        </div>
+        <figcaption><b>C · Reached</b>Once for each goal, over A.</figcaption>
+      </figure>
+
+      <figure class="screen-item" id="screen-d">
+        <div class="phone" role="img" aria-label="Goal screen with a warning banner that says round-ups are paused for a low balance">
+          <div class="title">Holiday fund</div>
+          <div class="big">120.60</div>
+          <div class="track"><div class="fill" style="width: 60%"></div></div>
+          <div class="banner warn"><b>Round-ups paused</b><span>Your balance is below 20.00</span></div>
+          <div class="spacer"></div>
+          <div class="row"><span>Round-ups</span><b>Paused</b></div>
+          <div class="btn">Add money</div>
+        </div>
+        <figcaption><b>D · Paused</b>Round-ups start again when the balance is 20.00 or more.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="all" class="wide">
+    <h2 id="all">All cases</h2>
+    <p>"The stub" is the card stub on staging. Click a screenshot to open it in a side panel. The page still scrolls. Use Previous and Next or the arrow keys to move through the screenshots, and Escape to close the panel.</p>
+    <div class="scroll">
+      <table class="cases">
+        <colgroup><col style="width: 64px"><col style="width: 190px"><col style="width: 24%"><col><col style="width: 184px"><col style="width: 160px"></colgroup>
+        <thead><tr><th scope="col">Case</th><th scope="col">User sees</th><th scope="col">Step</th><th scope="col">Expected</th><th scope="col">Screen</th><th scope="col">Result</th></tr></thead>
+        <tbody>
+          <tr><th scope="row" class="id">T-1</th><td class="flow" data-label="User sees">Turns on round-ups and sees the goal.</td><td data-label="Step">Open the goal "Holiday fund". Turn on round-ups.</td><td data-label="Expected">The goal screen shows "Round-ups: On". No push and no banner.</td><td data-label="Screen"><div class="shots"><a href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E01%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" class="shot-link"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E01%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" alt="T-1: Goal screen, round-ups on" title="Goal screen, round-ups on" loading="lazy"></a></div></td><td data-label="Result"><div class="result"><span class="pill pass">Pass</span></div></td></tr>
+          <tr><th scope="row" class="id">T-2</th><td class="flow" data-label="User sees">Pays 3.40 by card and sees 0.60 go to the goal.</td><td data-label="Step">The stub sends one card payment of 3.40.</td><td data-label="Expected">The banner "Round-up added: 0.60" shows once. The goal total goes up by 0.60 within 10 seconds.</td><td data-label="Screen"><div class="shots"><a href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E02%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" class="shot-link"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E02%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" alt="T-2: Round-up banner" title="Round-up banner" loading="lazy"></a><a href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E03%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" class="shot-link"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E03%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" alt="T-2: Goal total after the round-up" title="Goal total after the round-up" loading="lazy"></a></div></td><td data-label="Result"><div class="result"><span class="pill pass">Pass</span><span class="note">The total changed in 4 seconds.</span></div></td></tr>
+          <tr><th scope="row" class="id">T-3</th><td class="flow" data-label="User sees">Pays 5.00 by card. Nothing goes to the goal.</td><td data-label="Step">The stub sends one card payment of 5.00.</td><td data-label="Expected">No banner. The goal total does not change.</td><td data-label="Screen"><div class="shots"><a href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E04%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" class="shot-link"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E04%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" alt="T-3: Goal total unchanged" title="Goal total unchanged" loading="lazy"></a></div></td><td data-label="Result"><div class="result"><span class="pill pass">Pass</span></div></td></tr>
+          <tr><th scope="row" class="id">T-4</th><td class="flow" data-label="User sees">Gets one weekly summary on Sunday evening.</td><td data-label="Step">Move the test clock to Sunday 18:00. Tap the push.</td><td data-label="Expected">One push "Your round-ups this week: 4.10". The tap opens the weekly summary with the same total.</td><td data-label="Screen"><div class="shots"><a href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E05%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" class="shot-link"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E05%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" alt="T-4: Weekly push" title="Weekly push" loading="lazy"></a><a href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E06%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" class="shot-link"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E06%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" alt="T-4: Weekly summary" title="Weekly summary" loading="lazy"></a></div></td><td data-label="Result"><div class="result"><span class="pill pass">Pass</span></div></td></tr>
+          <tr><th scope="row" class="id">T-5</th><td class="flow" data-label="User sees">Reaches the goal and sees "You reached your goal" once.</td><td data-label="Step">Set the goal total to 199.80. The stub sends a card payment of 9.80.</td><td data-label="Expected">The goal reached popup once. One push. One receipt email.</td><td data-label="Screen"><div class="shots"><a href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E07%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" class="shot-link"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E07%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" alt="T-5: Goal reached popup" title="Goal reached popup" loading="lazy"></a><a href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E08%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" class="shot-link"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E08%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" alt="T-5: Two pushes in the list" title="Two pushes in the list" loading="lazy"></a></div></td><td data-label="Result"><div class="result"><span class="pill fail">Fail</span><span class="note">The push came two times. The popup and the email are correct. Run again after the fix.</span></div></td></tr>
+          <tr><th scope="row" class="id">T-6</th><td class="flow" data-label="User sees">A low balance stops the round-ups.</td><td data-label="Step">Set the balance to 15.00. The stub sends a card payment of 2.30.</td><td data-label="Expected">No round-up. The banner "Round-ups paused" shows once.</td><td data-label="Screen"><span class="note">No screenshot.</span></td><td data-label="Result"><div class="result"><span class="pill waived">Waived</span><span class="note">The staging account cannot go below 20.00. The gate owner waived it on 2026-11-12.</span></div></td></tr>
+          <tr><th scope="row" class="id">T-7</th><td class="flow" data-label="User sees">Opens the app again and sees the same goal.</td><td data-label="Step">Close the app from the app switcher, then open it.</td><td data-label="Expected">The goal screen with the same total. No second banner.</td><td data-label="Screen"><div class="shots"><a href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E09%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" class="shot-link"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='370' viewBox='0 0 180 370'%3E%3Crect x='1' y='1' width='178' height='368' rx='22' fill='%23f6f7f9' stroke='%2316202c' stroke-width='2'/%3E%3Crect x='16' y='28' width='90' height='10' rx='3' fill='%2316202c'/%3E%3Crect x='16' y='50' width='148' height='8' rx='4' fill='%23dde2e9'/%3E%3Crect x='16' y='50' width='88' height='8' rx='4' fill='%231f5fd1'/%3E%3Crect x='16' y='72' width='148' height='40' rx='6' fill='%23e6eefc'/%3E%3Crect x='16' y='124' width='148' height='7' rx='3' fill='%23dde2e9'/%3E%3Crect x='16' y='139' width='96' height='7' rx='3' fill='%23dde2e9'/%3E%3Ctext x='90' y='230' text-anchor='middle' font-family='monospace' font-size='16' fill='%235a6676'%3EScreenshot%3C/text%3E%3Ctext x='90' y='256' text-anchor='middle' font-family='monospace' font-size='22' font-weight='bold' fill='%231f5fd1'%3E09%3C/text%3E%3Crect x='16' y='326' width='148' height='26' rx='6' fill='none' stroke='%23dde2e9'/%3E%3C/svg%3E" alt="T-7: Goal screen after a restart" title="Goal screen after a restart" loading="lazy"></a></div></td><td data-label="Result"><div class="result"><span class="pill pass">Pass</span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="oos">
+    <h2 id="oos">Out of scope</h2>
+    <ul>
+      <li>Real card payments. The stub takes the place of the card network.</li>
+      <li>The Android app. It gets its own round.</li>
+      <li>The final words of the weekly push, which the product owner still writes.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>Sample data. Every name, amount, and screen on this page is made up.</p>
+  </footer>
+</main>
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-label="Screenshot">
+  <div class="lb-bar"><span id="lb-caption"></span><button type="button" id="lb-close">Close</button></div>
+  <div class="lb-stage"><img id="lb-img" alt=""></div>
+  <div class="lb-nav"><button type="button" id="lb-prev">Previous</button><button type="button" id="lb-next">Next</button></div>
+</div>
+<script>
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('a.shot-link'));
+  var box = document.getElementById('lightbox');
+  var img = document.getElementById('lb-img');
+  var cap = document.getElementById('lb-caption');
+  var prev = document.getElementById('lb-prev');
+  var next = document.getElementById('lb-next');
+  var idx = -1;
+  function show(i) {
+    if (i < 0 || i >= links.length) return;
+    if (links[idx]) links[idx].classList.remove('is-open');
+    idx = i;
+    var a = links[i];
+    a.classList.add('is-open');
+    var thumb = a.querySelector('img');
+    img.src = a.getAttribute('href');
+    img.alt = thumb ? thumb.alt : '';
+    cap.textContent = thumb ? thumb.alt : '';
+    prev.disabled = i === 0;
+    next.disabled = i === links.length - 1;
+    box.hidden = false;
+  }
+  function hide() {
+    box.hidden = true;
+    img.removeAttribute('src');
+    if (links[idx]) { links[idx].classList.remove('is-open'); links[idx].focus(); }
+  }
+  links.forEach(function (a, i) { a.addEventListener('click', function (e) { e.preventDefault(); show(i); }); });
+  document.getElementById('lb-close').addEventListener('click', hide);
+  prev.addEventListener('click', function () { show(idx - 1); });
+  next.addEventListener('click', function () { show(idx + 1); });
+  document.addEventListener('keydown', function (e) {
+    if (box.hidden) return;
+    if (e.key === 'Escape') hide();
+    else if (e.key === 'ArrowLeft') show(idx - 1);
+    else if (e.key === 'ArrowRight') show(idx + 1);
+  });
+})();
+</script>
+</body>
+</html>
