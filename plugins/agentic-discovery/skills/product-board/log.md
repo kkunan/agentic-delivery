@@ -70,3 +70,27 @@ This row comes from the made-up savings app in `board.html`.
   "decision": "Product owner, 20 October: read again on 3 November."
 }
 ```
+
+## The goal check
+
+A goal check compares each goal with its number on a fixed day, for example each Monday. It is one table with these columns: Item, Goal, Actual, Diff, Projected, What to do.
+
+Above the table, write one line that gives the date or the period of each source. This sample comes from the made-up savings app in `board.html`.
+
+Sources: analytics funnel report as of 2 November 2026, for 27 October to 2 November. Support dashboard chart as of 1 November 2026, for 1 August to 1 November.
+
+| Item | Goal | Actual | Diff | Projected | What to do |
+|---|---|---|---|---|---|
+| People who link a bank in a week | 150 | 128 | -22 | Miss. 131, 126, 130, and 128 in the last four weeks, with no trend up. | Read row D1 again. Write a ticket to test a shorter bank link step in one build. |
+| People who set a goal in a week | 300 | 312 | +12 | Hit. 12 over the goal, and at or above 300 in three of the last four weeks. | No change. Read again next week. |
+| Support tickets about failed deposits in the quarter | 120 or fewer | ~70 | ~50 left | Borderline. ~70 in 7 weeks, divided by 7, times 13 weeks, gives ~130. That is about 8 percent over 120. | Read the ticket reasons of the last two weeks. Name the cause in a log row. |
+
+Rules for the goal check:
+
+1. Give each source its "as of" date. A report or a chart often stops some days before the day of the read.
+2. Write "~" before each number that you read from a chart image, not from the data. A reader then knows that the number is approximate.
+3. For a number in each period, look at the last four periods. If the number meets the goal, write "Hit", and say how close. If it stays short of the goal, or moves away from it, write "Miss", and give the trend.
+4. For a total over a long period, divide the sum so far by the periods that passed. Multiply by all the periods. Compare the result with the goal, and show the arithmetic.
+5. If a projection is within about 10 percent of the goal, write "Borderline", with the projected number. A row this close can go either way, so the reader watches it.
+6. In What to do, write one or two concrete next steps for each row. If a ticket or a log row exists for the item, point to it. A next step that a person can do this week is more useful than a general wish.
+7. Write no names of people. Write a role, as the log does.

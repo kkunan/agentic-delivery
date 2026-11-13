@@ -1,6 +1,6 @@
 ---
 name: product-board
-description: Log each read of the product numbers and the decision that follows it, and show both on one board page. If someone asks for a product dashboard, a read of the analytics, or a decision log, use it. It holds the row shapes, the rules for a read, and a plain HTML board with made-up data.
+description: Log each read of the product numbers and the decision that follows it, and show both on one board page. Use it for a product dashboard, a read of the analytics, a decision log, or a goal check. It holds the row shapes, the rules for a read, and the goal check. It also holds a plain HTML board with made-up data.
 ---
 
 # Product board
@@ -14,3 +14,7 @@ A board has two parts. The numbers show what users did. The log shows each read 
 5. Show the owner each row that waits on them, in the chat, one question in each message. After each answer, change that row and the page.
 
 The sample data in `board.html` is for a made-up savings app. If the skill `public-writing` is installed and the page is for people outside the team, load it first.
+
+## A goal check
+
+If the owner asks how the numbers stand against the goals, for example each week, build a goal check. The section The goal check in `log.md` gives the table and its rules. Show the table in the chat first. Put it on a page or a ticket only after the owner says yes. A row with "Miss" or "Borderline" can raise a question. Write it as a log row.

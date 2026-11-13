@@ -72,11 +72,12 @@ plugin does not need it. It has five skills:
 - `agentic-discovery:public-roadmap` builds a public roadmap page from a talk with the owner. It
   holds the questions, an HTML template, and three made-up samples.
 - `agentic-discovery:product-board` keeps a log of each read of the product numbers and the
-  decision that follows it, and shows both on one page. It holds the rules for a read and a board
-  with made-up data.
+  decision that follows it, and shows both on one page. It holds the rules for a read, a goal
+  check that compares each goal with its number, and a board with made-up data.
 - `agentic-discovery:product-owner` gives the rules for a Product Owner session: ready tickets,
   grooming, sprint planning, and replan.
-- `agentic-discovery:product-manager` adds decision memos with evidence to the Product Owner.
+- `agentic-discovery:product-manager` adds decision memos with evidence to the Product Owner. It
+  tests the assumptions behind a pick against the data, and gives each impact as a range.
 
 A Product Owner session of the delivery plugin needs this plugin. A team of people can also use
 the Product Owner alone, with no delivery plugin. Copy `templates/agentic-discovery.md` from this
@@ -89,4 +90,4 @@ To install it, add the marketplace as above, then run this command:
 claude plugin install agentic-discovery@agentic-delivery
 ```
 
-The writing skill comes from two products, and the roadmap skill from one. The board skill comes from the boards of two products. The Product Owner skills come from the Product Owner of one product, and the mode for a team of people ran only on a fixture. No team used them yet.
+The writing skill comes from two products, and the roadmap skill from one. The board skill comes from the boards of two products, and its goal check from the weekly check of one product. The Product Owner skills come from the Product Owner of one product. The rules for numbers in the Product Manager come from the analysis of one product. The mode for a team of people ran only on a fixture. No team used them yet.
