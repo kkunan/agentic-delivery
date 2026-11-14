@@ -83,6 +83,8 @@ Do not pass a model override on these dispatches. A model passed at dispatch ove
 
 An M ticket gets one review before the gate: one `reviewer` seat over the M document. Brief the QA questions onto that seat: can each acceptance criterion fail, and can each manual check fail? If the document changes a screen, also brief the skills `design-critique` and `accessibility-review` onto it, against the design documents of the project. XS and S tickets get no review before the gate. Every ticket gets one final review of the whole branch.
 
+If the branch changes a screen and the ticket links approved frames, the final review compares the built screens with the frames. Before you dispatch it, take a screenshot of each state and device that the frames show, into the `screens` folder of the ledger. Brief the reviewer to put each screenshot beside its frame. A difference that the gate owner did not approve is an Important finding. A frame with no matching screenshot is an Important finding too. Frames come from the skill `agentic-discovery:product-designer`, or from the design documents of the project.
+
 A seat earns its place with knowledge that the other seats do not have, never with a different attitude. Reviewers that differ only in attitude share a knowledge base. Each one misses part of what a single reviewer with the union of their prompts finds, and together they cost more. Do not add a reviewer to be more careful. If a ticket needs a second seat, name it and its reason in the document header, beside the estimate. The seat is part of the estimate. An example is `qa-reviewer` on a server contract. A product seat does not qualify, because the gate owner writes the brainstorm and reads the document. (lesson: seats-by-knowledge)
 
 ### Rulings and fix briefs

@@ -10,7 +10,7 @@
       "source": "./",
       "displayName": "Agentic Delivery",
       "description": "A spec-driven feature pipeline for Claude Code: one plan gate, reviewed tasks, a ledger, and a retro, with platform layers.",
-      "version": "0.11.0",
+      "version": "0.12.0",
       "author": {
         "name": "kkunan"
       },
@@ -27,8 +27,8 @@
       "name": "agentic-discovery",
       "source": "./plugins/agentic-discovery",
       "displayName": "Agentic Discovery",
-      "description": "Optional product skills for Claude Code: a Product Owner and Product Manager for a team of agents or people, writing for readers outside the team, a public roadmap, and a board of product numbers with a decision log and a goal check.",
-      "version": "0.6.0",
+      "description": "Optional product skills for Claude Code: a Product Owner, Product Manager, and designer for a team of agents or people, writing for readers outside the team, a public roadmap, and a board of product numbers with a decision log and a goal check.",
+      "version": "0.7.0",
       "author": {
         "name": "kkunan"
       },

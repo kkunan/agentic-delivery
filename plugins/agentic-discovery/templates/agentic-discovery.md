@@ -8,6 +8,7 @@ delivery_mode: flow
 po_grooming: events
 po_authority: next-up
 po_scope: tickets
+po_design: no
 sprint_days:
 sprint_budget:
 size_budget:
@@ -29,6 +30,7 @@ The lines between the two `---` lines at the top are the front matter. Each line
 - `po_grooming` is `events`, `daily`, or `events,daily`. The events are a new ticket and a ticket that ships.
 - `po_authority` is `backlog`, `next-up`, or `all-but-done`. The skill `product-owner` defines each value.
 - `po_scope` is `tickets` or `product`. With `product`, the Product Owner also prepares product decisions, and loads the skill `product-manager`.
+- `po_design` is `yes` or `no`. With `yes`, the Product Owner also draws the frames of each ticket before the team starts, and loads the skill `product-designer`.
 - `sprint_days` is the length of a sprint in working days. Sprint mode needs it.
 - `sprint_budget` is the capacity of one sprint, in the unit of the team, for example `20` points. Sprint mode needs it.
 - `size_budget` gives a value or a range for each t-shirt size, in the same unit, for example `XS=1,S=2,M=5`. Sprint mode needs it.
@@ -44,3 +46,7 @@ Name what the Product Owner weighs to order the backlog, for example the next re
 ## Product Manager
 
 Fill in this section only if `po_scope` is `product`. Name the person who makes product decisions. Name each evidence source that the Product Owner can read, and how to read it. If the team has a strategy document, name it too.
+
+## Design
+
+Fill in this section only if `po_design` is `yes`. Name the design system: its tokens, its components, and its motion rules. Name the place where the frames go, and the form of a link to one frame. List the device classes and postures that the product supports, for example a phone, a foldable, and a tablet. If you leave the list empty, the designer asks you before the first frame. Name the design notes file, where the designer writes the lessons from the gate owner's comments.
