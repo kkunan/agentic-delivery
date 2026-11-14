@@ -38,6 +38,7 @@ Read these keys from the front matter of the project file:
 - `sprint_days`, `sprint_tokens`, and `size_tokens`: sprint mode needs all three. In people mode, the keys are `sprint_days`, `sprint_budget`, and `size_budget`. The rest of this skill says `sprint_tokens` and `size_tokens`, and in people mode it means the two budget keys.
 - `gate_owner` and `lead`: people mode needs both.
 - `po_scope`: `tickets` or `product`. If it is empty or missing, it is `tickets`. With `product`, also load the skill `product-manager`.
+- `po_design`: `yes` or `no`. If it is empty or missing, it is `no`. With `yes`, also load the skill `product-designer`.
 
 If a key holds a value outside its list, stop and name the key. In people mode, if `gate_owner` or `lead` is empty, stop and name the key. In sprint mode, if `sprint_days`, `sprint_tokens`, or `size_tokens` is empty, do not plan the sprint. Name the key, and ask the gate owner for the value. Grooming still runs.
 

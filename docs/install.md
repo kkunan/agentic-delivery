@@ -10,7 +10,7 @@ For a team, pin the plugin to a release tag. Run these two commands at the root 
 repository:
 
 ```bash
-claude plugin marketplace add 'kkunan/agentic-delivery#v0.11.0' --scope project
+claude plugin marketplace add 'kkunan/agentic-delivery#v0.12.0' --scope project
 ```
 
 ```bash
@@ -24,7 +24,7 @@ team gets the same version:
 {
   "extraKnownMarketplaces": {
     "agentic-delivery": {
-      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.11.0" }
+      "source": { "source": "github", "repo": "kkunan/agentic-delivery", "ref": "v0.12.0" }
     }
   },
   "enabledPlugins": { "agentic-delivery@agentic-delivery": true }
@@ -66,7 +66,7 @@ and run `/feature` in Claude Code.
 ## Optional product skills
 
 The same marketplace holds a second plugin, `agentic-discovery`. It is separate, and the delivery
-plugin does not need it. It has five skills:
+plugin does not need it. It has six skills:
 
 - `agentic-discovery:public-writing` gives the rules for a page that people outside the agent sessions read.
 - `agentic-discovery:public-roadmap` builds a public roadmap page from a talk with the owner. It
@@ -78,6 +78,9 @@ plugin does not need it. It has five skills:
   grooming, sprint planning, and replan.
 - `agentic-discovery:product-manager` adds decision memos with evidence to the Product Owner. It
   tests the assumptions behind a pick against the data, and gives each impact as a range.
+- `agentic-discovery:product-designer` makes the Product Owner draw the frames of a ticket before a
+  team starts. It covers every state and device of a screen, the platform guides, and a critique
+  pass by a fresh agent before the gate owner sees the frames.
 
 A Product Owner session of the delivery plugin needs this plugin. A team of people can also use
 the Product Owner alone, with no delivery plugin. Copy `templates/agentic-discovery.md` from this
@@ -90,4 +93,4 @@ To install it, add the marketplace as above, then run this command:
 claude plugin install agentic-discovery@agentic-delivery
 ```
 
-The writing skill comes from two products, and the roadmap skill from one. The board skill comes from the boards of two products, and its goal check from the weekly check of one product. The Product Owner skills come from the Product Owner of one product. The rules for numbers in the Product Manager come from the analysis of one product. The mode for a team of people ran only on a fixture. No team used them yet.
+The writing skill comes from two products, and the roadmap skill from one. The board skill comes from the boards of two products, and its goal check from the weekly check of one product. The Product Owner skills come from the Product Owner of one product. The rules for numbers in the Product Manager come from the analysis of one product. The designer checklist comes from the gate owner's comments on the frames of one product. The mode for a team of people ran only on a fixture. No team used them yet.
