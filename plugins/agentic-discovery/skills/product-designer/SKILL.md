@@ -24,6 +24,16 @@ Read the section Design in the body of the project file. It names these things:
 
 If the section is missing, say so to the gate owner, and draw nothing until it is fixed.
 
+## Ask which devices to cover
+
+If the section Design names no device list, ask the gate owner which devices and postures to cover before the first frame. Each device class adds a set of frames to every ticket, so the answer sets the cost of all later design work. Ask in one message:
+
+- Give the classes that the platform allows, for example a phone, a large phone, a foldable, and a tablet.
+- Name your pick, with the reason. If an evidence source shows the devices of the users, base the pick on it.
+- Give the cost: the number of frames for one screen with each choice.
+
+Write the answer as the device list in the section Design, or ask the gate owner to write it. If the gate owner adds a platform, or the devices of the users change, ask again.
+
 ## Before the first frame
 
 1. Read the design system. Take every color, font size, space, and corner radius from it, and name the token. Do not invent a value. If a value is missing, propose it as a separate change to the design system.

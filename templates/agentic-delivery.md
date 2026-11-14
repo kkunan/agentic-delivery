@@ -110,4 +110,4 @@ Fill in this section only if `po_scope` is `product`. Name the person who makes 
 
 ## Design
 
-Fill in this section only if `po_design` is `yes`. Name the design system: its tokens, its components, and its motion rules. Name the place where the frames go, and the form of a link to one frame. List the device classes and postures that the product supports, for example a phone, a foldable, and a tablet. Name the design notes file, where the designer writes the lessons from the gate owner's comments.
+Fill in this section only if `po_design` is `yes`. Name the design system: its tokens, its components, and its motion rules. Name the place where the frames go, and the form of a link to one frame. List the device classes and postures that the product supports, for example a phone, a foldable, and a tablet. If you leave the list empty, the designer asks you before the first frame. Name the design notes file, where the designer writes the lessons from the gate owner's comments.
